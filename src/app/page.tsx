@@ -56,7 +56,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <Card className="text-center p-6 hover:shadow-lg transition-shadow">
               <CardContent className="pt-6">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Award className="h-8 w-8 text-white" />
                 </div>
                 <h3 className="text-xl font-semibold mb-2">Bounties</h3>
@@ -153,7 +153,7 @@ export default function Home() {
               <Link href="/bounties">
                 <Button
                   size="lg"
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  className="bg-blue-600 hover:from-blue-700 hover:to-purple-700"
                 >
                   Go to Bounties
                   <ArrowRight className="h-5 w-5 ml-2" />
@@ -162,7 +162,7 @@ export default function Home() {
             ) : (
               <Button
                 size="lg"
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                className="bg-blue-600 hover:from-blue-700 hover:to-purple-700"
                 data-connect-wallet
                 onClick={() => {
                   const connectButton = document.querySelector(

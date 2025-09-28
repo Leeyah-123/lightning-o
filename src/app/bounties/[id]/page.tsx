@@ -475,7 +475,7 @@ export default function BountyDetailPage() {
                     <Button
                       onClick={handleFund}
                       disabled={isProcessing}
-                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                      className="bg-blue-600 hover:from-blue-700 hover:to-purple-700"
                     >
                       {isProcessing ? (
                         <LoadingSpinner className="h-4 w-4 mr-2" />

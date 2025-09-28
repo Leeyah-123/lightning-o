@@ -211,7 +211,7 @@ export function BountyCard({
               <Button
                 onClick={handleFund}
                 disabled={isLoading || isProcessing}
-                className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                className="flex-1 bg-blue-600 hover:from-blue-700 hover:to-purple-700"
               >
                 {isLoading || isProcessing ? (
                   <LoadingSpinner className="h-4 w-4" />

@@ -100,7 +100,7 @@ export default function BountiesPage() {
             </Select>
             {user && (
               <Link href="/bounties/create">
-                <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+                <Button className="bg-blue-600 hover:from-blue-700 hover:to-purple-700">
                   <Plus className="h-4 w-4 mr-2" />
                   Create Bounty
                 </Button>
