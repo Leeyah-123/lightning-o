@@ -158,22 +158,25 @@ export function BountyCard({
             </div>
           </div>
 
-          <div className="flex items-center gap-4 text-xs text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <Calendar className="h-3 w-3" />
-              <span>
-                Submit by:{' '}
-                {new Date(bounty.submissionDeadline).toLocaleDateString()}
-              </span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Award className="h-3 w-3" />
-              <span>
-                {isOwner ? 'Judge by' : 'Will be judged by'}:{' '}
-                {new Date(bounty.judgingDeadline).toLocaleDateString()}
-              </span>
-            </div>
-          </div>
+          {bounty.submissionDeadline &&
+            Date.now() < bounty.submissionDeadline && (
+              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <Calendar className="h-3 w-3" />
+                  <span>
+                    Submit by:{' '}
+                    {new Date(bounty.submissionDeadline).toLocaleDateString()}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Award className="h-3 w-3" />
+                  <span>
+                    {isOwner ? 'Judge before' : 'Will be judged before'}:{' '}
+                    {new Date(bounty.judgingDeadline).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
+            )}
         </div>
 
         {bounty.escrowTxId && (
