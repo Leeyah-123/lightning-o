@@ -78,10 +78,10 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
         <form onSubmit={form.handleSubmit(handleLogin)} className="space-y-4">
           <div>
             <label className="text-sm font-medium mb-2 block">
-              Your Secret Key (hex)
+              Your Secret Key (hex or nsec)
             </label>
             <Textarea
-              placeholder="Enter your 64-character hex secret key..."
+              placeholder="Enter your secret key (hex or nsec format)..."
               rows={3}
               {...form.register('secretKey')}
               className="font-mono text-xs"

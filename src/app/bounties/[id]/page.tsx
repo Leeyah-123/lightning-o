@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoadingSpinner } from '@/components/ui/loading';
 import { NostrAddresses } from '@/components/ui/NostrAddresses';
-import { truncateMiddle } from '@/lib/utils';
+import { areKeysEqual, normalizeToNpub, truncateMiddle } from '@/lib/utils';
 import { validationUtils } from '@/lib/validation';
 import { useAuth } from '@/store/auth';
 import { useBounties } from '@/store/bounties';
@@ -174,7 +174,10 @@ export default function BountyDetailPage() {
     );
   }
 
-  const isOwner = user?.pubkey === bounty.sponsorPubkey;
+  const isOwner =
+    user?.pubkey && bounty.sponsorPubkey
+      ? areKeysEqual(user.pubkey, bounty.sponsorPubkey)
+      : false;
 
   return (
     <div className="min-h-screen bg-background">
@@ -422,7 +425,11 @@ export default function BountyDetailPage() {
               <div className="flex items-center gap-2">
                 <Users className="h-5 w-5 text-muted-foreground" />
                 <span className="font-mono text-sm">
-                  {truncateMiddle(bounty.sponsorPubkey, 12, 12)}
+                  {truncateMiddle(
+                    normalizeToNpub(bounty.sponsorPubkey),
+                    12,
+                    12
+                  )}
                 </span>
               </div>
             </CardContent>

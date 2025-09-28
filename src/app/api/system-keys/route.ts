@@ -3,8 +3,6 @@ import { generateSecretKey, getPublicKey } from 'nostr-tools';
 
 export async function GET() {
   try {
-    // In a real implementation, these would be stored securely on the server
-    // For now, we'll generate them from environment variables or create new ones
     const systemPrivateKey = process.env.SYSTEM_PRIVATE_KEY;
 
     if (!systemPrivateKey) {

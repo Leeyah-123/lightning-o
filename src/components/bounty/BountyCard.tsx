@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoadingSpinner } from '@/components/ui/loading';
-import { truncateMiddle } from '@/lib/utils';
+import { normalizeToNpub, truncateMiddle } from '@/lib/utils';
 import { validationUtils } from '@/lib/validation';
 import { useBounties } from '@/store/bounties';
 import type { Bounty, BountyDisplayStatus } from '@/types/bounty';
@@ -151,7 +151,8 @@ export function BountyCard({
               <div className="flex items-center gap-1">
                 <Users className="h-4 w-4" />
                 <span>
-                  Sponsor: {truncateMiddle(bounty.sponsorPubkey, 6, 4)}
+                  Sponsor:{' '}
+                  {truncateMiddle(normalizeToNpub(bounty.sponsorPubkey), 6, 4)}
                 </span>
               </div>
             </div>

@@ -1,5 +1,6 @@
 'use client';
 
+import { normalizeToNpub, normalizeToNsec } from '@/lib/utils';
 import { nostrService } from '@/services/nostrService';
 import { profileService } from '@/services/profileService';
 import type { AuthState, NostrProfile, User } from '@/types/auth';
@@ -22,8 +23,8 @@ export const useAuth = create<AuthState>()(
           }
 
           const pubkey = profileService.getPublicKeyFromSecret(secretKey);
-          const npub = profileService.getNpubFromPubkey(pubkey);
-          const nsec = profileService.getNsecFromSecretKey(secretKey);
+          const npub = normalizeToNpub(pubkey);
+          const nsec = normalizeToNsec(secretKey);
           const profile =
             (await profileService.fetchProfile(pubkey)) || undefined;
 

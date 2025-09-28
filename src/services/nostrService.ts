@@ -4,8 +4,8 @@ import type {
   NostrEventKind,
 } from '@/types/nostr';
 import { getKindNumber } from '@/types/nostr';
+import { bech32 } from 'bech32';
 import {
-  Event,
   finalizeEvent,
   generateSecretKey,
   getPublicKey,
@@ -14,8 +14,8 @@ import {
 } from 'nostr-tools';
 
 export interface NostrKeys {
-  sk: string; // hex
-  pk: string; // hex
+  sk: string; // bech32 nsec format
+  pk: string; // bech32 npub format
 }
 
 class NostrService {
@@ -34,9 +34,13 @@ class NostrService {
 
   generateKeys(): NostrKeys {
     const skBytes = generateSecretKey();
-    const skHex = Buffer.from(skBytes).toString('hex');
     const pk = getPublicKey(skBytes);
-    return { sk: skHex, pk };
+
+    // Convert to bech32 format
+    const nsec = bech32.encode('nsec', bech32.toWords(skBytes));
+    const npub = bech32.encode('npub', bech32.toWords(Buffer.from(pk, 'hex')));
+
+    return { sk: nsec, pk: npub };
   }
 
   async publishBountyEvent(
@@ -50,15 +54,19 @@ class NostrService {
     // Convert kind string to number
     const kindNumber = getKindNumber(kind);
 
+    // Convert bech32 keys to hex for internal use
+    const pkHex = this.getHexFromNpub(keys.pk);
+    const skHex = this.getHexFromNsec(keys.sk);
+
     const unsigned = {
       kind: kindNumber,
       created_at,
       tags,
       content: JSON.stringify(content),
-      pubkey: keys.pk,
+      pubkey: pkHex,
     };
 
-    const sk = Buffer.from(keys.sk, 'hex');
+    const sk = Buffer.from(skHex, 'hex');
     const signed = finalizeEvent(unsigned, sk);
     if (!verifyEvent(signed)) throw new Error('Invalid signature');
     this.pool.publish(this.relays, signed);
@@ -118,6 +126,26 @@ class NostrService {
         resolve(events);
       }, 5000); // 5 second timeout
     });
+  }
+
+  // Helper method to convert npub back to hex format (for internal use)
+  getHexFromNpub(npub: string): string {
+    if (npub.startsWith('npub1')) {
+      const { words } = bech32.decode(npub);
+      const bytes = new Uint8Array(bech32.fromWords(words));
+      return Buffer.from(bytes).toString('hex');
+    }
+    return npub; // Assume it's already hex
+  }
+
+  // Helper method to convert nsec back to hex format (for internal use)
+  getHexFromNsec(nsec: string): string {
+    if (nsec.startsWith('nsec1')) {
+      const { words } = bech32.decode(nsec);
+      const bytes = new Uint8Array(bech32.fromWords(words));
+      return Buffer.from(bytes).toString('hex');
+    }
+    return nsec; // Assume it's already hex
   }
 }
 

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/loading';
 import { Select } from '@/components/ui/select';
+import { areKeysEqual } from '@/lib/utils';
 import { useAuth } from '@/store/auth';
 import { useBounties } from '@/store/bounties';
 import { Plus, Search } from 'lucide-react';
@@ -123,7 +124,11 @@ export default function BountiesPage() {
               <BountyCard
                 key={bounty.id}
                 bounty={bounty}
-                isOwner={user?.pubkey === bounty.sponsorPubkey}
+                isOwner={
+                  user?.pubkey && bounty.sponsorPubkey
+                    ? areKeysEqual(user.pubkey, bounty.sponsorPubkey)
+                    : false
+                }
                 isLoading={isLoading}
                 currentUserPubkey={user?.pubkey}
               />
