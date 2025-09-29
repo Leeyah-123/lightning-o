@@ -1,7 +1,9 @@
 {
   "name": "lightning",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
+  "license": "MIT",
+  "author": "https://github.com/Leeyah-123",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
