@@ -1,8 +1,7 @@
 'use client';
 import { BountyCard } from '@/components/bounty/bounty-card';
 import { GigCard } from '@/components/gig/gig-card';
-import { Footer } from '@/components/layout/footer';
-import { Header } from '@/components/layout/header';
+import { GrantCard } from '@/components/grant/grant-card';
 import { Hero } from '@/components/layout/hero';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -11,6 +10,7 @@ import { profileService } from '@/services/profile-service';
 import { useAuth } from '@/store/auth';
 import { useBounties } from '@/store/bounties';
 import { useGigs } from '@/store/gigs';
+import { useGrants } from '@/store/grants';
 import { ArrowRight, Award, Briefcase, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -18,16 +18,17 @@ import { useEffect, useState } from 'react';
 export default function Home() {
   const { bounties, init: initBounties } = useBounties();
   const { gigs, init: initGigs } = useGigs();
+  const { grants, init: initGrants } = useGrants();
   const { user } = useAuth();
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     const initializeData = async () => {
-      await Promise.all([initBounties(), initGigs()]);
+      await Promise.all([initBounties(), initGigs(), initGrants()]);
       setIsInitialized(true);
     };
     initializeData();
-  }, [initBounties, initGigs]);
+  }, [initBounties, initGigs, initGrants]);
 
   // Calculate combined stats
   const totalBountyReward = bounties.reduce(
@@ -53,39 +54,48 @@ export default function Home() {
     return sum;
   }, 0);
 
-  const totalRewards = totalBountyReward + totalGigReward;
-  const totalOpportunities = bounties.length + gigs.length;
+  const totalGrantReward = grants.reduce((sum, grant) => {
+    if (grant.reward.type === 'fixed') {
+      return sum + grant.reward.amount;
+    } else {
+      return sum + (grant.reward.maxAmount || grant.reward.amount);
+    }
+  }, 0);
+
+  const totalRewards = totalBountyReward + totalGigReward + totalGrantReward;
+  const totalOpportunities = bounties.length + gigs.length + grants.length;
   const activeOpportunities =
     bounties.filter((bounty) => bounty.status === 'open').length +
     gigs.filter((gig) => gig.status === 'open' || gig.status === 'in_progress')
-      .length;
+      .length +
+    grants.filter((grant) => grant.status === 'open').length;
 
-  const recentBounties = bounties.slice(0, 3);
-  const recentGigs = gigs.slice(0, 3);
+  const recentBounties = bounties.slice(0, 2);
+  const recentGigs = gigs.slice(0, 2);
+  const recentGrants = grants.slice(0, 2);
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-
+    <>
       <Hero
         activeOpportunities={activeOpportunities}
         totalOpportunities={totalOpportunities}
         totalRewards={totalRewards}
       />
 
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
         {/* Features Section */}
         <section className="mb-16">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">How LightningO Works</h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              A complete platform for earning opportunities powered by Nostr and
-              Lightning
+              LightningO is a platform where anyone, anywhere can create and
+              have access to earning opportunities powered by Nostr and receive
+              payments instantly with the Lightning Network.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card className="text-center p-6 hover:shadow-lg transition-shadow">
+            <Card className="text-center hover:shadow-lg transition-shadow">
               <CardContent>
                 <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Award className="h-8 w-8 text-white" />
@@ -103,7 +113,7 @@ export default function Home() {
               </CardContent>
             </Card>
 
-            <Card className="text-center p-6 hover:shadow-lg transition-shadow">
+            <Card className="text-center hover:shadow-lg transition-shadow">
               <CardContent>
                 <div className="w-16 h-16 bg-gradient-to-br from-orange-600 to-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Briefcase className="h-8 w-8 text-white" />
@@ -121,7 +131,7 @@ export default function Home() {
               </CardContent>
             </Card>
 
-            <Card className="text-center p-6 hover:shadow-lg transition-shadow">
+            <Card className="text-center hover:shadow-lg transition-shadow">
               <CardContent>
                 <div className="w-16 h-16 bg-gradient-to-br from-green-600 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Zap className="h-8 w-8 text-white" />
@@ -132,7 +142,7 @@ export default function Home() {
                 </p>
                 <Link href="/grants">
                   <Button variant="outline" className="w-full">
-                    Coming Soon
+                    Explore Grants
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
                 </Link>
@@ -141,9 +151,11 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Recent Bounties */}
+        {/* Recent Opportunities */}
         {isInitialized &&
-          (recentBounties.length > 0 || recentGigs.length > 0) && (
+          (recentBounties.length > 0 ||
+            recentGigs.length > 0 ||
+            recentGrants.length > 0) && (
             <section className="mb-16">
               <div className="flex items-center justify-between mb-8">
                 <h2 className="text-2xl font-bold">Recent Opportunities</h2>
@@ -157,6 +169,12 @@ export default function Home() {
                   <Link href="/gigs">
                     <Button variant="outline">
                       View All Gigs
+                      <ArrowRight className="h-4 w-4 ml-2" />
+                    </Button>
+                  </Link>
+                  <Link href="/grants">
+                    <Button variant="outline">
+                      View All Grants
                       <ArrowRight className="h-4 w-4 ml-2" />
                     </Button>
                   </Link>
@@ -190,6 +208,19 @@ export default function Home() {
                     />
                   );
                 })}
+                {recentGrants.map((grant) => {
+                  const userHexPubkey = user?.pubkey
+                    ? profileService.getHexFromNpub(user.pubkey)
+                    : undefined;
+                  return (
+                    <GrantCard
+                      key={grant.id}
+                      grant={grant}
+                      isOwner={userHexPubkey === grant.sponsorPubkey}
+                      currentUserPubkey={user?.pubkey}
+                    />
+                  );
+                })}
               </div>
             </section>
           )}
@@ -203,15 +234,37 @@ export default function Home() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             {user ? (
-              <Link href="/bounties">
-                <Button
-                  size="lg"
-                  className="bg-blue-600 hover:from-blue-700 hover:to-purple-700"
-                >
-                  Explore Bounties
-                  <ArrowRight className="h-5 w-5 ml-2" />
-                </Button>
-              </Link>
+              <>
+                <Link href="/bounties">
+                  <Button
+                    size="lg"
+                    className="bg-blue-600 hover:from-blue-700 hover:to-purple-700"
+                  >
+                    Explore Bounties
+                    <ArrowRight className="h-5 w-5 ml-2" />
+                  </Button>
+                </Link>
+                <Link href="/gigs">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="border-orange-600 text-orange-600 hover:bg-orange-50"
+                  >
+                    Explore Gigs
+                    <ArrowRight className="h-5 w-5 ml-2" />
+                  </Button>
+                </Link>
+                <Link href="/grants">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="border-green-600 text-green-600 hover:bg-green-50"
+                  >
+                    Explore Grants
+                    <ArrowRight className="h-5 w-5 ml-2" />
+                  </Button>
+                </Link>
+              </>
             ) : (
               <Button
                 size="lg"
@@ -230,9 +283,7 @@ export default function Home() {
             )}
           </div>
         </section>
-      </main>
-
-      <Footer />
-    </div>
+      </div>
+    </>
   );
 }

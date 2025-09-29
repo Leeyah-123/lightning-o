@@ -11,7 +11,15 @@ export type NostrEventKind =
   | 'gig:approve_milestone'
   | 'gig:reject_milestone'
   | 'gig:complete'
-  | 'gig:cancel';
+  | 'gig:cancel'
+  | 'grant:create'
+  | 'grant:apply'
+  | 'grant:select'
+  | 'grant:funded'
+  | 'grant:submit_tranche'
+  | 'grant:approve_tranche'
+  | 'grant:reject_tranche'
+  | 'grant:cancel';
 
 // Mapping from string kinds to numeric kinds
 export const NOSTR_KIND_MAP: Record<NostrEventKind, number> = {
@@ -28,6 +36,14 @@ export const NOSTR_KIND_MAP: Record<NostrEventKind, number> = {
   'gig:reject_milestone': 51407,
   'gig:complete': 51408,
   'gig:cancel': 51409,
+  'grant:create': 51501,
+  'grant:apply': 51502,
+  'grant:select': 51503,
+  'grant:funded': 51504,
+  'grant:submit_tranche': 51505,
+  'grant:approve_tranche': 51506,
+  'grant:reject_tranche': 51507,
+  'grant:cancel': 51508,
 };
 
 // Helper function to convert string kind to number
@@ -186,5 +202,100 @@ export type GigContent =
   | GigContentRejectMilestone
   | GigContentComplete
   | GigContentCancel;
+
+// Grant Content Types
+export interface GrantContentCreate {
+  type: 'create';
+  grantId: string;
+  title: string;
+  shortDescription: string;
+  description: string;
+  sponsorPubkey: string;
+  reward: {
+    type: 'fixed' | 'range';
+    amount: number;
+    maxAmount?: number;
+  };
+  tranches: Array<{
+    id: string;
+    amount: number;
+    maxAmount?: number;
+    description: string;
+  }>;
+}
+
+export interface GrantContentApply {
+  type: 'apply';
+  grantId: string;
+  applicationId: string;
+  applicantPubkey: string;
+  portfolioLink?: string;
+  proposal: string;
+  budgetRequest?: number;
+}
+
+export interface GrantContentSelect {
+  type: 'select';
+  grantId: string;
+  applicationId: string;
+  sponsorPubkey: string;
+  finalAllocation?: number;
+}
+
+export interface GrantContentFunded {
+  type: 'funded';
+  grantId: string;
+  applicationId: string;
+  trancheId: string;
+  lightningInvoice: string;
+  amountSats: number;
+  paymentHash: string;
+  sponsorPubkey: string;
+}
+
+export interface GrantContentSubmitTranche {
+  type: 'submit_tranche';
+  grantId: string;
+  applicationId: string;
+  trancheId: string;
+  content: string;
+  links?: string[];
+  submitterPubkey: string;
+}
+
+export interface GrantContentApproveTranche {
+  type: 'approve_tranche';
+  grantId: string;
+  applicationId: string;
+  trancheId: string;
+  sponsorPubkey: string;
+  paymentProof: string;
+}
+
+export interface GrantContentRejectTranche {
+  type: 'reject_tranche';
+  grantId: string;
+  applicationId: string;
+  trancheId: string;
+  sponsorPubkey: string;
+  rejectionReason: string;
+}
+
+export interface GrantContentCancel {
+  type: 'cancel';
+  grantId: string;
+  sponsorPubkey: string;
+  reason?: string;
+}
+
+export type GrantContent =
+  | GrantContentCreate
+  | GrantContentApply
+  | GrantContentSelect
+  | GrantContentFunded
+  | GrantContentSubmitTranche
+  | GrantContentApproveTranche
+  | GrantContentRejectTranche
+  | GrantContentCancel;
 
 export const SYSTEM_PUBKEY_TAG = 'system-pubkey';

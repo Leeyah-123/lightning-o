@@ -1,4 +1,5 @@
 import { gigService } from '@/services/gig-service';
+import { grantService } from '@/services/grant-service';
 import { lightningService } from '@/services/lightning-service';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -34,6 +35,18 @@ export async function POST(request: NextRequest) {
         console.log('Gig milestone payment confirmed:', event.data.paymentHash);
         // Add entityType to the event for proper routing
         event.data.entityType = 'gig';
+      } else {
+        // Try grant tranche payments
+        const grantPaymentConfirmed =
+          await grantService.handlePaymentConfirmation(event.data.paymentHash);
+        if (grantPaymentConfirmed) {
+          console.log(
+            'Grant tranche payment confirmed:',
+            event.data.paymentHash
+          );
+          // Add entityType to the event for proper routing
+          event.data.entityType = 'grant';
+        }
       }
     }
 

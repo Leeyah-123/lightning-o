@@ -1,8 +1,6 @@
 'use client';
 
 import { GigCard } from '@/components/gig/gig-card';
-import { Footer } from '@/components/layout/footer';
-import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { LoadingSpinner } from '@/components/ui/loading';
@@ -72,172 +70,152 @@ export default function GigsPage() {
   const statusCounts = getStatusCounts();
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header Section */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-3xl font-bold mb-2">Gigs</h1>
-              <p className="text-muted-foreground">
-                Find short-term work opportunities and get paid with Lightning
-              </p>
-            </div>
-            {user && (
-              <Link href="/gigs/create">
-                <Button className="bg-blue-600 hover:from-blue-700 hover:to-purple-700">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Gig
-                </Button>
-              </Link>
-            )}
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Header Section */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Gigs</h1>
+            <p className="text-muted-foreground">
+              Find short-term work opportunities and get paid with Lightning
+            </p>
           </div>
-
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
-                    <Briefcase className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold">{totalGigs}</p>
-                    <p className="text-sm text-muted-foreground">Total Gigs</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
-                    <Briefcase className="h-5 w-5 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold">{openGigs}</p>
-                    <p className="text-sm text-muted-foreground">Open Gigs</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg flex items-center justify-center">
-                    <Briefcase className="h-5 w-5 text-yellow-600" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold">
-                      {statusCounts.in_progress}
-                    </p>
-                    <p className="text-sm text-muted-foreground">In Progress</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
-                    <Briefcase className="h-5 w-5 text-purple-600" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold">
-                      {statusCounts.completed}
-                    </p>
-                    <p className="text-sm text-muted-foreground">Completed</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Search and Filter */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search gigs..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-input rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-              />
-            </div>
-            <div className="flex gap-2">
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-2 border border-input rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-              >
-                <option value="all">All Status</option>
-                <option value="open">Open</option>
-                <option value="application_selected">
-                  Application Selected
-                </option>
-                <option value="in_progress">In Progress</option>
-                <option value="completed">Completed</option>
-                <option value="cancelled">Cancelled</option>
-              </select>
-            </div>
-          </div>
+          {user && (
+            <Link href="/gigs/create">
+              <Button className="bg-blue-600 hover:from-blue-700 hover:to-purple-700">
+                <Plus className="h-4 w-4 mr-2" />
+                Create Gig
+              </Button>
+            </Link>
+          )}
         </div>
 
-        {/* Gigs Grid */}
-        {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <LoadingSpinner className="h-8 w-8 mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Loading Gigs...</h3>
-              <p className="text-muted-foreground">
-                Fetching gigs from the network
-              </p>
-            </div>
-          </div>
-        ) : filteredGigs.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredGigs.map((gig) => {
-              const userHexPubkey = user?.pubkey
-                ? profileService.getHexFromNpub(user.pubkey)
-                : undefined;
-              return (
-                <GigCard
-                  key={gig.id}
-                  gig={gig}
-                  isOwner={userHexPubkey === gig.sponsorPubkey}
-                  currentUserPubkey={user?.pubkey}
-                />
-              );
-            })}
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <Briefcase className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No gigs found</h3>
-            <p className="text-muted-foreground mb-4">
-              {searchQuery || statusFilter !== 'all'
-                ? 'Try adjusting your search or filter criteria.'
-                : 'Be the first to create a gig!'}
-            </p>
-            {user && !searchQuery && statusFilter === 'all' && (
-              <Link href="/gigs/create">
-                <Button className="bg-blue-600 hover:from-blue-700 hover:to-purple-700">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create First Gig
-                </Button>
-              </Link>
-            )}
-          </div>
-        )}
-      </main>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <Card>
+            <CardContent className="p-6 text-center">
+              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/20 mx-auto mb-3">
+                <Briefcase className="h-6 w-6 text-blue-600" />
+              </div>
+              <div className="text-2xl font-bold text-foreground mb-1">
+                {totalGigs}
+              </div>
+              <div className="text-sm text-muted-foreground">Total Gigs</div>
+            </CardContent>
+          </Card>
 
-      <Footer />
+          <Card>
+            <CardContent className="p-6 text-center">
+              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/20 mx-auto mb-3">
+                <Briefcase className="h-6 w-6 text-green-600" />
+              </div>
+              <div className="text-2xl font-bold text-foreground mb-1">
+                {openGigs}
+              </div>
+              <div className="text-sm text-muted-foreground">Open Gigs</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6 text-center">
+              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-yellow-100 dark:bg-yellow-900/20 mx-auto mb-3">
+                <Briefcase className="h-6 w-6 text-yellow-600" />
+              </div>
+              <div className="text-2xl font-bold text-foreground mb-1">
+                {statusCounts.in_progress}
+              </div>
+              <div className="text-sm text-muted-foreground">In Progress</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6 text-center">
+              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/20 mx-auto mb-3">
+                <Briefcase className="h-6 w-6 text-purple-600" />
+              </div>
+              <div className="text-2xl font-bold text-foreground mb-1">
+                {statusCounts.completed}
+              </div>
+              <div className="text-sm text-muted-foreground">Completed</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Search and Filter */}
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search gigs..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-input rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+          </div>
+          <div className="flex gap-2">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-3 py-2 border border-input rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="all">All Status</option>
+              <option value="open">Open</option>
+              <option value="application_selected">Application Selected</option>
+              <option value="in_progress">In Progress</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Gigs Grid */}
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <LoadingSpinner className="h-8 w-8 mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Loading Gigs...</h3>
+            <p className="text-muted-foreground">
+              Fetching gigs from the network
+            </p>
+          </div>
+        </div>
+      ) : filteredGigs.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredGigs.map((gig) => {
+            const userHexPubkey = user?.pubkey
+              ? profileService.getHexFromNpub(user.pubkey)
+              : undefined;
+            return (
+              <GigCard
+                key={gig.id}
+                gig={gig}
+                isOwner={userHexPubkey === gig.sponsorPubkey}
+                currentUserPubkey={user?.pubkey}
+              />
+            );
+          })}
+        </div>
+      ) : (
+        <div className="text-center py-12">
+          <Briefcase className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-semibold mb-2">No gigs found</h3>
+          <p className="text-muted-foreground mb-4">
+            {searchQuery || statusFilter !== 'all'
+              ? 'Try adjusting your search or filter criteria.'
+              : 'Be the first to create a gig!'}
+          </p>
+          {user && !searchQuery && statusFilter === 'all' && (
+            <Link href="/gigs/create">
+              <Button className="bg-blue-600 hover:from-blue-700 hover:to-purple-700">
+                <Plus className="h-4 w-4 mr-2" />
+                Create First Gig
+              </Button>
+            </Link>
+          )}
+        </div>
+      )}
     </div>
   );
 }

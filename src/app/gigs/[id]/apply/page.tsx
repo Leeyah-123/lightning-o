@@ -1,7 +1,5 @@
 'use client';
 
-import { Footer } from '@/components/layout/footer';
-import { Header } from '@/components/layout/header';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -124,53 +122,45 @@ export default function ApplyPage({ params }: ApplyPageProps) {
 
   if (!gig) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center py-12">
-            <Briefcase className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h1 className="text-2xl font-bold mb-2">Gig not found</h1>
-            <p className="text-muted-foreground mb-4">
-              The gig you're looking for doesn't exist or has been removed.
-            </p>
-            <Link href="/gigs">
-              <Button variant="outline">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Gigs
-              </Button>
-            </Link>
-          </div>
-        </main>
-        <Footer />
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center py-12">
+          <Briefcase className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <h1 className="text-2xl font-bold mb-2">Gig not found</h1>
+          <p className="text-muted-foreground mb-4">
+            The gig you're looking for doesn't exist or has been removed.
+          </p>
+          <Link href="/gigs">
+            <Button variant="outline">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Gigs
+            </Button>
+          </Link>
+        </div>
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center py-12">
-            <Briefcase className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h1 className="text-2xl font-bold mb-2">Authentication Required</h1>
-            <p className="text-muted-foreground mb-4">
-              You need to be logged in to apply to gigs.
-            </p>
-            <Button
-              onClick={() => {
-                const connectButton = document.querySelector(
-                  '[data-connect-wallet]'
-                ) as HTMLButtonElement;
-                connectButton?.click();
-              }}
-              className="bg-blue-600 hover:from-blue-700 hover:to-purple-700"
-            >
-              Connect Nostr
-            </Button>
-          </div>
-        </main>
-        <Footer />
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center py-12">
+          <Briefcase className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <h1 className="text-2xl font-bold mb-2">Authentication Required</h1>
+          <p className="text-muted-foreground mb-4">
+            You need to be logged in to apply to gigs.
+          </p>
+          <Button
+            onClick={() => {
+              const connectButton = document.querySelector(
+                '[data-connect-wallet]'
+              ) as HTMLButtonElement;
+              connectButton?.click();
+            }}
+            className="bg-blue-600 hover:from-blue-700 hover:to-purple-700"
+          >
+            Connect Nostr
+          </Button>
+        </div>
       </div>
     );
   }
@@ -179,24 +169,20 @@ export default function ApplyPage({ params }: ApplyPageProps) {
 
   if (!canApply) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center py-12">
-            <Briefcase className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h1 className="text-2xl font-bold mb-2">Applications Closed</h1>
-            <p className="text-muted-foreground mb-4">
-              This gig is no longer accepting applications.
-            </p>
-            <Link href={`/gigs/${gig.id}`}>
-              <Button variant="outline">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Gig
-              </Button>
-            </Link>
-          </div>
-        </main>
-        <Footer />
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center py-12">
+          <Briefcase className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <h1 className="text-2xl font-bold mb-2">Applications Closed</h1>
+          <p className="text-muted-foreground mb-4">
+            This gig is no longer accepting applications.
+          </p>
+          <Link href={`/gigs/${gig.id}`}>
+            <Button variant="outline">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Gig
+            </Button>
+          </Link>
+        </div>
       </div>
     );
   }
@@ -251,271 +237,260 @@ export default function ApplyPage({ params }: ApplyPageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <Link
-            href={`/gigs/${gig.id}`}
-            className={buttonVariants({
-              variant: 'outline',
-              className: 'p-0 mb-4',
-            })}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Gig
-          </Link>
-          <div>
-            <h1 className="text-3xl font-bold">Apply to Gig</h1>
-            <p className="text-muted-foreground">
-              Submit your application and milestone breakdown
-            </p>
-          </div>
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="mb-8">
+        <Link
+          href={`/gigs/${gig.id}`}
+          className={buttonVariants({
+            variant: 'outline',
+            className: 'p-0 mb-4',
+          })}
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Gig
+        </Link>
+        <div>
+          <h1 className="text-3xl font-bold">Apply to Gig</h1>
+          <p className="text-muted-foreground">
+            Submit your application and milestone breakdown
+          </p>
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Application Form */}
-          <div className="lg:col-span-2">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-              {/* Portfolio Link */}
-              <div className="space-y-2">
-                <Label htmlFor="portfolioLink">Portfolio Link (Optional)</Label>
-                <div className="relative">
-                  <ExternalLink className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="portfolioLink"
-                    type="url"
-                    placeholder="https://your-portfolio.com"
-                    className="pl-10"
-                    {...register('portfolioLink')}
-                  />
-                </div>
-                {errors.portfolioLink && (
-                  <p className="text-sm text-red-500">
-                    {errors.portfolioLink.message}
-                  </p>
-                )}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Application Form */}
+        <div className="lg:col-span-2">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            {/* Portfolio Link */}
+            <div className="space-y-2">
+              <Label htmlFor="portfolioLink">Portfolio Link (Optional)</Label>
+              <div className="relative">
+                <ExternalLink className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="portfolioLink"
+                  type="url"
+                  placeholder="https://your-portfolio.com"
+                  className="pl-10"
+                  {...register('portfolioLink')}
+                />
               </div>
-
-              {/* Total Offer Amount (Read-only) */}
-              <div className="space-y-2">
-                <Label>Total Offer Amount (sats)</Label>
-                <div className="relative">
-                  <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    type="text"
-                    value={totalMilestoneAmount.toLocaleString()}
-                    className="pl-10 bg-muted/50 cursor-not-allowed"
-                    readOnly
-                  />
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Automatically calculated from milestone amounts
+              {errors.portfolioLink && (
+                <p className="text-sm text-red-500">
+                  {errors.portfolioLink.message}
                 </p>
-                {gig.budgetRange && (
-                  <p className="text-sm text-muted-foreground">
-                    {gigUtils.isSingleAmount(gig.budgetRange)
-                      ? 'Budget: '
-                      : 'Budget range: '}
-                    {gigUtils.formatBudget(gig.budgetRange)}
-                  </p>
-                )}
+              )}
+            </div>
+
+            {/* Total Offer Amount (Read-only) */}
+            <div className="space-y-2">
+              <Label>Total Offer Amount (sats)</Label>
+              <div className="relative">
+                <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="text"
+                  value={totalMilestoneAmount.toLocaleString()}
+                  className="pl-10 bg-muted/50 cursor-not-allowed"
+                  readOnly
+                />
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Automatically calculated from milestone amounts
+              </p>
+              {gig.budgetRange && (
+                <p className="text-sm text-muted-foreground">
+                  {gigUtils.isSingleAmount(gig.budgetRange)
+                    ? 'Budget: '
+                    : 'Budget range: '}
+                  {gigUtils.formatBudget(gig.budgetRange)}
+                </p>
+              )}
+            </div>
+
+            {/* Milestones */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label>Milestones *</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addMilestone}
+                  className="flex items-center gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Milestone
+                </Button>
               </div>
 
-              {/* Milestones */}
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <Label>Milestones *</Label>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={addMilestone}
-                    className="flex items-center gap-2"
+                {fields.map((field, index) => (
+                  <div
+                    key={field.id}
+                    className="border rounded-lg p-4 space-y-4"
                   >
-                    <Plus className="h-4 w-4" />
-                    Add Milestone
-                  </Button>
-                </div>
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-medium">Milestone {index + 1}</h4>
+                      {fields.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeMilestone(index)}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
 
-                <div className="space-y-4">
-                  {fields.map((field, index) => (
-                    <div
-                      key={field.id}
-                      className="border rounded-lg p-4 space-y-4"
-                    >
-                      <div className="flex items-center justify-between">
-                        <h4 className="font-medium">Milestone {index + 1}</h4>
-                        {fields.length > 1 && (
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeMilestone(index)}
-                            className="text-red-500 hover:text-red-700"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor={`milestones.${index}.amountSats`}>
+                          Amount (sats) *
+                        </Label>
+                        <div className="relative">
+                          <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            type="number"
+                            placeholder="5000"
+                            className="pl-10"
+                            {...register(`milestones.${index}.amountSats`, {
+                              valueAsNumber: true,
+                            })}
+                          />
+                        </div>
+                        {errors.milestones?.[index]?.amountSats && (
+                          <p className="text-sm text-red-500">
+                            {errors.milestones[index]?.amountSats?.message}
+                          </p>
                         )}
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor={`milestones.${index}.amountSats`}>
-                            Amount (sats) *
-                          </Label>
-                          <div className="relative">
-                            <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input
-                              type="number"
-                              placeholder="5000"
-                              className="pl-10"
-                              {...register(`milestones.${index}.amountSats`, {
-                                valueAsNumber: true,
-                              })}
-                            />
-                          </div>
-                          {errors.milestones?.[index]?.amountSats && (
-                            <p className="text-sm text-red-500">
-                              {errors.milestones[index]?.amountSats?.message}
-                            </p>
-                          )}
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor={`milestones.${index}.eta`}>
-                            ETA *
-                          </Label>
-                          <div className="relative">
-                            <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input
-                              type="datetime-local"
-                              className="pl-10"
-                              value={timestampToDatetimeLocal(
-                                watch(`milestones.${index}.eta`)
-                              )}
-                              onChange={(e) => {
-                                if (e.target.value) {
-                                  // Create date in local timezone
-                                  const localDate = new Date(e.target.value);
-                                  setValue(
-                                    `milestones.${index}.eta`,
-                                    localDate.getTime()
-                                  );
-                                } else {
-                                  setValue(`milestones.${index}.eta`, 0);
-                                }
-                              }}
-                            />
-                          </div>
-                          {errors.milestones?.[index]?.eta && (
-                            <p className="text-sm text-red-500">
-                              {errors.milestones[index]?.eta?.message}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-
                       <div className="space-y-2">
-                        <Label htmlFor={`milestones.${index}.description`}>
-                          Description *
-                        </Label>
+                        <Label htmlFor={`milestones.${index}.eta`}>ETA *</Label>
                         <div className="relative">
-                          <FileText className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                          <Textarea
-                            placeholder="Describe what will be delivered in this milestone..."
-                            className="pl-10 min-h-[100px]"
-                            {...register(`milestones.${index}.description`)}
+                          <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            type="datetime-local"
+                            className="pl-10"
+                            value={timestampToDatetimeLocal(
+                              watch(`milestones.${index}.eta`)
+                            )}
+                            onChange={(e) => {
+                              if (e.target.value) {
+                                // Create date in local timezone
+                                const localDate = new Date(e.target.value);
+                                setValue(
+                                  `milestones.${index}.eta`,
+                                  localDate.getTime()
+                                );
+                              } else {
+                                setValue(`milestones.${index}.eta`, 0);
+                              }
+                            }}
                           />
                         </div>
-                        {errors.milestones?.[index]?.description && (
+                        {errors.milestones?.[index]?.eta && (
                           <p className="text-sm text-red-500">
-                            {errors.milestones[index]?.description?.message}
+                            {errors.milestones[index]?.eta?.message}
                           </p>
                         )}
                       </div>
                     </div>
-                  ))}
-                </div>
 
-                {/* Milestone sum validation */}
-                <div className="p-3 rounded-lg bg-muted/50">
-                  <div className="flex items-center justify-between text-sm">
-                    <span>Total milestone amount:</span>
-                    <span
-                      className={`font-medium ${
-                        isMilestoneSumValid ? 'text-green-600' : 'text-red-500'
-                      }`}
-                    >
-                      {totalMilestoneAmount.toLocaleString()} sats
-                    </span>
+                    <div className="space-y-2">
+                      <Label htmlFor={`milestones.${index}.description`}>
+                        Description *
+                      </Label>
+                      <div className="relative">
+                        <FileText className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Textarea
+                          placeholder="Describe what will be delivered in this milestone..."
+                          className="pl-10 min-h-[100px]"
+                          {...register(`milestones.${index}.description`)}
+                        />
+                      </div>
+                      {errors.milestones?.[index]?.description && (
+                        <p className="text-sm text-red-500">
+                          {errors.milestones[index]?.description?.message}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  {!isMilestoneSumValid && (
-                    <p className="text-sm text-red-500 mt-2">
-                      Please add at least one milestone with a valid amount
-                    </p>
-                  )}
-                </div>
+                ))}
               </div>
 
-              {/* Submit buttons */}
-              <div className="flex gap-3 pt-4">
-                <Link href={`/gigs/${gig.id}`}>
-                  <Button type="button" variant="outline" className="flex-1">
-                    Cancel
-                  </Button>
-                </Link>
-                <Button
-                  type="submit"
-                  disabled={isSubmitting || !isMilestoneSumValid}
-                  className="flex-1 bg-blue-600 hover:from-blue-700 hover:to-purple-700"
-                >
-                  {isSubmitting ? 'Submitting...' : 'Submit Application'}
-                </Button>
+              {/* Milestone sum validation */}
+              <div className="p-3 rounded-lg bg-muted/50">
+                <div className="flex items-center justify-between text-sm">
+                  <span>Total milestone amount:</span>
+                  <span
+                    className={`font-medium ${
+                      isMilestoneSumValid ? 'text-green-600' : 'text-red-500'
+                    }`}
+                  >
+                    {totalMilestoneAmount.toLocaleString()} sats
+                  </span>
+                </div>
+                {!isMilestoneSumValid && (
+                  <p className="text-sm text-red-500 mt-2">
+                    Please add at least one milestone with a valid amount
+                  </p>
+                )}
               </div>
-            </form>
+            </div>
+
+            {/* Submit buttons */}
+            <div className="flex gap-3 pt-4">
+              <Link href={`/gigs/${gig.id}`}>
+                <Button type="button" variant="outline" className="flex-1">
+                  Cancel
+                </Button>
+              </Link>
+              <Button
+                type="submit"
+                disabled={isSubmitting || !isMilestoneSumValid}
+                className="flex-1 bg-blue-600 hover:from-blue-700 hover:to-purple-700"
+              >
+                {isSubmitting ? 'Submitting...' : 'Submit Application'}
+              </Button>
+            </div>
+          </form>
+        </div>
+
+        {/* Sidebar */}
+        <div className="space-y-6">
+          {/* Gig Info */}
+          <div className="p-4 border rounded-lg bg-muted/30">
+            <h3 className="font-medium mb-2">{gig.title}</h3>
+            <p className="text-muted-foreground mb-3">{gig.shortDescription}</p>
+            <div
+              className="rich-text-content mb-4"
+              dangerouslySetInnerHTML={{ __html: gig.description }}
+            />
+            {gig.budgetRange && (
+              <div className="flex items-center gap-2 text-sm">
+                <DollarSign className="h-4 w-4 text-green-500" />
+                <span>{gigUtils.formatBudget(gig.budgetRange)}</span>
+              </div>
+            )}
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Gig Info */}
-            <div className="p-4 border rounded-lg bg-muted/30">
-              <h3 className="font-medium mb-2">{gig.title}</h3>
-              <p className="text-muted-foreground mb-3">
-                {gig.shortDescription}
-              </p>
-              <div
-                className="rich-text-content mb-4"
-                dangerouslySetInnerHTML={{ __html: gig.description }}
-              />
-              {gig.budgetRange && (
-                <div className="flex items-center gap-2 text-sm">
-                  <DollarSign className="h-4 w-4 text-green-500" />
-                  <span>{gigUtils.formatBudget(gig.budgetRange)}</span>
-                </div>
-              )}
-            </div>
-
-            {/* Tips */}
-            <div className="p-4 border rounded-lg bg-blue-50 dark:bg-blue-950/20">
-              <h3 className="font-medium text-blue-900 dark:text-blue-100 mb-2">
-                Application Tips
-              </h3>
-              <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
-                <li>• Break work into clear, measurable milestones</li>
-                <li>• Set realistic timelines for each milestone</li>
-                <li>• Be specific about deliverables</li>
-                <li>• Include your portfolio if available</li>
-                <li>• Price competitively within the budget range</li>
-              </ul>
-            </div>
+          {/* Tips */}
+          <div className="p-4 border rounded-lg bg-blue-50 dark:bg-blue-950/20">
+            <h3 className="font-medium text-blue-900 dark:text-blue-100 mb-2">
+              Application Tips
+            </h3>
+            <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+              <li>• Break work into clear, measurable milestones</li>
+              <li>• Set realistic timelines for each milestone</li>
+              <li>• Be specific about deliverables</li>
+              <li>• Include your portfolio if available</li>
+              <li>• Price competitively within the budget range</li>
+            </ul>
           </div>
         </div>
-      </main>
-
-      <Footer />
+      </div>
     </div>
   );
 }
