@@ -1,4 +1,4 @@
-import { nostrValidation } from '@/lib/nostrValidation';
+import { nostrValidation } from '@/lib/nostr-validation';
 import type { Bounty, BountySubmission } from '@/types/bounty';
 import type {
   BountyContent,
@@ -7,13 +7,19 @@ import type {
   NostrEventBase,
 } from '@/types/nostr';
 import { v4 as uuidv4 } from 'uuid';
-import { lightningService, type Payout } from './lightningService';
-import { nostrService, type NostrKeys } from './nostrService';
+import { BountyEventRouter } from './bounty-event-handlers';
+import { lightningService, type Payout } from './lightning-service';
+import { nostrService, type NostrKeys } from './nostr-service';
 
 class BountyService {
   private bounties: Map<string, Bounty> = new Map();
   private systemKeys?: NostrKeys;
   private onChangeCallback?: () => void;
+  private eventRouter: BountyEventRouter;
+
+  constructor() {
+    this.eventRouter = new BountyEventRouter(this.bounties);
+  }
 
   setSystemKeys(keys: NostrKeys) {
     this.systemKeys = keys;
@@ -346,8 +352,10 @@ class BountyService {
         }
       }
     );
+
+    // Subscribe to funded events from Lightning service
     lightningService.on((evt) => {
-      if (evt.type === 'funded') {
+      if (evt.type === 'funded' && evt.data?.entityType === 'bounty') {
         const {
           bountyId,
           escrowTxId,
@@ -355,6 +363,17 @@ class BountyService {
           amountSats,
           paymentHash,
         } = evt.data;
+        console.log('Received funded event for bounty:', evt.data);
+
+        // Validate that we have the required fields
+        if (!bountyId || !escrowTxId) {
+          console.warn(
+            'Invalid bounty funded event: missing bountyId or escrowTxId',
+            evt.data
+          );
+          return;
+        }
+
         const b = this.bounties.get(bountyId);
         if (!b) return;
         if (!this.systemKeys) return;
@@ -418,165 +437,24 @@ class BountyService {
     }
   }
 
-  private handleNostrEvent(event: NostrEventBase, content: BountyContent) {
-    let hasChanges = false;
+  /**
+   * OPTIMIZED: Handle Nostr events with improved structure and error handling
+   */
+  private handleNostrEvent(
+    event: NostrEventBase,
+    content: BountyContent
+  ): void {
+    try {
+      // Use the event router to handle the event
+      const hasChanges = this.eventRouter.route(event, content);
 
-    switch (content.type) {
-      case 'pending':
-        // Handle bounty creation
-        const existingBounty = this.bounties.get(content.bountyId);
-        if (!existingBounty) {
-          // Create new bounty
-          const bounty: Bounty = {
-            id: content.bountyId,
-            title: content.title,
-            shortDescription: content.shortDescription,
-            description: content.description,
-            sponsorPubkey: content.sponsorPubkey,
-            rewardSats: content.rewardSats,
-            status: 'pending',
-            submissionDeadline: content.submissionDeadline,
-            judgingDeadline: content.judgingDeadline,
-            submissions: [],
-            createdAt: event.created_at * 1000, // Convert to milliseconds
-          };
-          this.bounties.set(content.bountyId, bounty);
-          hasChanges = true;
-        } else if (existingBounty.title === 'Loading...') {
-          // Update placeholder bounty with real data
-          console.log(
-            'Updating placeholder bounty with create event:',
-            content.bountyId
-          );
-          existingBounty.title = content.title;
-          existingBounty.shortDescription = content.shortDescription;
-          existingBounty.description = content.description;
-          existingBounty.sponsorPubkey = content.sponsorPubkey;
-          existingBounty.rewardSats = content.rewardSats;
-          existingBounty.submissionDeadline = content.submissionDeadline;
-          existingBounty.judgingDeadline = content.judgingDeadline;
-          // Only set status to 'pending' if it's not already set to a higher state
-          if (
-            existingBounty.status === 'pending' ||
-            existingBounty.status === 'open' ||
-            existingBounty.status === 'completed'
-          ) {
-            // Keep existing status
-          } else {
-            existingBounty.status = 'pending';
-          }
-          this.bounties.set(content.bountyId, existingBounty);
-          hasChanges = true;
-        }
-        break;
-      case 'open':
-        console.log('open', content);
-        // Handle bounty funding
-        const openBounty = this.bounties.get(content.bountyId);
-        if (openBounty) {
-          // Update existing bounty
-          openBounty.status = 'open';
-          openBounty.escrowTxId = content.escrowTxId;
-          this.bounties.set(content.bountyId, openBounty);
-          hasChanges = true;
-        } else {
-          // Bounty doesn't exist yet, create a placeholder bounty
-          // This handles the case where 'open' event arrives before 'create' event
-          console.log(
-            'Creating placeholder bounty for open event:',
-            content.bountyId
-          );
-          const placeholderBounty: Bounty = {
-            id: content.bountyId,
-            title: 'Loading...',
-            shortDescription: 'Bounty details loading...',
-            description: 'Bounty details are being loaded from the network.',
-            sponsorPubkey: 'unknown',
-            rewardSats: 0,
-            status: 'open',
-            submissionDeadline: 0,
-            judgingDeadline: 0,
-            escrowTxId: content.escrowTxId,
-            submissions: [],
-            createdAt: event.created_at * 1000,
-          };
-          this.bounties.set(content.bountyId, placeholderBounty);
-          hasChanges = true;
-        }
-        break;
-      case 'completed':
-        // Handle bounty completion
-        const completedBounty = this.bounties.get(content.bountyId);
-        if (completedBounty) {
-          // Update existing bounty
-          completedBounty.status = 'completed';
-          completedBounty.winners = content.winners.map((winner, index) => ({
-            ...winner,
-            rank: index + 1, // Assign rank based on order
-          }));
-          this.bounties.set(content.bountyId, completedBounty);
-          hasChanges = true;
-        } else {
-          // Bounty doesn't exist yet, create a placeholder bounty
-          // This handles the case where 'completed' event arrives before other events
-          console.log(
-            'Creating placeholder bounty for completed event:',
-            content.bountyId
-          );
-          const placeholderBounty: Bounty = {
-            id: content.bountyId,
-            title: 'Loading...',
-            shortDescription: 'Bounty details loading...',
-            description: 'Bounty details are being loaded from the network.',
-            sponsorPubkey: 'unknown',
-            rewardSats: 0,
-            status: 'completed',
-            submissionDeadline: 0,
-            judgingDeadline: 0,
-            winners: content.winners.map((winner, index) => ({
-              ...winner,
-              rank: index + 1, // Assign rank based on order
-            })),
-            submissions: [],
-            createdAt: event.created_at * 1000,
-          };
-          this.bounties.set(content.bountyId, placeholderBounty);
-          hasChanges = true;
-        }
-        break;
-      case 'submit':
-        // Handle bounty submission
-        const submitContent = content as BountyContentSubmit;
-        const submitBounty = this.bounties.get(submitContent.bountyId);
-        if (submitBounty) {
-          // Check if submission already exists
-          const existingSubmission = submitBounty.submissions?.find(
-            (sub) => sub.id === submitContent.submissionId
-          );
-
-          if (!existingSubmission) {
-            // Add new submission
-            const submission: BountySubmission = {
-              id: submitContent.submissionId,
-              pubkey: submitContent.submitterPubkey,
-              content: submitContent.content,
-              lightningAddress: submitContent.lightningAddress,
-              submittedAt: event.created_at * 1000,
-              status: 'pending',
-            };
-
-            submitBounty.submissions = submitBounty.submissions || [];
-            submitBounty.submissions.push(submission);
-            this.bounties.set(submitContent.bountyId, submitBounty);
-            hasChanges = true;
-          }
-        }
-        break;
-    }
-
-    // Notify listeners if there were changes
-    if (hasChanges) {
-      this.notifyChange();
+      // Only notify listeners if there were actual changes
+      if (hasChanges) {
+        this.notifyChange();
+      }
+    } catch (error) {
+      console.error(`Failed to handle bounty event ${event.id}:`, error);
+      // Don't re-throw to prevent breaking the event processing loop
     }
   }
 }

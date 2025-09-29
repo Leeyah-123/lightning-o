@@ -1,12 +1,14 @@
 'use client';
 
-import { LightningInvoiceModal } from '@/components/bounty/LightningInvoiceModal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { LightningInvoiceModal } from '@/components/ui/lightning-invoice-modal';
 import { LoadingSpinner } from '@/components/ui/loading';
+import { useToast } from '@/lib/hooks/use-toast';
 import { normalizeToNpub, truncateMiddle } from '@/lib/utils';
 import { validationUtils } from '@/lib/validation';
+import { lightningService } from '@/services/lightning-service';
 import { useBounties } from '@/store/bounties';
 import type { Bounty, BountyDisplayStatus } from '@/types/bounty';
 import { bountyUtils } from '@/types/bounty';
@@ -29,6 +31,7 @@ export function BountyCard({
 }: BountyCardProps) {
   const router = useRouter();
   const { fundBounty } = useBounties();
+  const { toast } = useToast();
 
   // State for Lightning invoice modal
   const [showLightningModal, setShowLightningModal] = useState(false);
@@ -76,14 +79,57 @@ export function BountyCard({
         setFundingAmount(validationUtils.getTotalReward(bounty.rewardSats));
         setShowLightningModal(true);
       } else {
-        console.error('Funding failed:', result.error);
-        // You might want to show an error message to the user
+        throw new Error(result.error || 'Failed to create invoice');
       }
     } catch (error) {
       console.error('Funding error:', error);
-      // You might want to show an error message to the user
+      toast({
+        title: 'Failed to Fund Bounty',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'An unexpected error occurred. Please try again.',
+        variant: 'destructive',
+      });
     } finally {
       setIsProcessing(false);
+    }
+  };
+
+  const handleDevPayment = async () => {
+    if (!bounty) return;
+
+    // Simulate payment by calling the pay invoice API
+    const response = await fetch('/api/lightning/pay-invoice', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        request: lightningInvoice,
+        reference: `dev-bounty-payment-${bounty.id}-${Date.now()}`,
+        customerEmail: 'dev@lightning.app',
+      }),
+    });
+
+    if (response.ok) {
+      // Emit the funded event with the correct escrowTxId
+      const eventData = {
+        type: 'funded' as const,
+        data: {
+          entityType: 'bounty' as const,
+          bountyId: bounty.id,
+          escrowTxId: `dev-escrow-${Date.now()}`,
+          lightningInvoice,
+          amountSats: fundingAmount,
+          paymentHash: `dev-payment-${Date.now()}`,
+        },
+      };
+
+      lightningService.emitEvent(eventData);
+      console.log('Emitted funded event for bounty:', bounty.id);
+    } else {
+      throw new Error('Dev payment failed');
     }
   };
 
@@ -240,8 +286,13 @@ export function BountyCard({
         onClose={() => setShowLightningModal(false)}
         lightningInvoice={lightningInvoice}
         amountSats={fundingAmount}
-        bountyTitle={bounty.title}
-        bountyId={bounty.id}
+        title="Fund Bounty"
+        description={`to fund "${bounty.title}"`}
+        onDevPayment={handleDevPayment}
+        onPaymentComplete={() => {
+          setShowLightningModal(false);
+          // The bounty will be updated via webhook
+        }}
       />
     </Card>
   );

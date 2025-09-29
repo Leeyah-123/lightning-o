@@ -1,4 +1,5 @@
-import { ThemeProvider } from '@/components/theme/ThemeProvider';
+import { ThemeProvider } from '@/components/theme/theme-provider';
+import { Toaster } from '@/components/ui/toaster';
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
@@ -14,9 +15,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Lightning - Decentralized Bounties & Gigs',
+  title: 'Lightning - Decentralized Earning Opportunities',
   description:
-    'Create, fund, and complete bounties on the decentralized web. Built on Nostr and Lightning for instant, global payments.',
+    'Create, fund, and complete earning opportunities on the decentralized web. Built on Nostr and Lightning for instant, global payments.',
   keywords: [
     'bounties',
     'lightning',
@@ -27,7 +28,7 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: 'Lightning Team' }],
   openGraph: {
-    title: 'Lightning - Decentralized Bounties & Gigs',
+    title: 'Lightning - Decentralized Earning Opportunities',
     description:
       'Create, fund, and complete bounties on the decentralized web. Built on Nostr and Lightning for instant, global payments.',
     type: 'website',
@@ -44,7 +45,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          {children}
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );

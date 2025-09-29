@@ -1,15 +1,16 @@
 'use client';
 
-import { LightningInvoiceModal } from '@/components/bounty/LightningInvoiceModal';
-import { SubmissionModal } from '@/components/bounty/SubmissionModal';
-import { SubmissionsList } from '@/components/bounty/SubmissionsList';
+import { SubmissionModal } from '@/components/bounty/submission-modal';
+import { SubmissionsList } from '@/components/bounty/submissions-list';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { LightningInvoiceModal } from '@/components/ui/lightning-invoice-modal';
 import { LoadingSpinner } from '@/components/ui/loading';
-import { NostrAddresses } from '@/components/ui/NostrAddresses';
+import { NostrAddress } from '@/components/ui/nostr-address';
 import { areKeysEqual, normalizeToNpub, truncateMiddle } from '@/lib/utils';
 import { validationUtils } from '@/lib/validation';
+import { lightningService } from '@/services/lightning-service';
 import { useAuth } from '@/store/auth';
 import { useBounties } from '@/store/bounties';
 import type { Bounty, BountyDisplayStatus } from '@/types/bounty';
@@ -75,6 +76,43 @@ export default function BountyDetailPage() {
       // You might want to show an error message to the user
     } finally {
       setIsProcessing(false);
+    }
+  };
+
+  const handleDevPayment = async () => {
+    if (!bounty) return;
+
+    // Simulate payment by calling the pay invoice API
+    const response = await fetch('/api/lightning/pay-invoice', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        request: lightningInvoice,
+        reference: `dev-bounty-payment-${bounty.id}-${Date.now()}`,
+        customerEmail: 'dev@lightning.app',
+      }),
+    });
+
+    if (response.ok) {
+      // Emit the funded event with the correct escrowTxId
+      const eventData = {
+        type: 'funded' as const,
+        data: {
+          entityType: 'bounty' as const,
+          bountyId: bounty.id,
+          escrowTxId: `dev-escrow-${Date.now()}`,
+          lightningInvoice,
+          amountSats: fundingAmount,
+          paymentHash: `dev-payment-${Date.now()}`,
+        },
+      };
+
+      lightningService.emitEvent(eventData);
+      console.log('Emitted funded event for bounty:', bounty.id);
+    } else {
+      throw new Error('Dev payment failed');
     }
   };
 
@@ -252,7 +290,7 @@ export default function BountyDetailPage() {
             </CardHeader>
             <CardContent>
               <div
-                className="prose prose-sm max-w-none dark:prose-invert"
+                className="rich-text-content"
                 dangerouslySetInnerHTML={{ __html: bounty.description }}
               />
             </CardContent>
@@ -302,7 +340,7 @@ export default function BountyDetailPage() {
                               </span>
                             </div>
                             <div className="text-sm text-muted-foreground">
-                              <NostrAddresses pubkey={winner.pubkey} copy />
+                              <NostrAddress pubkey={winner.pubkey} copy />
                             </div>
                           </div>
                           <div className="text-right">
@@ -774,8 +812,9 @@ export default function BountyDetailPage() {
           onClose={() => setShowLightningModal(false)}
           lightningInvoice={lightningInvoice}
           amountSats={fundingAmount}
-          bountyTitle={bounty.title}
-          bountyId={bounty.id}
+          title="Fund Bounty"
+          description={`to fund "${bounty.title}"`}
+          onDevPayment={handleDevPayment}
         />
       )}
     </div>

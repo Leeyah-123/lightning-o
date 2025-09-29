@@ -71,7 +71,7 @@ export function Hero({
           {/* Stats */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-2xl mx-auto">
             <Card className="border-0 shadow-lg bg-white/50 dark:bg-card/50 backdrop-blur-sm">
-              <CardContent className="p-6 pt-6 text-center">
+              <CardContent className="p-6 text-center">
                 <div className="flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 mx-auto mb-3">
                   <Award className="h-6 w-6 text-blue-600" />
                 </div>
@@ -85,7 +85,7 @@ export function Hero({
             </Card>
 
             <Card className="border-0 shadow-lg bg-white/50 dark:bg-card/50 backdrop-blur-sm">
-              <CardContent className="p-6 pt-6 text-center">
+              <CardContent className="p-6 text-center">
                 <div className="flex items-center justify-center w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 mx-auto mb-3">
                   <Zap className="h-6 w-6 text-green-600" />
                 </div>
@@ -99,7 +99,7 @@ export function Hero({
             </Card>
 
             <Card className="border-0 shadow-lg bg-white/50 dark:bg-card/50 backdrop-blur-sm">
-              <CardContent className="p-6 pt-6 text-center">
+              <CardContent className="p-6 text-center">
                 <div className="flex items-center justify-center w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/30 mx-auto mb-3">
                   <Activity className="h-6 w-6 text-purple-600" />
                 </div>

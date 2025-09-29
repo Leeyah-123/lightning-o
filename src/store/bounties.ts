@@ -1,8 +1,8 @@
 'use client';
 
-import { bountyService } from '@/services/bountyService';
-import { nostrService } from '@/services/nostrService';
-import { profileService } from '@/services/profileService';
+import { bountyService } from '@/services/bounty-service';
+import { nostrService } from '@/services/nostr-service';
+import { profileService } from '@/services/profile-service';
 import type { Bounty } from '@/types/bounty';
 import { create } from 'zustand';
 import { useAuth } from './auth';

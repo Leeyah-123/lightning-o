@@ -1,8 +1,8 @@
 'use client';
 
-import { LoginModal } from '@/components/auth/LoginModal';
-import { ProfileMenu } from '@/components/auth/ProfileMenu';
-import { ThemeToggle } from '@/components/theme/ThemeToggle';
+import { LoginModal } from '@/components/auth/login-modal';
+import { ProfileMenu } from '@/components/auth/profile-menu';
+import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/store/auth';
 import { Zap } from 'lucide-react';
@@ -21,19 +21,9 @@ export function Header({ onConnect }: HeaderProps) {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-300 to-blue-600 flex items-center justify-center">
-                <Zap className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold bg-blue-600 bg-clip-text text-transparent">
-                  Lightning
-                </h1>
-                <p className="text-xs text-muted-foreground -mt-1">
-                  Bounties & Gigs
-                </p>
-              </div>
-            </div>
+            <h1 className="flex gap-1 items-center text-xl font-bold bg-blue-600 bg-clip-text text-transparent">
+              Lightning0 <Zap className="h-5 w-5 text-blue-600" />
+            </h1>
           </div>
 
           {/* Navigation */}

@@ -64,3 +64,26 @@ export function areKeysEqual(key1: string, key2: string): boolean {
 
   return hex1 === hex2;
 }
+
+// Date-time conversion utilities for datetime-local inputs
+export function timestampToDatetimeLocal(timestamp: number): string {
+  if (!timestamp || timestamp === 0) return '';
+
+  const date = new Date(timestamp);
+  // Convert to local time for datetime-local input
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
+export function datetimeLocalToTimestamp(datetimeLocal: string): number {
+  if (!datetimeLocal) return 0;
+
+  // Create date in local timezone
+  const localDate = new Date(datetimeLocal);
+  return localDate.getTime();
+}

@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Modal } from '@/components/ui/modal';
-import { Textarea } from '@/components/ui/textarea';
+import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { useAuth } from '@/store/auth';
 import { useBounties } from '@/store/bounties';
 import { Loader2, Send } from 'lucide-react';
@@ -119,17 +119,14 @@ export function SubmissionModal({
                 >
                   Your Solution *
                 </label>
-                <Textarea
-                  id="submission-content"
+                <RichTextEditor
                   value={content}
-                  onChange={(e) => setContent(e.target.value)}
+                  onChange={setContent}
                   placeholder="Describe your solution in detail..."
-                  className="min-h-[200px] resize-none"
-                  disabled={isSubmitting}
-                  required
+                  className="min-h-[200px]"
                 />
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  {content.length} characters
+                  {content.replace(/<[^>]*>/g, '').length} characters
                 </p>
               </div>
 

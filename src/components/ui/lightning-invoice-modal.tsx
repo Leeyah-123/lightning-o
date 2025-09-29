@@ -1,9 +1,10 @@
 'use client';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Modal } from '@/components/ui/modal';
-import { lightningService } from '@/services/lightningService';
-import { CheckCircle, Copy, ExternalLink, QrCode, Zap } from 'lucide-react';
+import { lightningService } from '@/services/lightning-service';
+import { CheckCircle, Copy, QrCode, Zap } from 'lucide-react';
 import QRCode from 'qrcode';
 import { useEffect, useState } from 'react';
 
@@ -12,8 +13,10 @@ interface LightningInvoiceModalProps {
   onClose: () => void;
   lightningInvoice: string;
   amountSats: number;
-  bountyTitle: string;
-  bountyId?: string;
+  title: string;
+  description?: string;
+  onDevPayment?: () => Promise<void>; // Custom dev payment handler
+  onPaymentComplete?: () => void;
 }
 
 export function LightningInvoiceModal({
@@ -21,8 +24,10 @@ export function LightningInvoiceModal({
   onClose,
   lightningInvoice,
   amountSats,
-  bountyTitle,
-  bountyId,
+  title,
+  description,
+  onDevPayment,
+  onPaymentComplete,
 }: LightningInvoiceModalProps) {
   const [copied, setCopied] = useState(false);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>('');
@@ -86,44 +91,38 @@ export function LightningInvoiceModal({
 
     setIsPaying(true);
     try {
-      // Simulate payment by calling the pay invoice API
-      const response = await fetch('/api/lightning/pay-invoice', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          request: lightningInvoice,
-          reference: `dev-payment-${Date.now()}`,
-          customerEmail: 'dev@lightning.app',
-        }),
-      });
-
-      if (response.ok) {
-        // Emit the 'funded' event to trigger bounty:open
-        if (bountyId) {
-          const escrowTxId = `dev-escrow-${Date.now()}`;
-          lightningService.emitEvent({
-            type: 'funded',
-            data: {
-              bountyId,
-              escrowTxId,
-              lightningInvoice,
-              amountSats,
-              paymentHash: `dev-payment-${Date.now()}`,
-            },
-          });
-          console.log('Emitted funded event for bounty:', bountyId);
-        }
-
-        setPaymentSuccess(true);
-        // Auto-close modal after 2 seconds
-        setTimeout(() => {
-          onClose();
-        }, 2000);
+      // Call the custom dev payment handler if provided
+      if (onDevPayment) {
+        await onDevPayment();
       } else {
-        console.error('Dev payment failed:', await response.text());
+        // Fallback: simulate payment by calling the pay invoice API
+        const response = await fetch('/api/lightning/pay-invoice', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            request: lightningInvoice,
+            reference: `dev-payment-${Date.now()}`,
+            customerEmail: 'dev@lightning.app',
+          }),
+        });
+
+        if (!response.ok) {
+          console.error('Dev payment failed:', await response.text());
+          return;
+        }
       }
+
+      setPaymentSuccess(true);
+
+      // Call payment complete callback
+      onPaymentComplete?.();
+
+      // Auto-close modal after 2 seconds
+      setTimeout(() => {
+        onClose();
+      }, 2000);
     } catch (error) {
       console.error('Dev payment error:', error);
     } finally {
@@ -138,10 +137,11 @@ export function LightningInvoiceModal({
           <CardHeader className="text-center">
             <div className="flex items-center justify-center gap-2 mb-2">
               <Zap className="h-6 w-6 text-yellow-500" />
-              <CardTitle className="text-xl">Fund Bounty</CardTitle>
+              <CardTitle className="text-xl">{title}</CardTitle>
             </div>
             <p className="text-muted-foreground">
-              Pay {amountSats.toLocaleString()} sats to fund "{bountyTitle}"
+              Pay {amountSats.toLocaleString()} sats
+              {description && ` ${description}`}
             </p>
           </CardHeader>
 
@@ -216,7 +216,9 @@ export function LightningInvoiceModal({
                   <span className="flex-shrink-0 w-5 h-5 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-medium">
                     1
                   </span>
-                  <span>Copy the Lightning invoice above</span>
+                  <span>
+                    Copy the Lightning invoice above or scan the QR code
+                  </span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="flex-shrink-0 w-5 h-5 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-medium">
@@ -242,7 +244,7 @@ export function LightningInvoiceModal({
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-2 pt-4">
+            <div className="flex gap-2">
               {process.env.NODE_ENV !== 'production' && (
                 <Button
                   onClick={handleDevPayment}

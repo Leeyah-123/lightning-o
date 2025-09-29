@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { lightningService } from '@/services/lightningService';
+import { lightningService } from '@/services/lightning-service';
 import { CheckCircle, Copy, ExternalLink, QrCode, Zap } from 'lucide-react';
 import QRCode from 'qrcode';
 import { useEffect, useState } from 'react';
