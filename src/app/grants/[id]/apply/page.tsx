@@ -278,7 +278,7 @@ export default function ApplyPage({ params }: ApplyPageProps) {
                           </span>
                         </div>
                         <div
-                          className="text-xs text-muted-foreground mt-1"
+                          className="rich-text-content mt-1"
                           dangerouslySetInnerHTML={{
                             __html: tranche.description,
                           }}

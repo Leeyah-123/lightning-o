@@ -207,23 +207,29 @@ export function GrantCard({
           <div className="space-y-4">
             {/* Reward and Stats */}
             <div className="grid grid-cols-2 gap-4 text-sm">
-              <div className="flex items-center gap-2 text-foreground">
-                <DollarSign className="h-4 w-4 text-green-600" />
-                <span className="font-medium">
+              <div className="flex flex-col items-center text-center">
+                <DollarSign className="h-5 w-5 text-green-600 mb-1" />
+                <span className="font-medium text-foreground">
                   {grantUtils.formatReward(grant.reward)}
                 </span>
               </div>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Users className="h-4 w-4" />
-                <span>{grant.applications.length} applications</span>
+              <div className="flex flex-col items-center text-center">
+                <Users className="h-5 w-5 text-muted-foreground mb-1" />
+                <span className="text-muted-foreground">
+                  {grant.applications.length} applications
+                </span>
               </div>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Award className="h-4 w-4" />
-                <span>{grant.tranches.length} tranches</span>
+              <div className="flex flex-col items-center text-center">
+                <Award className="h-5 w-5 text-muted-foreground mb-1" />
+                <span className="text-muted-foreground">
+                  {grant.tranches.length} tranches
+                </span>
               </div>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Calendar className="h-4 w-4" />
-                <span>{grantUtils.getRelativeTime(grant.createdAt)}</span>
+              <div className="flex flex-col items-center text-center">
+                <Calendar className="h-5 w-5 text-muted-foreground mb-1" />
+                <span className="text-muted-foreground">
+                  {grantUtils.getRelativeTime(grant.createdAt)}
+                </span>
               </div>
             </div>
 

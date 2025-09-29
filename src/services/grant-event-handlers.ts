@@ -1,5 +1,16 @@
 import type { Grant, GrantApplication, GrantTranche } from '@/types/grant';
-import type { GrantContent, NostrEventBase } from '@/types/nostr';
+import type {
+  GrantContent,
+  GrantContentApply,
+  GrantContentApproveTranche,
+  GrantContentCancel,
+  GrantContentCreate,
+  GrantContentFunded,
+  GrantContentRejectTranche,
+  GrantContentSelect,
+  GrantContentSubmitTranche,
+  NostrEventBase,
+} from '@/types/nostr';
 
 /**
  * Helper functions for grant event processing
@@ -111,7 +122,7 @@ export class GrantEventHelpers {
             content.applicationId &&
             content.trancheId &&
             content.lightningInvoice &&
-            (content as any).amountSats &&
+            content.amountSats &&
             content.paymentHash &&
             content.sponsorPubkey
           );
@@ -248,7 +259,7 @@ export class GrantEventRouter {
           handled = await this.handleCancelGrant(event, content);
           break;
         default:
-          console.warn('Unknown grant event type:', (content as any).type);
+          console.warn('Unknown grant event type:', content);
           return false;
       }
 
@@ -265,7 +276,7 @@ export class GrantEventRouter {
 
   private async handleCreateGrant(
     event: NostrEventBase,
-    content: any
+    content: GrantContentCreate
   ): Promise<boolean> {
     try {
       const grant: Grant = {
@@ -275,7 +286,7 @@ export class GrantEventRouter {
         description: content.description,
         sponsorPubkey: content.sponsorPubkey,
         reward: content.reward,
-        tranches: content.tranches.map((t: any) => ({
+        tranches: content.tranches.map((t) => ({
           id: `tranche-${Date.now()}-${Math.random()
             .toString(36)
             .substr(2, 9)}`,
@@ -300,7 +311,7 @@ export class GrantEventRouter {
 
   private async handleApplyToGrant(
     event: NostrEventBase,
-    content: any
+    content: GrantContentApply
   ): Promise<boolean> {
     try {
       const grant = GrantEventHelpers.findGrant(this.grants, content.grantId);
@@ -329,7 +340,7 @@ export class GrantEventRouter {
 
   private async handleSelectApplication(
     event: NostrEventBase,
-    content: any
+    content: GrantContentSelect
   ): Promise<boolean> {
     try {
       const grant = GrantEventHelpers.findGrant(this.grants, content.grantId);
@@ -358,7 +369,7 @@ export class GrantEventRouter {
 
   private async handleFundTranche(
     event: NostrEventBase,
-    content: any
+    content: GrantContentFunded
   ): Promise<boolean> {
     try {
       const grant = GrantEventHelpers.findGrant(this.grants, content.grantId);
@@ -379,7 +390,7 @@ export class GrantEventRouter {
 
   private async handleSubmitTranche(
     event: NostrEventBase,
-    content: any
+    content: GrantContentSubmitTranche
   ): Promise<boolean> {
     try {
       const grant = GrantEventHelpers.findGrant(this.grants, content.grantId);
@@ -403,7 +414,7 @@ export class GrantEventRouter {
 
   private async handleApproveTranche(
     event: NostrEventBase,
-    content: any
+    content: GrantContentApproveTranche
   ): Promise<boolean> {
     try {
       const grant = GrantEventHelpers.findGrant(this.grants, content.grantId);
@@ -436,7 +447,7 @@ export class GrantEventRouter {
 
   private async handleRejectTranche(
     event: NostrEventBase,
-    content: any
+    content: GrantContentRejectTranche
   ): Promise<boolean> {
     try {
       const grant = GrantEventHelpers.findGrant(this.grants, content.grantId);
@@ -458,7 +469,7 @@ export class GrantEventRouter {
 
   private async handleCancelGrant(
     event: NostrEventBase,
-    content: any
+    content: GrantContentCancel
   ): Promise<boolean> {
     try {
       const grant = GrantEventHelpers.findGrant(this.grants, content.grantId);

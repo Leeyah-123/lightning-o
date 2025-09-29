@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LightningInvoiceModal } from '@/components/ui/lightning-invoice-modal';
 import { LoadingSpinner } from '@/components/ui/loading';
 import { useToast } from '@/lib/hooks/use-toast';
+import { formatOrdinal } from '@/lib/utils';
 import { lightningService } from '@/services/lightning-service';
 import { profileService } from '@/services/profile-service';
 import { useAuth } from '@/store/auth';
@@ -181,85 +182,6 @@ export default function GrantDetailPage({ params }: GrantDetailPageProps) {
     }
   };
 
-  const handleFundTranche = async (
-    applicationId: string,
-    trancheId: string
-  ) => {
-    if (!isOwner) return;
-
-    try {
-      const result = await fundTranche({
-        grantId: grant.id,
-        applicationId,
-        trancheId,
-      });
-
-      if (result.success && result.lightningInvoice) {
-        setLightningInvoice(result.lightningInvoice);
-        setPaymentHash(result.paymentHash || '');
-        setFundingAmount(
-          grant.tranches.find((t) => t.id === trancheId)?.maxAmount ||
-            grant.tranches.find((t) => t.id === trancheId)?.amount ||
-            0
-        );
-        setSelectedApplicationId(applicationId);
-        setSelectedTrancheId(trancheId);
-        setShowLightningModal(true);
-      } else {
-        throw new Error(result.error || 'Failed to create invoice');
-      }
-    } catch (error) {
-      console.error('Failed to fund tranche:', error);
-      toast({
-        title: 'Failed to Fund Tranche',
-        description:
-          error instanceof Error
-            ? error.message
-            : 'An unexpected error occurred.',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const handleSubmitTranche = async (trancheId: string) => {
-    if (!isUserSelected) return;
-
-    const content = prompt('Describe your work for this tranche:');
-    if (!content) return;
-
-    try {
-      const selectedApp = grant.applications.find(
-        (app) =>
-          grant.selectedApplicationIds.includes(app.id) &&
-          profileService.getHexFromNpub(user!.pubkey) === app.applicantPubkey
-      );
-
-      if (!selectedApp) throw new Error('No selected application found');
-
-      await submitTranche({
-        grantId: grant.id,
-        applicationId: selectedApp.id,
-        trancheId,
-        content,
-      });
-
-      toast({
-        title: 'Tranche Submitted',
-        description: 'Your work has been submitted for review.',
-      });
-    } catch (error) {
-      console.error('Failed to submit tranche:', error);
-      toast({
-        title: 'Failed to Submit Tranche',
-        description:
-          error instanceof Error
-            ? error.message
-            : 'An unexpected error occurred.',
-        variant: 'destructive',
-      });
-    }
-  };
-
   const handleReviewTranche = async (
     trancheId: string,
     action: 'approve' | 'reject'
@@ -361,6 +283,25 @@ export default function GrantDetailPage({ params }: GrantDetailPageProps) {
     }
   };
 
+  const getTrancheStatusText = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return grant.selectedApplicationIds.length > 0
+          ? 'Pending Funding'
+          : 'Waiting for Applications';
+      case 'funded':
+        return 'Funded';
+      case 'submitted':
+        return 'Submitted for Review';
+      case 'accepted':
+        return 'Approved';
+      case 'rejected':
+        return 'Rejected';
+      default:
+        return 'Unknown';
+    }
+  };
+
   return (
     <>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -428,7 +369,9 @@ export default function GrantDetailPage({ params }: GrantDetailPageProps) {
                 {grant.tranches.map((tranche, index) => (
                   <div key={tranche.id} className="border rounded-lg p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-medium">Tranche {index + 1}</h4>
+                      <h4 className="font-medium">
+                        {formatOrdinal(index + 1)} Tranche
+                      </h4>
                       <div className="flex items-center gap-2">
                         {getTrancheStatusIcon(tranche.status)}
                         <span className="text-sm font-medium">
@@ -440,96 +383,6 @@ export default function GrantDetailPage({ params }: GrantDetailPageProps) {
                       className="rich-text-content mb-3"
                       dangerouslySetInnerHTML={{ __html: tranche.description }}
                     />
-
-                    {/* Tranche Actions */}
-                    {isOwner && tranche.status === 'pending' && (
-                      <Button
-                        onClick={() => {
-                          const selectedApp = grant.applications.find((app) =>
-                            grant.selectedApplicationIds.includes(app.id)
-                          );
-                          if (selectedApp) {
-                            handleFundTranche(selectedApp.id, tranche.id);
-                          }
-                        }}
-                        size="sm"
-                        className="bg-green-600 hover:from-green-700 hover:to-emerald-700"
-                      >
-                        Fund Tranche
-                      </Button>
-                    )}
-
-                    {isUserSelected && tranche.status === 'funded' && (
-                      <Button
-                        onClick={() => handleSubmitTranche(tranche.id)}
-                        size="sm"
-                        className="bg-blue-600 hover:from-blue-700 hover:to-cyan-700"
-                      >
-                        Submit Work
-                      </Button>
-                    )}
-
-                    {isOwner && tranche.status === 'submitted' && (
-                      <div className="flex gap-2">
-                        <Button
-                          onClick={() =>
-                            handleReviewTranche(tranche.id, 'approve')
-                          }
-                          size="sm"
-                          className="bg-green-600 hover:from-green-700 hover:to-emerald-700"
-                        >
-                          Approve
-                        </Button>
-                        <Button
-                          onClick={() =>
-                            handleReviewTranche(tranche.id, 'reject')
-                          }
-                          size="sm"
-                          variant="outline"
-                          className="text-red-600 border-red-300 hover:bg-red-50"
-                        >
-                          Reject
-                        </Button>
-                      </div>
-                    )}
-
-                    {tranche.submittedContent && (
-                      <div className="mt-3 p-3 bg-muted/50 rounded-lg">
-                        <h5 className="font-medium mb-2">Submitted Work:</h5>
-                        <p className="text-sm">{tranche.submittedContent}</p>
-                        {tranche.submittedLinks &&
-                          tranche.submittedLinks.length > 0 && (
-                            <div className="mt-2">
-                              <h6 className="font-medium text-sm mb-1">
-                                Links:
-                              </h6>
-                              {tranche.submittedLinks.map((link, idx) => (
-                                <a
-                                  key={idx}
-                                  href={link}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-sm text-blue-600 hover:underline mr-2"
-                                >
-                                  <ExternalLink className="h-3 w-3 inline mr-1" />
-                                  Link {idx + 1}
-                                </a>
-                              ))}
-                            </div>
-                          )}
-                      </div>
-                    )}
-
-                    {tranche.rejectionReason && (
-                      <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
-                        <h5 className="font-medium text-red-800 dark:text-red-200 mb-1">
-                          Rejection Reason:
-                        </h5>
-                        <p className="text-sm text-red-700 dark:text-red-300">
-                          {tranche.rejectionReason}
-                        </p>
-                      </div>
-                    )}
                   </div>
                 ))}
               </CardContent>
@@ -561,21 +414,32 @@ export default function GrantDetailPage({ params }: GrantDetailPageProps) {
                           {grantUtils.getRelativeTime(application.submittedAt)}
                         </div>
                       </div>
-                      {isOwner && application.status === 'pending' && (
-                        <Button
-                          onClick={() =>
-                            handleSelectApplication(application.id)
-                          }
-                          size="sm"
-                          className="bg-green-600 hover:from-green-700 hover:to-emerald-700"
-                        >
-                          Select
-                        </Button>
-                      )}
+                      <div className="flex gap-2">
+                        {isOwner && application.status === 'pending' && (
+                          <Button
+                            onClick={() =>
+                              handleSelectApplication(application.id)
+                            }
+                            size="sm"
+                            className="bg-green-600 hover:from-green-700 hover:to-emerald-700"
+                          >
+                            Select
+                          </Button>
+                        )}
+                        {application.status === 'selected' && (
+                          <Link
+                            href={`/grants/${grant.id}/applications/${application.id}`}
+                          >
+                            <Button size="sm" variant="outline">
+                              Manage Application
+                            </Button>
+                          </Link>
+                        )}
+                      </div>
                     </div>
 
                     <div
-                      className="prose prose-sm max-w-none dark:prose-invert mb-3"
+                      className="rich-text-content mb-3"
                       dangerouslySetInnerHTML={{ __html: application.proposal }}
                     />
 
@@ -595,9 +459,11 @@ export default function GrantDetailPage({ params }: GrantDetailPageProps) {
 
                 {grant.applications.length > 5 && (
                   <div className="text-center">
-                    <Button variant="outline">
-                      View All Applications ({grant.applications.length})
-                    </Button>
+                    <Link href={`/grants/${grant.id}/applications`}>
+                      <Button variant="outline">
+                        View All Applications ({grant.applications.length})
+                      </Button>
+                    </Link>
                   </div>
                 )}
               </CardContent>

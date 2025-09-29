@@ -239,12 +239,12 @@ export default function GigDetailPage({ params }: GigDetailPageProps) {
     router.push(`/gigs/${gig.id}/applications`);
   };
 
-  const handleSubmitMilestone = (milestone: any) => {
+  const handleSubmitMilestone = (milestone: GigMilestone) => {
     setSelectedMilestone(milestone);
     setShowMilestoneSubmissionModal(true);
   };
 
-  const handleReviewMilestone = (milestone: any) => {
+  const handleReviewMilestone = (milestone: GigMilestone) => {
     setSelectedMilestone(milestone);
     setShowMilestoneReviewModal(true);
   };

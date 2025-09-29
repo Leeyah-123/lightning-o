@@ -136,12 +136,14 @@ export const grantUtils = {
   // Format reward display
   formatReward: (reward: Grant['reward']): string => {
     if (reward.type === 'fixed') {
-      return `${reward.amount.toLocaleString()} sats`;
+      return `${(reward.amount || 0).toLocaleString()} sats`;
     } else {
       if (reward.amount === reward.maxAmount) {
-        return `${reward.amount.toLocaleString()} sats`;
+        return `${(reward.amount || 0).toLocaleString()} sats`;
       }
-      return `${reward.amount.toLocaleString()} - ${reward.maxAmount!.toLocaleString()} sats`;
+      return `${(reward.amount || 0).toLocaleString()} - ${(
+        reward.maxAmount || 0
+      ).toLocaleString()} sats`;
     }
   },
 
@@ -239,8 +241,10 @@ export const grantUtils = {
   // Format tranche amount display
   formatTrancheAmount: (tranche: GrantTranche): string => {
     if (!tranche.maxAmount || tranche.amount === tranche.maxAmount) {
-      return `${tranche.amount.toLocaleString()} sats`;
+      return `${(tranche.amount || 0).toLocaleString()} sats`;
     }
-    return `${tranche.amount.toLocaleString()} - ${tranche.maxAmount.toLocaleString()} sats`;
+    return `${(tranche.amount || 0).toLocaleString()} - ${(
+      tranche.maxAmount || 0
+    ).toLocaleString()} sats`;
   },
 };

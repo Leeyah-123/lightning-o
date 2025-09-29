@@ -1,6 +1,7 @@
 'use client';
 import { BountyCard } from '@/components/bounty/bounty-card';
 import { GigCard } from '@/components/gig/gig-card';
+import { GrantCard } from '@/components/grant/grant-card';
 import { Hero } from '@/components/layout/hero';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -69,8 +70,9 @@ export default function Home() {
       .length +
     grants.filter((grant) => grant.status === 'open').length;
 
-  const recentBounties = bounties.slice(0, 3);
-  const recentGigs = gigs.slice(0, 3);
+  const recentBounties = bounties.slice(0, 2);
+  const recentGigs = gigs.slice(0, 2);
+  const recentGrants = grants.slice(0, 2);
 
   return (
     <>
@@ -149,9 +151,11 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Recent Bounties */}
+        {/* Recent Opportunities */}
         {isInitialized &&
-          (recentBounties.length > 0 || recentGigs.length > 0) && (
+          (recentBounties.length > 0 ||
+            recentGigs.length > 0 ||
+            recentGrants.length > 0) && (
             <section className="mb-16">
               <div className="flex items-center justify-between mb-8">
                 <h2 className="text-2xl font-bold">Recent Opportunities</h2>
@@ -165,6 +169,12 @@ export default function Home() {
                   <Link href="/gigs">
                     <Button variant="outline">
                       View All Gigs
+                      <ArrowRight className="h-4 w-4 ml-2" />
+                    </Button>
+                  </Link>
+                  <Link href="/grants">
+                    <Button variant="outline">
+                      View All Grants
                       <ArrowRight className="h-4 w-4 ml-2" />
                     </Button>
                   </Link>
@@ -198,6 +208,19 @@ export default function Home() {
                     />
                   );
                 })}
+                {recentGrants.map((grant) => {
+                  const userHexPubkey = user?.pubkey
+                    ? profileService.getHexFromNpub(user.pubkey)
+                    : undefined;
+                  return (
+                    <GrantCard
+                      key={grant.id}
+                      grant={grant}
+                      isOwner={userHexPubkey === grant.sponsorPubkey}
+                      currentUserPubkey={user?.pubkey}
+                    />
+                  );
+                })}
               </div>
             </section>
           )}
@@ -211,15 +234,37 @@ export default function Home() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             {user ? (
-              <Link href="/bounties">
-                <Button
-                  size="lg"
-                  className="bg-blue-600 hover:from-blue-700 hover:to-purple-700"
-                >
-                  Explore Bounties
-                  <ArrowRight className="h-5 w-5 ml-2" />
-                </Button>
-              </Link>
+              <>
+                <Link href="/bounties">
+                  <Button
+                    size="lg"
+                    className="bg-blue-600 hover:from-blue-700 hover:to-purple-700"
+                  >
+                    Explore Bounties
+                    <ArrowRight className="h-5 w-5 ml-2" />
+                  </Button>
+                </Link>
+                <Link href="/gigs">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="border-orange-600 text-orange-600 hover:bg-orange-50"
+                  >
+                    Explore Gigs
+                    <ArrowRight className="h-5 w-5 ml-2" />
+                  </Button>
+                </Link>
+                <Link href="/grants">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="border-green-600 text-green-600 hover:bg-green-50"
+                  >
+                    Explore Grants
+                    <ArrowRight className="h-5 w-5 ml-2" />
+                  </Button>
+                </Link>
+              </>
             ) : (
               <Button
                 size="lg"
