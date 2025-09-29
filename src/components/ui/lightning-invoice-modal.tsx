@@ -155,6 +155,7 @@ export function LightningInvoiceModal({
                       <p className="text-sm">{qrCodeError}</p>
                     </div>
                   ) : qrCodeDataUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={qrCodeDataUrl}
                       alt="Lightning Invoice QR Code"

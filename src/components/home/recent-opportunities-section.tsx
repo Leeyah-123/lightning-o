@@ -6,13 +6,16 @@ import { GrantCard } from '@/components/grant/grant-card';
 import { Button } from '@/components/ui/button';
 import { profileService } from '@/services/profile-service';
 import { useAuth } from '@/store/auth';
+import { Bounty } from '@/types/bounty';
+import { Gig } from '@/types/gig';
+import { Grant } from '@/types/grant';
 import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
 interface RecentOpportunitiesSectionProps {
-  recentBounties: any[];
-  recentGigs: any[];
-  recentGrants: any[];
+  recentBounties: Bounty[];
+  recentGigs: Gig[];
+  recentGrants: Grant[];
   isInitialized: boolean;
 }
 
