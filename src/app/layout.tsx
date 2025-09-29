@@ -1,5 +1,5 @@
 import { Footer } from '@/components/layout/footer';
-import { Header } from '@/components/layout/header';
+import { Navbar } from '@/components/layout/header';
 import { ThemeProvider } from '@/components/theme/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
 import type { Metadata } from 'next';
@@ -48,7 +48,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider>
-          <Header />
+          <Navbar />
           <main>{children}</main>
           <Footer />
           <Toaster />

@@ -2,7 +2,7 @@
 import { BountyCard } from '@/components/bounty/bounty-card';
 import { GigCard } from '@/components/gig/gig-card';
 import { GrantCard } from '@/components/grant/grant-card';
-import { Hero } from '@/components/layout/hero';
+import { HeroSection } from '@/components/home/hero-section';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { validationUtils } from '@/lib/validation';
@@ -76,7 +76,7 @@ export default function Home() {
 
   return (
     <>
-      <Hero
+      <HeroSection
         activeOpportunities={activeOpportunities}
         totalOpportunities={totalOpportunities}
         totalRewards={totalRewards}

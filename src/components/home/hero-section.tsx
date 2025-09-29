@@ -5,17 +5,17 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Activity, Award, Zap } from 'lucide-react';
 import Link from 'next/link';
 
-interface HeroProps {
+interface HeroSectionProps {
   totalOpportunities: number;
   totalRewards: number;
   activeOpportunities: number;
 }
 
-export function Hero({
+export function HeroSection({
   totalOpportunities,
   totalRewards,
   activeOpportunities,
-}: HeroProps) {
+}: HeroSectionProps) {
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-blue-950/20 dark:via-background dark:to-purple-950/20">
       {/* Background decoration */}
