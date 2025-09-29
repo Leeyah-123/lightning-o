@@ -1,0 +1,105 @@
+'use client';
+
+import { BountyCard } from '@/components/bounty/bounty-card';
+import { GigCard } from '@/components/gig/gig-card';
+import { GrantCard } from '@/components/grant/grant-card';
+import { Button } from '@/components/ui/button';
+import { profileService } from '@/services/profile-service';
+import { useAuth } from '@/store/auth';
+import { ArrowRight } from 'lucide-react';
+import Link from 'next/link';
+
+interface RecentOpportunitiesSectionProps {
+  recentBounties: any[];
+  recentGigs: any[];
+  recentGrants: any[];
+  isInitialized: boolean;
+}
+
+export function RecentOpportunitiesSection({
+  recentBounties,
+  recentGigs,
+  recentGrants,
+  isInitialized,
+}: RecentOpportunitiesSectionProps) {
+  const { user } = useAuth();
+
+  if (
+    !isInitialized ||
+    (recentBounties.length === 0 &&
+      recentGigs.length === 0 &&
+      recentGrants.length === 0)
+  ) {
+    return null;
+  }
+
+  return (
+    <section className="mb-16">
+      <div className="flex items-center justify-between mb-8">
+        <h2 className="text-2xl font-bold">Recent Opportunities</h2>
+        <div className="flex gap-2">
+          <Link href="/bounties">
+            <Button variant="outline">
+              View All Bounties
+              <ArrowRight className="h-4 w-4 ml-2" />
+            </Button>
+          </Link>
+          <Link href="/gigs">
+            <Button variant="outline">
+              View All Gigs
+              <ArrowRight className="h-4 w-4 ml-2" />
+            </Button>
+          </Link>
+          <Link href="/grants">
+            <Button variant="outline">
+              View All Grants
+              <ArrowRight className="h-4 w-4 ml-2" />
+            </Button>
+          </Link>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {recentBounties.map((bounty) => {
+          const userHexPubkey = user?.pubkey
+            ? profileService.getHexFromNpub(user.pubkey)
+            : undefined;
+          return (
+            <BountyCard
+              key={bounty.id}
+              bounty={bounty}
+              isOwner={userHexPubkey === bounty.sponsorPubkey}
+              currentUserPubkey={user?.pubkey}
+            />
+          );
+        })}
+        {recentGigs.map((gig) => {
+          const userHexPubkey = user?.pubkey
+            ? profileService.getHexFromNpub(user.pubkey)
+            : undefined;
+          return (
+            <GigCard
+              key={gig.id}
+              gig={gig}
+              isOwner={userHexPubkey === gig.sponsorPubkey}
+              currentUserPubkey={user?.pubkey}
+            />
+          );
+        })}
+        {recentGrants.map((grant) => {
+          const userHexPubkey = user?.pubkey
+            ? profileService.getHexFromNpub(user.pubkey)
+            : undefined;
+          return (
+            <GrantCard
+              key={grant.id}
+              grant={grant}
+              isOwner={userHexPubkey === grant.sponsorPubkey}
+              currentUserPubkey={user?.pubkey}
+            />
+          );
+        })}
+      </div>
+    </section>
+  );
+}

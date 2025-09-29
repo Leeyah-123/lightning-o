@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Modal } from '@/components/ui/modal';
 import { CheckCircle, Copy, QrCode, Zap } from 'lucide-react';
-import Image from 'next/image';
 import QRCode from 'qrcode';
 import { useEffect, useState } from 'react';
 
@@ -156,12 +155,10 @@ export function LightningInvoiceModal({
                       <p className="text-sm">{qrCodeError}</p>
                     </div>
                   ) : qrCodeDataUrl ? (
-                    <Image
+                    <img
                       src={qrCodeDataUrl}
                       alt="Lightning Invoice QR Code"
                       className="w-full h-full object-contain rounded"
-                      width={256}
-                      height={256}
                     />
                   ) : (
                     <div className="text-center text-muted-foreground">

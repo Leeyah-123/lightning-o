@@ -90,12 +90,10 @@ export function ProfileMenu({ onLogout }: ProfileMenuProps) {
       >
         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
           {user.profile?.picture ? (
-            <Image
+            <img
               src={user.profile.picture}
               alt={user.profile.name || 'Profile'}
               className="w-8 h-8 rounded-full object-cover"
-              width={32}
-              height={32}
             />
           ) : (
             <User className="h-4 w-4 text-white" />
@@ -117,12 +115,10 @@ export function ProfileMenu({ onLogout }: ProfileMenuProps) {
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
                 {user.profile?.picture ? (
-                  <Image
+                  <img
                     src={user.profile.picture}
                     alt={user.profile.name || 'Profile'}
                     className="w-12 h-12 rounded-full object-cover"
-                    width={48}
-                    height={48}
                   />
                 ) : (
                   <User className="h-6 w-6 text-white" />
