@@ -623,15 +623,20 @@ class GigService {
 
     // Subscribe to funded events from Lightning service
     lightningService.on((evt) => {
-      if (evt.type === 'funded' && evt.data?.entityType === 'gig') {
-        const { gigId, paymentHash } = evt.data;
+      const data = evt.data as {
+        entityType: 'gig';
+        gigId: string;
+        paymentHash: string;
+      };
+      if (evt.type === 'funded' && data.entityType === 'gig') {
+        const { gigId, paymentHash } = data;
         console.log('Received funded event for gig:', evt.data);
 
         // Validate that we have the required fields
         if (!gigId || !paymentHash) {
           console.warn(
             'Invalid gig funded event: missing gigId or paymentHash',
-            evt.data
+            data
           );
           return;
         }

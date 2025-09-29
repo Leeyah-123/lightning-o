@@ -32,24 +32,24 @@ export function Header({ onConnect }: HeaderProps) {
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center gap-6">
-            <a
+            <Link
               href="/bounties"
               className="text-sm font-medium hover:text-primary transition-colors"
             >
               Bounties
-            </a>
-            <a
+            </Link>
+            <Link
               href="/gigs"
               className="text-sm font-medium hover:text-primary transition-colors"
             >
               Gigs
-            </a>
-            <a
+            </Link>
+            <Link
               href="/grants"
               className="text-sm font-medium hover:text-primary transition-colors"
             >
               Grants
-            </a>
+            </Link>
           </nav>
 
           {/* Actions */}

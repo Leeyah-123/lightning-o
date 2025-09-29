@@ -12,6 +12,7 @@ export async function POST(req: NextRequest) {
     }
     return NextResponse.json({ ok: false }, { status: 400 });
   } catch (e) {
+    console.error('Error in lightning webhook:', e);
     return NextResponse.json({ ok: false }, { status: 500 });
   }
 }

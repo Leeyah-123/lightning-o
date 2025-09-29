@@ -79,7 +79,7 @@ class BountyService {
       submissionDeadline: bounty.submissionDeadline,
       judgingDeadline: bounty.judgingDeadline,
     };
-    const res = await nostrService.publishBountyEvent(
+    await nostrService.publishBountyEvent(
       input.sponsorKeys,
       'bounty:create',
       content
@@ -355,14 +355,22 @@ class BountyService {
 
     // Subscribe to funded events from Lightning service
     lightningService.on((evt) => {
-      if (evt.type === 'funded' && evt.data?.entityType === 'bounty') {
+      const data = evt.data as {
+        entityType: 'bounty';
+        bountyId: string;
+        escrowTxId: string;
+        lightningInvoice: string;
+        amountSats: number;
+        paymentHash: string;
+      };
+      if (evt.type === 'funded' && data.entityType === 'bounty') {
         const {
           bountyId,
           escrowTxId,
           lightningInvoice,
           amountSats,
           paymentHash,
-        } = evt.data;
+        } = data;
         console.log('Received funded event for bounty:', evt.data);
 
         // Validate that we have the required fields

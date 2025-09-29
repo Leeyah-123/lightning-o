@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LightningInvoiceModal } from '@/components/ui/lightning-invoice-modal';
 import { LoadingSpinner } from '@/components/ui/loading';
 import { NostrAddress } from '@/components/ui/nostr-address';
+import { useToast } from '@/lib/hooks/use-toast';
 import { areKeysEqual, normalizeToNpub, truncateMiddle } from '@/lib/utils';
 import { validationUtils } from '@/lib/validation';
 import { lightningService } from '@/services/lightning-service';
@@ -24,6 +25,7 @@ export default function BountyDetailPage() {
   const router = useRouter();
   const { bounties, init, fundBounty, completeBounty } = useBounties();
   const { user } = useAuth();
+  const { toast } = useToast();
   const [bounty, setBounty] = useState<Bounty | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -68,12 +70,21 @@ export default function BountyDetailPage() {
         setFundingAmount(validationUtils.getTotalReward(bounty.rewardSats));
         setShowLightningModal(true);
       } else {
-        console.error('Funding failed:', result.error);
-        // You might want to show an error message to the user
+        toast({
+          title: 'Funding Failed',
+          description: result.error || 'Failed to create Lightning invoice',
+          variant: 'destructive',
+        });
       }
     } catch (error) {
-      console.error('Funding error:', error);
-      // You might want to show an error message to the user
+      toast({
+        title: 'Funding Error',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'An unexpected error occurred',
+        variant: 'destructive',
+      });
     } finally {
       setIsProcessing(false);
     }
@@ -110,7 +121,6 @@ export default function BountyDetailPage() {
       };
 
       lightningService.emitEvent(eventData);
-      console.log('Emitted funded event for bounty:', bounty.id);
     } else {
       throw new Error('Dev payment failed');
     }
@@ -201,7 +211,8 @@ export default function BountyDetailPage() {
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Bounty Not Found</h1>
           <p className="text-muted-foreground mb-4">
-            The bounty you're looking for doesn't exist or has been removed.
+            The bounty you&apos;re looking for doesn&apos;t exist or has been
+            removed.
           </p>
           <Button onClick={() => router.push('/bounties')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -306,7 +317,7 @@ export default function BountyDetailPage() {
                 <div className="space-y-3">
                   {bounty.winners
                     .sort((a, b) => a.rank - b.rank)
-                    .map((winner, index) => (
+                    .map((winner) => (
                       <div
                         key={winner.pubkey}
                         className={`p-4 rounded-lg border ${
@@ -491,7 +502,6 @@ export default function BountyDetailPage() {
           {isOwner && bounty.submissions && bounty.submissions.length > 0 && (
             <SubmissionsList
               submissions={bounty.submissions}
-              bountyId={bounty.id}
               submissionDeadline={bounty.submissionDeadline}
               rewardSats={bounty.rewardSats}
               onSelectWinners={handleComplete}

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LightningInvoiceModal } from '@/components/ui/lightning-invoice-modal';
 import { LoadingSpinner } from '@/components/ui/loading';
+import { useToast } from '@/lib/hooks/use-toast';
 import { normalizeToNpub, truncateMiddle } from '@/lib/utils';
 import { lightningService } from '@/services/lightning-service';
 import { profileService } from '@/services/profile-service';
@@ -43,6 +44,7 @@ interface GigDetailPageProps {
 export default function GigDetailPage({ params }: GigDetailPageProps) {
   const { gigs, init, fundMilestone } = useGigs();
   const { user } = useAuth();
+  const { toast } = useToast();
   const router = useRouter();
   const [gig, setGig] = useState<Gig | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -106,7 +108,8 @@ export default function GigDetailPage({ params }: GigDetailPageProps) {
           <Briefcase className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h1 className="text-2xl font-bold mb-2">Gig not found</h1>
           <p className="text-muted-foreground mb-4">
-            The gig you're looking for doesn't exist or has been removed.
+            The gig you&apos;re looking for doesn&apos;t exist or has been
+            removed.
           </p>
           <Link href="/gigs">
             <Button variant="outline">
@@ -138,7 +141,6 @@ export default function GigDetailPage({ params }: GigDetailPageProps) {
   const displayStatus = gigUtils.getDisplayStatus(gig);
   const canApply = gigUtils.canApply(gig);
   const canCancel = gigUtils.canCancel(gig);
-  const isInProgress = gigUtils.isInProgress(gig);
 
   const selectedApplication = gig.selectedApplicationId
     ? gig.applications.find(
@@ -224,12 +226,6 @@ export default function GigDetailPage({ params }: GigDetailPageProps) {
       };
 
       lightningService.emitEvent(eventData);
-      console.log(
-        'Emitted funded event for gig:',
-        gig.id,
-        'with paymentHash:',
-        paymentHash
-      );
     } else {
       throw new Error('Dev payment failed');
     }
@@ -263,10 +259,21 @@ export default function GigDetailPage({ params }: GigDetailPageProps) {
         setFundingAmount(milestone.amountSats);
         setShowLightningModal(true);
       } else {
-        console.error('Funding failed:', result.error);
+        toast({
+          title: 'Funding Failed',
+          description: result.error || 'Failed to create Lightning invoice',
+          variant: 'destructive',
+        });
       }
     } catch (error) {
-      console.error('Funding error:', error);
+      toast({
+        title: 'Funding Error',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'An unexpected error occurred',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -525,7 +532,7 @@ export default function GigDetailPage({ params }: GigDetailPageProps) {
                 <CardContent>
                   <div className="text-center text-amber-600 dark:text-amber-400">
                     <CheckCircle className="h-8 w-8 mx-auto mb-2" />
-                    <p className="font-medium">You've been selected!</p>
+                    <p className="font-medium">You&apos;ve been selected!</p>
                     <p className="text-sm">
                       {selectedApplication.milestones.some(
                         (m) => m.status === 'pending'

@@ -607,15 +607,20 @@ class GrantService {
 
     // Subscribe to funded events from Lightning service
     lightningService.on((evt) => {
-      if (evt.type === 'funded' && evt.data?.entityType === 'grant') {
-        const { grantId, paymentHash } = evt.data;
+      const data = evt.data as {
+        entityType: 'grant';
+        grantId: string;
+        paymentHash: string;
+      };
+      if (evt.type === 'funded' && data.entityType === 'grant') {
+        const { grantId, paymentHash } = data;
         console.log('Received funded event for grant:', evt.data);
 
         // Validate that we have the required fields
         if (!grantId || !paymentHash) {
           console.warn(
             'Invalid grant funded event: missing grantId or paymentHash',
-            evt.data
+            data
           );
           return;
         }

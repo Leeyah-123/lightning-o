@@ -82,7 +82,6 @@ export function BountyCard({
         throw new Error(result.error || 'Failed to create invoice');
       }
     } catch (error) {
-      console.error('Funding error:', error);
       toast({
         title: 'Failed to Fund Bounty',
         description:
@@ -127,7 +126,6 @@ export function BountyCard({
       };
 
       lightningService.emitEvent(eventData);
-      console.log('Emitted funded event for bounty:', bounty.id);
     } else {
       throw new Error('Dev payment failed');
     }

@@ -127,7 +127,8 @@ export default function ApplyPage({ params }: ApplyPageProps) {
           <Briefcase className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h1 className="text-2xl font-bold mb-2">Gig not found</h1>
           <p className="text-muted-foreground mb-4">
-            The gig you're looking for doesn't exist or has been removed.
+            The gig you&apos;re looking for doesn&apos;t exist or has been
+            removed.
           </p>
           <Link href="/gigs">
             <Button variant="outline">
@@ -222,7 +223,6 @@ export default function ApplyPage({ params }: ApplyPageProps) {
       });
       router.push(`/gigs/${gig.id}`);
     } catch (error) {
-      console.error('Application failed:', error);
       toast({
         title: 'Failed to Submit Application',
         description:

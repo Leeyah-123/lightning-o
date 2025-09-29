@@ -26,26 +26,24 @@ export async function POST(request: NextRequest) {
 
     console.log('Processed webhook event:', event);
 
+    const { paymentHash } = event.data as {
+      entityType: 'gig' | 'grant' | 'bounty';
+      paymentHash: string;
+    };
+
     // Handle gig milestone payments
-    if (event.type === 'funded' && event.data?.paymentHash) {
+    if (event.type === 'funded' && paymentHash) {
       const gigPaymentConfirmed = await gigService.handlePaymentConfirmation(
-        event.data.paymentHash
+        paymentHash
       );
       if (gigPaymentConfirmed) {
-        console.log('Gig milestone payment confirmed:', event.data.paymentHash);
-        // Add entityType to the event for proper routing
-        event.data.entityType = 'gig';
+        console.log('Gig milestone payment confirmed:', paymentHash);
       } else {
         // Try grant tranche payments
         const grantPaymentConfirmed =
-          await grantService.handlePaymentConfirmation(event.data.paymentHash);
+          await grantService.handlePaymentConfirmation(paymentHash);
         if (grantPaymentConfirmed) {
-          console.log(
-            'Grant tranche payment confirmed:',
-            event.data.paymentHash
-          );
-          // Add entityType to the event for proper routing
-          event.data.entityType = 'grant';
+          console.log('Grant tranche payment confirmed:', paymentHash);
         }
       }
     }

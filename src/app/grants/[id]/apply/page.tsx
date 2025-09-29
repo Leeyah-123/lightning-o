@@ -120,7 +120,8 @@ export default function ApplyPage({ params }: ApplyPageProps) {
           <Award className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h1 className="text-2xl font-bold mb-2">Grant not found</h1>
           <p className="text-muted-foreground mb-4">
-            The grant you're looking for doesn't exist or has been removed.
+            The grant you&apos;re looking for doesn&apos;t exist or has been
+            removed.
           </p>
           <Link href="/grants">
             <Button variant="outline">
@@ -184,7 +185,6 @@ export default function ApplyPage({ params }: ApplyPageProps) {
 
       router.push(`/grants/${grant.id}`);
     } catch (error) {
-      console.error('Failed to apply to grant:', error);
       toast({
         title: 'Failed to Submit Application',
         description:
@@ -215,7 +215,7 @@ export default function ApplyPage({ params }: ApplyPageProps) {
           </Link>
           <h1 className="text-3xl font-bold mb-2">Apply for Grant</h1>
           <p className="text-muted-foreground">
-            Submit your application for "{grant.title}"
+            Submit your application for &quot;{grant.title}&quot;
           </p>
         </div>
 

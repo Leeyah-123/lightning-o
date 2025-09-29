@@ -22,7 +22,6 @@ import {
   XCircle,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { use, useEffect, useState } from 'react';
 
 interface ApplicationDetailPageProps {
@@ -39,7 +38,6 @@ export default function ApplicationDetailPage({
     useGrants();
   const { user } = useAuth();
   const { toast } = useToast();
-  const router = useRouter();
   const [grant, setGrant] = useState<Grant | null>(null);
   const [application, setApplication] = useState<GrantApplication | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -48,7 +46,6 @@ export default function ApplicationDetailPage({
   const [lightningInvoice, setLightningInvoice] = useState<string>('');
   const [fundingAmount, setFundingAmount] = useState<number>(0);
   const [paymentHash, setPaymentHash] = useState<string>('');
-  const [selectedTrancheId, setSelectedTrancheId] = useState<string>('');
   const [showSubmissionModal, setShowSubmissionModal] = useState(false);
   const [selectedTrancheForSubmission, setSelectedTrancheForSubmission] =
     useState<string>('');
@@ -113,13 +110,11 @@ export default function ApplicationDetailPage({
         setLightningInvoice(result.lightningInvoice);
         setPaymentHash(result.paymentHash || '');
         setFundingAmount(tranche.maxAmount || tranche.amount);
-        setSelectedTrancheId(trancheId);
         setShowLightningModal(true);
       } else {
         throw new Error(result.error || 'Failed to create invoice');
       }
     } catch (error) {
-      console.error('Failed to fund tranche:', error);
       toast({
         title: 'Failed to Fund Tranche',
         description:
@@ -163,10 +158,6 @@ export default function ApplicationDetailPage({
         },
       };
       lightningService.emitEvent(eventData);
-      console.log(
-        'Emitted funded event for grant application:',
-        application.id
-      );
     } else {
       throw new Error('Dev payment failed');
     }
@@ -201,7 +192,6 @@ export default function ApplicationDetailPage({
         } successfully.`,
       });
     } catch (error) {
-      console.error(`Failed to ${action} tranche:`, error);
       toast({
         title: `Failed to ${
           action === 'approve' ? 'Approve' : 'Reject'
@@ -246,7 +236,6 @@ export default function ApplicationDetailPage({
       setSubmissionContent('');
       setSubmissionLinks(['']);
     } catch (error) {
-      console.error('Failed to submit work:', error);
       toast({
         title: 'Failed to Submit Work',
         description:
@@ -300,7 +289,7 @@ export default function ApplicationDetailPage({
   const canFundTranche = (trancheIndex: number) => {
     if (!grant) return false;
 
-    // First tranche can always be funded if it's pending
+    // First tranche can always be funded if it&apos;s pending
     if (trancheIndex === 0) {
       return grant.tranches[trancheIndex].status === 'pending';
     }
@@ -345,8 +334,8 @@ export default function ApplicationDetailPage({
         <div className="text-center py-12">
           <h1 className="text-2xl font-bold mb-4">Application Not Found</h1>
           <p className="text-muted-foreground mb-6">
-            The application you're looking for doesn't exist or has been
-            removed.
+            The application you&apos;re looking for doesn&apos;t exist or has
+            been removed.
           </p>
           <Link href={`/grants/${id}`}>
             <Button variant="outline">

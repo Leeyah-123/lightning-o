@@ -146,7 +146,7 @@ export function MilestoneSubmissionModal({
             </p>
           )}
           <p className="text-sm text-muted-foreground">
-            This is where you'll receive payment for this milestone
+            This is where you&apos;ll receive payment for this milestone
           </p>
         </div>
 

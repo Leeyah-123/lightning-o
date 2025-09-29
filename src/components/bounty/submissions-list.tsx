@@ -23,14 +23,13 @@ interface SubmissionsListProps {
 
 export function SubmissionsList({
   submissions,
-  bountyId,
   submissionDeadline,
   rewardSats,
   onSelectWinners,
   isOwner,
   isProcessing,
   bountyStatus,
-}: SubmissionsListProps) {
+}: Omit<SubmissionsListProps, 'bountyId'>) {
   const [selectedSubmissions, setSelectedSubmissions] = useState<string[]>([]);
   const [submissionRanks, setSubmissionRanks] = useState<
     Record<string, number>

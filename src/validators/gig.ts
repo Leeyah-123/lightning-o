@@ -164,8 +164,8 @@ export const gigValidationUtils = {
 
   // Get validation error message for common cases
   getValidationErrorMessage: (error: z.ZodError): string => {
-    const firstError = Array.isArray((error as any).issues)
-      ? (error as any).issues[0]
+    const firstError = Array.isArray((error as z.ZodError).issues)
+      ? (error as z.ZodError).issues[0]
       : undefined;
     if (firstError) {
       return firstError.message;

@@ -104,7 +104,6 @@ export function GigCard({
           'The gig has been cancelled and is no longer accepting applications.',
       });
     } catch (error) {
-      console.error('Failed to cancel gig:', error);
       toast({
         title: 'Failed to Cancel Gig',
         description:
@@ -152,7 +151,6 @@ export function GigCard({
         throw new Error(result.error || 'Failed to create invoice');
       }
     } catch (error) {
-      console.error('Failed to fund milestone:', error);
       toast({
         title: 'Failed to Fund Milestone',
         description:
@@ -198,12 +196,6 @@ export function GigCard({
       };
 
       lightningService.emitEvent(eventData);
-      console.log(
-        'Emitted funded event for gig:',
-        gig.id,
-        'with paymentHash:',
-        paymentHash
-      );
     } else {
       throw new Error('Dev payment failed');
     }
@@ -283,8 +275,8 @@ export function GigCard({
             <strong>Awaiting first milestone payment</strong>
             {isUserSelected && (
               <p className="mt-1">
-                You've been selected! Awaiting sponsor payment for the first
-                milestone.
+                You&apos;ve been selected! Awaiting sponsor payment for the
+                first milestone.
               </p>
             )}
           </div>

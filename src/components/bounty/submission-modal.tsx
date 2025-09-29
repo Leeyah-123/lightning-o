@@ -147,7 +147,7 @@ export function SubmissionModal({
                   required
                 />
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Enter your Lightning address where you'll receive payment
+                  Enter your Lightning address where you&apos;ll receive payment
                 </p>
               </div>
 

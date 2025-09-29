@@ -20,7 +20,6 @@ import {
   XCircle,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { use, useEffect, useState } from 'react';
 
 interface ApplicationsPageProps {
@@ -33,7 +32,6 @@ export default function ApplicationsPage({ params }: ApplicationsPageProps) {
   const { grants, init, selectApplication } = useGrants();
   const { user } = useAuth();
   const { toast } = useToast();
-  const router = useRouter();
   const [grant, setGrant] = useState<Grant | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -85,7 +83,6 @@ export default function ApplicationsPage({ params }: ApplicationsPageProps) {
         description: 'The application has been selected successfully.',
       });
     } catch (error) {
-      console.error('Failed to select application:', error);
       toast({
         title: 'Failed to Select Application',
         description:
@@ -96,32 +93,6 @@ export default function ApplicationsPage({ params }: ApplicationsPageProps) {
       });
     } finally {
       setIsProcessing(false);
-    }
-  };
-
-  const getApplicationStatusIcon = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return <Calendar className="h-4 w-4 text-yellow-500" />;
-      case 'selected':
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'rejected':
-        return <XCircle className="h-4 w-4 text-red-500" />;
-      default:
-        return null;
-    }
-  };
-
-  const getApplicationStatusText = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return 'Pending Review';
-      case 'selected':
-        return 'Selected';
-      case 'rejected':
-        return 'Rejected';
-      default:
-        return 'Unknown';
     }
   };
 
@@ -146,7 +117,8 @@ export default function ApplicationsPage({ params }: ApplicationsPageProps) {
           <Award className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h1 className="text-2xl font-bold mb-2">Grant not found</h1>
           <p className="text-muted-foreground mb-4">
-            The grant you're looking for doesn't exist or has been removed.
+            The grant you&apos;re looking for doesn&apos;t exist or has been
+            removed.
           </p>
           <Link href="/grants">
             <Button variant="outline">
@@ -487,8 +459,8 @@ export default function ApplicationsPage({ params }: ApplicationsPageProps) {
                 No Applications Yet
               </h3>
               <p className="text-muted-foreground">
-                This grant hasn't received any applications yet. Share it to get
-                more visibility.
+                This grant hasn&apos;t received any applications yet. Share it
+                to get more visibility.
               </p>
             </CardContent>
           </Card>

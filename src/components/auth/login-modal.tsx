@@ -131,7 +131,7 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
           <ul className="text-xs text-muted-foreground space-y-1">
             <li>• Use a Nostr client like Damus, Amethyst, or Snort</li>
             <li>• Export your private key from settings</li>
-            <li>• Or generate new keys if you're new to Nostr</li>
+            <li>• Or generate new keys if you&apos;re new to Nostr</li>
           </ul>
         </div>
       </div>

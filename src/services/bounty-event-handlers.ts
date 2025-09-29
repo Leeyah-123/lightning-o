@@ -103,7 +103,16 @@ export class BountyEventHandlers {
       return false;
     }
 
-    const pendingContent = content as any; // Type assertion for pending content
+    const pendingContent = content as {
+      bountyId: string;
+      sponsorPubkey: string;
+      rewardSats: number | number[];
+      description: string;
+      title: string;
+      shortDescription: string;
+      submissionDeadline: number;
+      judgingDeadline: number;
+    };
     const bounty = BountyEventHelpers.findBounty(
       this.bounties,
       pendingContent.bountyId
@@ -172,7 +181,7 @@ export class BountyEventHandlers {
       return false;
     }
 
-    const openContent = content as any; // Type assertion for open content
+    const openContent = content as { bountyId: string; escrowTxId: string };
     const bounty = BountyEventHelpers.findBounty(
       this.bounties,
       openContent.bountyId
@@ -226,7 +235,10 @@ export class BountyEventHandlers {
       return false;
     }
 
-    const completedContent = content as any; // Type assertion for completed content
+    const completedContent = content as {
+      bountyId: string;
+      winners: { pubkey: string; amountSats: number; paymentProof: string }[];
+    };
     const bounty = BountyEventHelpers.findBounty(
       this.bounties,
       completedContent.bountyId
@@ -300,7 +312,13 @@ export class BountyEventHandlers {
       return false;
     }
 
-    const submitContent = content as any; // Type assertion for submit content
+    const submitContent = content as {
+      bountyId: string;
+      submissionId: string;
+      content: string;
+      lightningAddress: string;
+      submitterPubkey: string;
+    };
     const bounty = BountyEventHelpers.findBounty(
       this.bounties,
       submitContent.bountyId

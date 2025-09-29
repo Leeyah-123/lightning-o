@@ -116,7 +116,6 @@ export default function CreateGrantPage() {
 
       router.push('/grants');
     } catch (error) {
-      console.error('Failed to create grant:', error);
       toast({
         title: 'Failed to Create Grant',
         description:

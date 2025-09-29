@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { validationUtils, errorMessages } from './validation';
+import { errorMessages, validationUtils } from './validation';
 
 // Form-specific validation schemas
 export const formSchemas = {
@@ -115,7 +115,7 @@ export const formValidationUtils = {
       });
 
       return { success: false, errors };
-    } catch (error) {
+    } catch {
       return {
         success: false,
         errors: { general: ['Validation failed'] },
@@ -140,8 +140,10 @@ export const formValidationUtils = {
   },
 
   // Sanitize form data before validation
-  sanitizeFormData: (data: Record<string, any>): Record<string, any> => {
-    const sanitized: Record<string, any> = {};
+  sanitizeFormData: (
+    data: Record<string, unknown>
+  ): Record<string, unknown> => {
+    const sanitized: Record<string, unknown> = {};
 
     Object.keys(data).forEach((key) => {
       const value = data[key];
@@ -185,8 +187,8 @@ export type WinnerSelectionFormData = z.infer<
   typeof formSchemas.winnerSelection
 >;
 
-import { ZodError, ZodType } from 'zod';
 import { FieldError, FieldErrors, FieldValues } from 'react-hook-form';
+import { ZodError, ZodType } from 'zod';
 
 // Utility to convert ZodError to Hook Form-compatible FieldErrors
 const zodToHookFormErrors = (zodError: ZodError): FieldErrors => {

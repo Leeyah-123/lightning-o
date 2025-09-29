@@ -606,7 +606,7 @@ export class GigEventRouter {
       case 'cancel':
         return this.handlers.handleCancel(event, content);
       default:
-        console.warn(`Unknown gig event type: ${(content as any).type}`);
+        console.warn(`Unknown gig event type: ${(content as GigContent).type}`);
         return false;
     }
   }

@@ -2,8 +2,7 @@ import { cn } from '@/lib/utils';
 import { ChevronDown } from 'lucide-react';
 import * as React from 'react';
 
-export interface SelectProps
-  extends React.SelectHTMLAttributes<HTMLSelectElement> {}
+export type SelectProps = React.SelectHTMLAttributes<HTMLSelectElement>;
 
 const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
   ({ className, children, ...props }, ref) => {

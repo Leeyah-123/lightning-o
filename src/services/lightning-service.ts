@@ -77,7 +77,7 @@ export type BitnobDecodePaymentResponse = {
     is_expired: boolean;
     mtokens: string;
     payment: string;
-    routes: any[];
+    routes: unknown[];
     safe_tokens: number;
     tokens: number;
   };
@@ -97,7 +97,7 @@ export type BitnobWebhookPayload = {
 
 type Listener = (event: {
   type: 'funded' | 'payouts' | 'payment_status';
-  data: any;
+  data: unknown;
 }) => void;
 
 class LightningService {
@@ -317,7 +317,10 @@ class LightningService {
   }
 
   // Validate webhook signature
-  validateWebhookSignature(payload: string, signature: string): boolean {
+  async validateWebhookSignature(
+    payload: string,
+    signature: string
+  ): Promise<boolean> {
     if (!BITNOB_WEBHOOK_SECRET) {
       console.warn('No webhook secret configured, skipping validation');
       return true; // Allow in development
@@ -325,7 +328,7 @@ class LightningService {
 
     try {
       // Bitnob typically uses HMAC-SHA256 for webhook validation
-      const crypto = require('crypto');
+      const crypto = await import('crypto');
       const expectedSignature = crypto
         .createHmac('sha256', BITNOB_WEBHOOK_SECRET)
         .update(payload)
@@ -341,7 +344,7 @@ class LightningService {
   // Process webhook payload
   processWebhookPayload(payload: BitnobWebhookPayload): {
     type: 'funded' | 'payouts' | 'payment_status';
-    data: any;
+    data: unknown;
   } {
     switch (payload.event) {
       case 'payment.completed':
@@ -402,7 +405,7 @@ class LightningService {
     customerEmail: string
   ): Promise<{
     success: boolean;
-    data?: any;
+    data?: unknown;
     error?: string;
   }> {
     try {
@@ -448,7 +451,7 @@ class LightningService {
 
   private emit(evt: {
     type: 'funded' | 'payouts' | 'payment_status';
-    data: any;
+    data: unknown;
   }) {
     this.listeners.forEach((l) => l(evt));
   }
@@ -456,7 +459,7 @@ class LightningService {
   // Public method to emit events (for webhook processing)
   public emitEvent(evt: {
     type: 'funded' | 'payouts' | 'payment_status';
-    data: any;
+    data: unknown;
   }) {
     this.emit(evt);
   }
