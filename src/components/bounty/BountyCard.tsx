@@ -191,19 +191,26 @@ export function BountyCard({
               Winners:
             </div>
             <div className="space-y-1">
-              {bounty.winners.map((winner, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between text-xs bg-green-50 dark:bg-green-900/20 p-2 rounded"
-                >
-                  <span className="font-mono">
-                    {truncateMiddle(winner.pubkey, 8, 8)}
-                  </span>
-                  <span className="font-medium">
-                    {winner.amountSats.toLocaleString()} sats
-                  </span>
-                </div>
-              ))}
+              {bounty.winners
+                .sort((a, b) => a.rank - b.rank)
+                .map((winner, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between text-xs bg-green-50 dark:bg-green-900/20 p-2 rounded"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="flex items-center justify-center w-5 h-5 bg-green-600 text-white text-xs font-bold rounded-full">
+                        {winner.rank}
+                      </span>
+                      <span className="font-mono">
+                        {truncateMiddle(winner.pubkey, 8, 8)}
+                      </span>
+                    </div>
+                    <span className="font-medium">
+                      {winner.amountSats.toLocaleString()} sats
+                    </span>
+                  </div>
+                ))}
             </div>
           </div>
         )}

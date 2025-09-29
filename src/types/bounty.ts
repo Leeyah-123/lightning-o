@@ -65,7 +65,7 @@ export const bountyUtils = {
   // Get status badge variant
   getStatusBadgeVariant: (
     status: BountyDisplayStatus
-  ): 'default' | 'secondary' | 'destructive' | 'outline' => {
+  ): 'default' | 'secondary' | 'destructive' | 'outline' | 'success' => {
     switch (status) {
       case 'pending':
         return 'secondary';
@@ -74,7 +74,7 @@ export const bountyUtils = {
       case 'closed':
         return 'destructive';
       case 'completed':
-        return 'outline';
+        return 'success';
       default:
         return 'secondary';
     }
