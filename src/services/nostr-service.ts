@@ -1,6 +1,7 @@
 import type {
   BountyContent,
   GigContent,
+  GrantContent,
   NostrEventBase,
   NostrEventKind,
 } from '@/types/nostr';
@@ -78,6 +79,36 @@ class NostrService {
     keys: NostrKeys,
     kind: NostrEventKind,
     content: GigContent,
+    tags: string[][] = []
+  ): Promise<NostrEventBase> {
+    const created_at = Math.floor(Date.now() / 1000);
+
+    // Convert kind string to number
+    const kindNumber = getKindNumber(kind);
+
+    // Convert bech32 keys to hex for internal use
+    const pkHex = this.getHexFromNpub(keys.pk);
+    const skHex = this.getHexFromNsec(keys.sk);
+
+    const unsigned = {
+      kind: kindNumber,
+      created_at,
+      tags,
+      content: JSON.stringify(content),
+      pubkey: pkHex,
+    };
+
+    const sk = Buffer.from(skHex, 'hex');
+    const signed = finalizeEvent(unsigned, sk);
+    if (!verifyEvent(signed)) throw new Error('Invalid signature');
+    this.pool.publish(this.relays, signed);
+    return signed as unknown as NostrEventBase;
+  }
+
+  async publishGrantEvent(
+    keys: NostrKeys,
+    kind: NostrEventKind,
+    content: GrantContent,
     tags: string[][] = []
   ): Promise<NostrEventBase> {
     const created_at = Math.floor(Date.now() / 1000);

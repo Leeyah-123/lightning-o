@@ -6,6 +6,7 @@ import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/store/auth';
 import { Zap } from 'lucide-react';
+import Link from 'next/link';
 import { useState } from 'react';
 
 interface HeaderProps {
@@ -21,9 +22,12 @@ export function Header({ onConnect }: HeaderProps) {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-2">
-            <h1 className="flex gap-1 items-center text-xl font-bold bg-blue-600 bg-clip-text text-transparent">
-              Lightning0 <Zap className="h-5 w-5 text-blue-600" />
-            </h1>
+            <Link href="/" className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
+                <Zap className="h-5 w-5 text-white" />
+              </div>
+              <h1 className="text-xl font-bold">LightningO</h1>
+            </Link>
           </div>
 
           {/* Navigation */}

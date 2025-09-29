@@ -11,6 +11,7 @@ import { profileService } from '@/services/profile-service';
 import { useAuth } from '@/store/auth';
 import { useBounties } from '@/store/bounties';
 import { useGigs } from '@/store/gigs';
+import { useGrants } from '@/store/grants';
 import { ArrowRight, Award, Briefcase, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -18,16 +19,17 @@ import { useEffect, useState } from 'react';
 export default function Home() {
   const { bounties, init: initBounties } = useBounties();
   const { gigs, init: initGigs } = useGigs();
+  const { grants, init: initGrants } = useGrants();
   const { user } = useAuth();
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     const initializeData = async () => {
-      await Promise.all([initBounties(), initGigs()]);
+      await Promise.all([initBounties(), initGigs(), initGrants()]);
       setIsInitialized(true);
     };
     initializeData();
-  }, [initBounties, initGigs]);
+  }, [initBounties, initGigs, initGrants]);
 
   // Calculate combined stats
   const totalBountyReward = bounties.reduce(
@@ -53,12 +55,26 @@ export default function Home() {
     return sum;
   }, 0);
 
-  const totalRewards = totalBountyReward + totalGigReward;
-  const totalOpportunities = bounties.length + gigs.length;
+  const totalGrantReward = grants.reduce((sum, grant) => {
+    if (grant.reward.type === 'fixed') {
+      return sum + grant.reward.amount;
+    } else {
+      return sum + (grant.reward.maxAmount || grant.reward.amount);
+    }
+  }, 0);
+
+  const totalRewards = totalBountyReward + totalGigReward + totalGrantReward;
+  const totalOpportunities = bounties.length + gigs.length + grants.length;
   const activeOpportunities =
     bounties.filter((bounty) => bounty.status === 'open').length +
     gigs.filter((gig) => gig.status === 'open' || gig.status === 'in_progress')
-      .length;
+      .length +
+    grants.filter(
+      (grant) =>
+        grant.status === 'open' ||
+        grant.status === 'partially_active' ||
+        grant.status === 'active'
+    ).length;
 
   const recentBounties = bounties.slice(0, 3);
   const recentGigs = gigs.slice(0, 3);
@@ -132,7 +148,7 @@ export default function Home() {
                 </p>
                 <Link href="/grants">
                   <Button variant="outline" className="w-full">
-                    Coming Soon
+                    Explore Grants
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
                 </Link>

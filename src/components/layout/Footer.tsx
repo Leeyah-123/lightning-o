@@ -12,10 +12,11 @@ export function Footer() {
               <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
                 <Zap className="h-5 w-5 text-white" />
               </div>
-              <span className="text-xl font-bold">Lightning</span>
+              <span className="text-xl font-bold">LightningO</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              Decentralized bounties and gigs powered by Nostr and Lightning.
+              Decentralized earning opportunities powered by Nostr and
+              Lightning.
             </p>
             <div className="flex gap-2">
               <Button variant="ghost" size="icon">
