@@ -146,7 +146,7 @@ export default function Home() {
           (recentBounties.length > 0 || recentGigs.length > 0) && (
             <section className="mb-16">
               <div className="flex items-center justify-between mb-8">
-                <h2 className="text-2xl font-bold">Recent Bounties</h2>
+                <h2 className="text-2xl font-bold">Recent Opportunities</h2>
                 <div className="flex gap-2">
                   <Link href="/bounties">
                     <Button variant="outline">
