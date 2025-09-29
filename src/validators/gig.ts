@@ -154,7 +154,7 @@ export const gigValidationUtils = {
 
   // Check if milestone can be submitted
   canSubmitMilestone: (milestone: { status: string }): boolean => {
-    return milestone.status === 'pending';
+    return milestone.status === 'funded';
   },
 
   // Check if milestone can be reviewed

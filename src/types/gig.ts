@@ -16,7 +16,7 @@ export interface GigMilestone {
   amountSats: number;
   description: string;
   eta: number; // timestamp in milliseconds
-  status: 'pending' | 'submitted' | 'accepted' | 'rejected';
+  status: 'pending' | 'funded' | 'submitted' | 'accepted' | 'rejected';
   submittedAt?: number;
   submittedContent?: string;
   submittedLightningAddress?: string;
@@ -80,11 +80,6 @@ export const gigUtils = {
   // Check if sponsor can select applications
   canSelectApplication: (gig: Gig): boolean => {
     return gig.status === 'open' && gig.applications.length > 0;
-  },
-
-  // Check if first milestone payment is pending
-  isFirstMilestonePaymentPending: (gig: Gig): boolean => {
-    return gig.status === 'application_selected';
   },
 
   // Check if gig is in progress
@@ -203,7 +198,7 @@ export const gigUtils = {
 
     return (
       selectedApp.milestones.find(
-        (milestone) => milestone.status === 'pending'
+        (milestone) => milestone.status === 'funded'
       ) || null
     );
   },

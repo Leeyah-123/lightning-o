@@ -275,8 +275,6 @@ class GigService {
       this.gigs.set(input.gigId, gig);
       this.notifyChange();
 
-      // Note: Nostr event will be published after payment confirmation via webhook
-
       return {
         success: true,
         lightningInvoice: invoice.paymentRequest,
@@ -314,8 +312,8 @@ class GigService {
       (m) => m.id === input.milestoneId
     );
     if (!milestone) throw new Error('Milestone not found');
-    if (milestone.status !== 'submitted')
-      throw new Error('Milestone is not ready for submission');
+    if (milestone.status !== 'funded')
+      throw new Error('Milestone is not funded yet');
 
     milestone.status = 'submitted';
     milestone.submittedAt = Date.now();
@@ -380,6 +378,36 @@ class GigService {
 
       milestone.status = 'accepted';
       milestone.rejectionReason = undefined;
+
+      // Find the next milestone and make it pending for funding
+      const currentMilestoneIndex = application.milestones.findIndex(
+        (m) => m.id === input.milestoneId
+      );
+      const nextMilestone = application.milestones[currentMilestoneIndex + 1];
+
+      if (nextMilestone) {
+        if (nextMilestone.status === 'pending') {
+          // Next milestone is already pending, no change needed
+          console.log(`Next milestone ${nextMilestone.id} is already pending`);
+        } else {
+          // Next milestone exists but is not pending, make it pending
+          nextMilestone.status = 'pending';
+          console.log(
+            `Made next milestone ${nextMilestone.id} pending for funding`
+          );
+        }
+      } else {
+        // No more milestones, check if all are completed
+        const allCompleted = application.milestones.every(
+          (m) => m.status === 'accepted'
+        );
+        if (allCompleted) {
+          gig.status = 'completed';
+          console.log(
+            'All milestones completed, gig status updated to completed'
+          );
+        }
+      }
     } else {
       milestone.status = 'rejected';
       milestone.rejectionReason = input.rejectionReason;
@@ -706,8 +734,8 @@ class GigService {
             (m) => m.id === gig.pendingInvoice!.milestoneId
           );
           if (milestone) {
-            // Update milestone status and gig status
-            milestone.status = 'submitted';
+            // Update milestone status to funded (not submitted yet)
+            milestone.status = 'funded';
             gig.status = 'in_progress';
             gig.updatedAt = Date.now();
             this.gigs.set(gig.id, gig);

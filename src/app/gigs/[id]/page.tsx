@@ -144,8 +144,6 @@ export default function GigDetailPage({ params }: GigDetailPageProps) {
   const displayStatus = gigUtils.getDisplayStatus(gig);
   const canApply = gigUtils.canApply(gig);
   const canCancel = gigUtils.canCancel(gig);
-  const isFirstMilestonePaymentPending =
-    gigUtils.isFirstMilestonePaymentPending(gig);
   const isInProgress = gigUtils.isInProgress(gig);
 
   const selectedApplication = gig.selectedApplicationId
@@ -175,6 +173,8 @@ export default function GigDetailPage({ params }: GigDetailPageProps) {
     switch (status) {
       case 'pending':
         return <Clock className="h-4 w-4 text-yellow-500" />;
+      case 'funded':
+        return <DollarSign className="h-4 w-4 text-green-500" />;
       case 'submitted':
         return <Clock className="h-4 w-4 text-blue-500" />;
       case 'accepted':
@@ -255,35 +255,18 @@ export default function GigDetailPage({ params }: GigDetailPageProps) {
     setShowMilestoneReviewModal(true);
   };
 
-  const handleFundFirstMilestone = async () => {
+  const handleFundMilestone = async (milestone: GigMilestone) => {
     if (!gig) return;
-
-    // Find the first pending milestone
-    const selectedApplication = gig.applications.find(
-      (app: GigApplication) => app.id === gig.selectedApplicationId
-    );
-    if (!selectedApplication) {
-      console.error('No selected application found');
-      return;
-    }
-
-    const firstMilestone = selectedApplication.milestones.find(
-      (m: GigMilestone) => m.status === 'pending'
-    );
-    if (!firstMilestone) {
-      console.error('No pending milestone found');
-      return;
-    }
 
     try {
       const result = await fundMilestone({
         gigId: gig.id,
-        milestoneId: firstMilestone.id,
+        milestoneId: milestone.id,
       });
       if (result.success && result.lightningInvoice) {
         setLightningInvoice(result.lightningInvoice);
         setPaymentHash(result.paymentHash || '');
-        setFundingAmount(firstMilestone.amountSats);
+        setFundingAmount(milestone.amountSats);
         setShowLightningModal(true);
       } else {
         console.error('Funding failed:', result.error);
@@ -418,17 +401,25 @@ export default function GigDetailPage({ params }: GigDetailPageProps) {
                           )}
 
                           {/* Action buttons */}
-                          {isUserSelected &&
-                            milestone.status === 'pending' &&
-                            !isFirstMilestonePaymentPending && (
-                              <Button
-                                onClick={() => handleSubmitMilestone(milestone)}
-                                size="sm"
-                                className="bg-green-600 hover:from-green-700 hover:to-emerald-700"
-                              >
-                                Submit Work
-                              </Button>
-                            )}
+                          {isUserSelected && milestone.status === 'funded' && (
+                            <Button
+                              onClick={() => handleSubmitMilestone(milestone)}
+                              size="sm"
+                              className="bg-green-600 hover:from-green-700 hover:to-emerald-700"
+                            >
+                              Submit Work
+                            </Button>
+                          )}
+
+                          {isOwner && milestone.status === 'pending' && (
+                            <Button
+                              onClick={() => handleFundMilestone(milestone)}
+                              size="sm"
+                              className="bg-blue-600 hover:from-blue-700 hover:to-cyan-700"
+                            >
+                              Fund Milestone
+                            </Button>
+                          )}
 
                           {isOwner && milestone.status === 'submitted' && (
                             <div className="flex gap-2">
@@ -527,15 +518,6 @@ export default function GigDetailPage({ params }: GigDetailPageProps) {
                     </Button>
                   )}
 
-                  {isOwner && isFirstMilestonePaymentPending && (
-                    <Button
-                      onClick={handleFundFirstMilestone}
-                      className="w-full bg-green-600 hover:from-green-700 hover:to-emerald-700"
-                    >
-                      Fund First Milestone
-                    </Button>
-                  )}
-
                   {isOwner && canCancel && (
                     <Button variant="destructive" className="w-full">
                       Cancel Gig
@@ -546,14 +528,18 @@ export default function GigDetailPage({ params }: GigDetailPageProps) {
             </Card>
 
             {/* Status Messages */}
-            {isFirstMilestonePaymentPending && isUserSelected && (
+            {isUserSelected && selectedApplication && (
               <Card>
                 <CardContent>
                   <div className="text-center text-amber-600 dark:text-amber-400">
                     <CheckCircle className="h-8 w-8 mx-auto mb-2" />
                     <p className="font-medium">You've been selected!</p>
                     <p className="text-sm">
-                      Awaiting sponsor payment for the first milestone.
+                      {selectedApplication.milestones.some(
+                        (m) => m.status === 'pending'
+                      )
+                        ? 'Awaiting sponsor payment for the next milestone.'
+                        : 'All milestones have been funded. You can start working on funded milestones.'}
                     </p>
                   </div>
                 </CardContent>
@@ -604,7 +590,7 @@ export default function GigDetailPage({ params }: GigDetailPageProps) {
         lightningInvoice={lightningInvoice}
         amountSats={fundingAmount}
         title="Fund Gig Milestone"
-        description="for the first milestone"
+        description="for the selected milestone"
         onDevPayment={handleDevPayment}
         onPaymentComplete={() => {
           setShowLightningModal(false);

@@ -294,7 +294,7 @@ export class GigEventHandlers {
     }
 
     try {
-      milestone.status = 'submitted';
+      milestone.status = 'funded';
       gig.status = 'in_progress';
       GigEventHelpers.updateGig(
         this.gigs,
@@ -411,6 +411,31 @@ export class GigEventHandlers {
 
     try {
       milestone.status = 'accepted';
+
+      // Find the next milestone and make it pending for funding
+      const currentMilestoneIndex = application.milestones.findIndex(
+        (m) => m.id === content.milestoneId
+      );
+      const nextMilestone = application.milestones[currentMilestoneIndex + 1];
+
+      if (nextMilestone) {
+        nextMilestone.status = 'pending';
+        console.log(
+          `Made next milestone ${nextMilestone.id} pending for funding`
+        );
+      } else {
+        // No more milestones, check if all are completed
+        const allCompleted = application.milestones.every(
+          (m) => m.status === 'accepted'
+        );
+        if (allCompleted) {
+          gig.status = 'completed';
+          console.log(
+            'All milestones completed, gig status updated to completed'
+          );
+        }
+      }
+
       GigEventHelpers.updateGig(
         this.gigs,
         gig,
