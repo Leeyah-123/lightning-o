@@ -572,7 +572,7 @@ class GigService {
   // Start watchers for new events
   startWatchers() {
     // Load existing events first
-    this.loadExistingEvents();
+    this.loadExistingEvents().catch(console.error);
 
     // Subscribe to new gig events from Nostr relays
     nostrService.subscribeKinds(

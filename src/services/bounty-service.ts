@@ -308,7 +308,7 @@ class BountyService {
   // Relay watcher hooks simulated via lightningService events
   startWatchers() {
     // Load existing events first
-    this.loadExistingEvents();
+    this.loadExistingEvents().catch(console.error);
 
     // Subscribe to new bounty events from Nostr relays
     nostrService.subscribeKinds(

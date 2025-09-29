@@ -529,7 +529,7 @@ class GrantService {
   // Event watchers
   private startWatchers() {
     // Load existing events first
-    this.loadExistingEvents();
+    this.loadExistingEvents().catch(console.error);
 
     // Subscribe to new grant events from Nostr relays
     nostrService.subscribeKinds(
@@ -658,9 +658,54 @@ class GrantService {
   // Load existing events from relays
   private async loadExistingEvents() {
     try {
-      // This would typically load existing events from Nostr relays
-      // For now, we'll just log that we're loading events
-      console.log('Loading existing grant events from relays...');
+      const events = await nostrService.queryEvents([
+        'grant:create',
+        'grant:apply',
+        'grant:select',
+        'grant:funded',
+        'grant:submit_tranche',
+        'grant:approve_tranche',
+        'grant:reject_tranche',
+        'grant:cancel',
+      ]);
+
+      // Process events in chronological order
+      const sortedEvents = events.sort((a, b) => a.created_at - b.created_at);
+
+      for (const event of sortedEvents) {
+        try {
+          // Validate event structure
+          if (!nostrValidation.isValidEvent(event)) {
+            continue;
+          }
+
+          // Validate event content
+          if (!nostrValidation.isValidEventContent(event.content)) {
+            continue;
+          }
+
+          const content = JSON.parse(event.content) as GrantContent;
+
+          // Check if we should process this event
+          if (!this.validateIncomingEvent(event, content)) {
+            continue;
+          }
+
+          await this.handleNostrEvent(event, content);
+        } catch (error) {
+          // Only log meaningful errors
+          if (event.content && event.content.trim() !== '') {
+            console.warn(
+              'Failed to parse grant event during load:',
+              error,
+              'Event content:',
+              event.content
+            );
+          }
+        }
+      }
+
+      console.log(`Loaded ${sortedEvents.length} existing grant events`);
     } catch (error) {
       console.error('Failed to load existing grant events:', error);
     }
