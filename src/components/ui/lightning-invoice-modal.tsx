@@ -80,9 +80,9 @@ export function LightningInvoiceModal({
       const link = document.createElement('a');
       link.download = `lightning-invoice-${amountSats}sats-qr.png`;
       link.href = qrCodeDataUrl;
-      document.body.appendChild(link);
+      document.body?.appendChild(link);
       link.click();
-      document.body.removeChild(link);
+      document.body?.removeChild(link);
     }
   };
 

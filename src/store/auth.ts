@@ -92,9 +92,9 @@ export const useAuth = create<AuthState>()(
         const a = document.createElement('a');
         a.href = url;
         a.download = `nostr-keys-${user.pubkey.slice(0, 8)}.json`;
-        document.body.appendChild(a);
+        document.body?.appendChild(a);
         a.click();
-        document.body.removeChild(a);
+        document.body?.removeChild(a);
         URL.revokeObjectURL(url);
       },
 
@@ -109,9 +109,9 @@ export const useAuth = create<AuthState>()(
         const a = document.createElement('a');
         a.href = url;
         a.download = `nostr-secret-key-${user.pubkey.slice(0, 8)}.txt`;
-        document.body.appendChild(a);
+        document.body?.appendChild(a);
         a.click();
-        document.body.removeChild(a);
+        document.body?.removeChild(a);
         URL.revokeObjectURL(url);
       },
 
@@ -126,9 +126,9 @@ export const useAuth = create<AuthState>()(
         const a = document.createElement('a');
         a.href = url;
         a.download = `nostr-public-key-${user.pubkey.slice(0, 8)}.txt`;
-        document.body.appendChild(a);
+        document.body?.appendChild(a);
         a.click();
-        document.body.removeChild(a);
+        document.body?.removeChild(a);
         URL.revokeObjectURL(url);
       },
     }),

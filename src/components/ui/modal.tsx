@@ -23,6 +23,7 @@ export function Modal({
   const modalRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
+    if (!document.body) return;
     if (isOpen) {
       document.body.style.overflow = 'hidden';
       // Focus the modal when it opens

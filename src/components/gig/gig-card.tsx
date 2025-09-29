@@ -45,8 +45,7 @@ export function GigCard({
   const displayStatus = gigUtils.getDisplayStatus(gig);
   const canApply = gigUtils.canApply(gig);
   const canCancel = gigUtils.canCancel(gig);
-  const isFirstMilestonePaymentPending =
-    gigUtils.isFirstMilestonePaymentPending(gig);
+  const isFirstMilestonePaymentPending = gig.status === 'application_selected';
   const isInProgress = gigUtils.isInProgress(gig);
 
   // Check if current user has applied

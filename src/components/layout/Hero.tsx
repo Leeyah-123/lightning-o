@@ -6,15 +6,15 @@ import { Activity, Award, Zap } from 'lucide-react';
 import Link from 'next/link';
 
 interface HeroProps {
-  totalBounties: number;
-  totalReward: number;
-  activeBounties: number;
+  totalOpportunities: number;
+  totalRewards: number;
+  activeOpportunities: number;
 }
 
 export function Hero({
-  totalBounties,
-  totalReward,
-  activeBounties,
+  totalOpportunities,
+  totalRewards,
+  activeOpportunities,
 }: HeroProps) {
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-blue-950/20 dark:via-background dark:to-purple-950/20">
@@ -32,15 +32,16 @@ export function Hero({
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
             <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 bg-clip-text text-transparent">
-              Lightning Bounties
+              LightningO
             </span>
             <br />
-            <span className="text-foreground">for the Future of Work</span>
+            <span className="text-foreground">Lightning Opportunities</span>
           </h1>
 
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
-            Create, fund, and complete bounties on the decentralized web. Built
-            on Nostr and Lightning for instant, global payments.
+            Discover, create, and complete earning opportunities on the
+            decentralized web. Built on Nostr and Lightning for instant, global
+            payments.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
@@ -76,10 +77,10 @@ export function Hero({
                   <Award className="h-6 w-6 text-blue-600" />
                 </div>
                 <div className="text-2xl font-bold text-foreground mb-1">
-                  {totalBounties}
+                  {totalOpportunities}
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  Total Bounties
+                  Total Opportunities
                 </div>
               </CardContent>
             </Card>
@@ -90,7 +91,7 @@ export function Hero({
                   <Zap className="h-6 w-6 text-green-600" />
                 </div>
                 <div className="text-2xl font-bold text-foreground mb-1">
-                  {totalReward.toLocaleString()}
+                  {totalRewards.toLocaleString()}
                 </div>
                 <div className="text-sm text-muted-foreground">
                   Total Rewards (sats)
@@ -104,10 +105,10 @@ export function Hero({
                   <Activity className="h-6 w-6 text-purple-600" />
                 </div>
                 <div className="text-2xl font-bold text-foreground mb-1">
-                  {activeBounties}
+                  {activeOpportunities}
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  Active Bounties
+                  Active Opportunities
                 </div>
               </CardContent>
             </Card>
