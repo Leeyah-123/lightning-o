@@ -1,8 +1,8 @@
 'use client';
 
 import { normalizeToNpub, normalizeToNsec } from '@/lib/utils';
-import { nostrService } from '@/services/nostrService';
-import { profileService } from '@/services/profileService';
+import { nostrService } from '@/services/nostr-service';
+import { profileService } from '@/services/profile-service';
 import type { AuthState, NostrProfile, User } from '@/types/auth';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';

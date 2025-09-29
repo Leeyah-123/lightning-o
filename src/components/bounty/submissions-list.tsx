@@ -3,8 +3,8 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { LightningLinks } from '@/components/ui/LightningLinks';
-import { NostrAddresses } from '@/components/ui/NostrAddresses';
+import { LightningLinks } from '@/components/ui/lightning-links';
+import { NostrAddress } from '@/components/ui/nostr-address';
 import { Select } from '@/components/ui/select';
 import type { BountySubmission } from '@/types/bounty';
 import { Calendar, ChevronDown, ChevronUp, Clock, User } from 'lucide-react';
@@ -262,7 +262,7 @@ export function SubmissionsList({
                   <div className="space-y-2 text-sm text-muted-foreground">
                     <div className="flex items-center gap-2">
                       <User className="h-4 w-4" />
-                      <NostrAddresses pubkey={submission.pubkey} copy />
+                      <NostrAddress pubkey={submission.pubkey} copy />
                     </div>
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4" />

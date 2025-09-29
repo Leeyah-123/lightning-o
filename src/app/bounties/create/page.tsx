@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { LoadingSpinner } from '@/components/ui/loading';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { Textarea } from '@/components/ui/textarea';
-import { customResolver } from '@/lib/formValidation';
+import { customResolver } from '@/lib/form-validation';
 import { useAuth } from '@/store/auth';
 import { useBounties } from '@/store/bounties';
 import {
@@ -34,8 +34,22 @@ export default function CreateBountyPage() {
     defaultValues: {
       title: '',
       shortDescription: '',
-      description:
-        '<p>Create a <strong>responsive React component</strong> for user authentication with the following requirements:</p><ul><li>Include proper <em>TypeScript types</em></li><li>Add unit tests with Jest</li><li>Follow accessibility guidelines (WCAG 2.1)</li><li>Implement dark/light theme support</li></ul><p>Please provide a working example and documentation.</p>',
+      description: `
+      <h2>Bounty Title</h2>
+      <p>Bounty description</p>
+      <h3>Bounty requirements</h3>
+      <ul>
+        <li>Requirement 1</li>
+        <li>Requirement 2</li>
+        <li>Requirement 3</li>
+      </ul>
+      <h3>Bounty deliverables</h3>
+      <ul>
+        <li>Deliverable 1</li>
+        <li>Deliverable 2</li>
+        <li>Deliverable 3</li>
+      </ul>
+      `,
       rewardSats: [1000],
       submissionDeadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
       judgingDeadline: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days from now

@@ -1,8 +1,8 @@
 'use client';
 
-import { BountyCard } from '@/components/bounty/BountyCard';
-import { Footer } from '@/components/layout/Footer';
-import { Header } from '@/components/layout/Header';
+import { BountyCard } from '@/components/bounty/bounty-card';
+import { Footer } from '@/components/layout/footer';
+import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/loading';

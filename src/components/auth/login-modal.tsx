@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
 import { Textarea } from '@/components/ui/textarea';
-import { customResolver } from '@/lib/formValidation';
+import { customResolver } from '@/lib/form-validation';
 import { useAuth } from '@/store/auth';
 import { Key, Loader2, UserPlus } from 'lucide-react';
 import { useState } from 'react';
@@ -30,6 +30,7 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
   const form = useForm<LoginForm>({
     resolver: customResolver(loginSchema),
     defaultValues: { secretKey: '' },
+    mode: 'onChange',
   });
 
   const handleLogin = async (data: LoginForm) => {

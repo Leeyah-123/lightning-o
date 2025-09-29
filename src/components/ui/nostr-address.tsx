@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Copy, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 
-interface NostrAddressesProps {
+interface NostrAddressProps {
   pubkey: string;
   link?: boolean;
   copy?: boolean;
@@ -12,13 +12,13 @@ interface NostrAddressesProps {
   showFull?: boolean;
 }
 
-export function NostrAddresses({
+export function NostrAddress({
   pubkey,
   link = false,
   copy = true,
   className = '',
   showFull = false,
-}: NostrAddressesProps) {
+}: NostrAddressProps) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -54,7 +54,7 @@ export function NostrAddresses({
           onClick={handleCopy}
           className="h-6 w-6 p-0 hover:bg-muted"
         >
-          <Copy className="h-3 w-3" />
+          <Copy className="h-3 w-3 text-muted-foreground" />
         </Button>
       )}
 
@@ -65,7 +65,7 @@ export function NostrAddresses({
           onClick={handleLinkClick}
           className="h-6 w-6 p-0 hover:bg-muted"
         >
-          <ExternalLink className="h-3 w-3" />
+          <ExternalLink className="h-3 w-3 text-muted-foreground" />
         </Button>
       )}
 

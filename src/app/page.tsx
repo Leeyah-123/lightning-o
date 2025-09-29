@@ -1,12 +1,12 @@
 'use client';
-import { BountyCard } from '@/components/bounty/BountyCard';
-import { Footer } from '@/components/layout/Footer';
-import { Header } from '@/components/layout/Header';
-import { Hero } from '@/components/layout/Hero';
+import { BountyCard } from '@/components/bounty/bounty-card';
+import { Footer } from '@/components/layout/footer';
+import { Header } from '@/components/layout/header';
+import { Hero } from '@/components/layout/hero';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { validationUtils } from '@/lib/validation';
-import { profileService } from '@/services/profileService';
+import { profileService } from '@/services/profile-service';
 import { useAuth } from '@/store/auth';
 import { useBounties } from '@/store/bounties';
 import { ArrowRight, Award, Briefcase, Zap } from 'lucide-react';
@@ -55,7 +55,7 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <Card className="text-center p-6 hover:shadow-lg transition-shadow">
-              <CardContent className="pt-6">
+              <CardContent>
                 <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Award className="h-8 w-8 text-white" />
                 </div>
@@ -73,7 +73,7 @@ export default function Home() {
             </Card>
 
             <Card className="text-center p-6 hover:shadow-lg transition-shadow">
-              <CardContent className="pt-6">
+              <CardContent>
                 <div className="w-16 h-16 bg-gradient-to-br from-orange-600 to-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Briefcase className="h-8 w-8 text-white" />
                 </div>
@@ -83,7 +83,7 @@ export default function Home() {
                 </p>
                 <Link href="/gigs">
                   <Button variant="outline" className="w-full">
-                    Coming Soon
+                    Explore Gigs
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
                 </Link>
@@ -91,7 +91,7 @@ export default function Home() {
             </Card>
 
             <Card className="text-center p-6 hover:shadow-lg transition-shadow">
-              <CardContent className="pt-6">
+              <CardContent>
                 <div className="w-16 h-16 bg-gradient-to-br from-green-600 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Zap className="h-8 w-8 text-white" />
                 </div>

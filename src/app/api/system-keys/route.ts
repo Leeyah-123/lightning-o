@@ -17,7 +17,9 @@ export async function GET() {
       });
     }
 
-    const systemPublicKey = getPublicKey(Buffer.from(systemPrivateKey, 'hex'));
+    const systemPublicKey = getPublicKey(
+      new Uint8Array(Buffer.from(systemPrivateKey, 'hex'))
+    );
 
     return NextResponse.json({
       privateKey: systemPrivateKey,
