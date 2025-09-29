@@ -1,20 +1,11 @@
-export type GrantStatus =
-  | 'open'
-  | 'partially_active'
-  | 'active'
-  | 'completed'
-  | 'cancelled';
+export type GrantStatus = 'open' | 'closed';
 
-export type GrantDisplayStatus =
-  | 'open'
-  | 'partially_active'
-  | 'active'
-  | 'completed'
-  | 'cancelled';
+export type GrantDisplayStatus = 'open' | 'closed';
 
 export interface GrantTranche {
   id: string;
-  amountSats: number;
+  amount: number;
+  maxAmount?: number;
   description: string;
   status: 'pending' | 'funded' | 'submitted' | 'accepted' | 'rejected';
   submittedAt?: number;
@@ -72,25 +63,22 @@ export const grantUtils = {
 
   // Check if applications are currently allowed
   canApply: (grant: Grant): boolean => {
-    return grant.status === 'open' || grant.status === 'partially_active';
+    return grant.status === 'open';
   },
 
   // Check if grant can be cancelled
   canCancel: (grant: Grant): boolean => {
-    return grant.status === 'open' && grant.selectedApplicationIds.length === 0;
+    return grant.status === 'open';
   },
 
   // Check if sponsor can select applications
   canSelectApplication: (grant: Grant): boolean => {
-    return (
-      (grant.status === 'open' || grant.status === 'partially_active') &&
-      grant.applications.length > 0
-    );
+    return grant.status === 'open' && grant.applications.length > 0;
   },
 
-  // Check if grant is active
+  // Check if grant is active (has selected applications)
   isActive: (grant: Grant): boolean => {
-    return grant.status === 'active' || grant.status === 'partially_active';
+    return grant.selectedApplicationIds.length > 0;
   },
 
   // Get status badge variant
@@ -106,13 +94,7 @@ export const grantUtils = {
     switch (status) {
       case 'open':
         return 'default';
-      case 'partially_active':
-        return 'warning';
-      case 'active':
-        return 'secondary';
-      case 'completed':
-        return 'success';
-      case 'cancelled':
+      case 'closed':
         return 'destructive';
       default:
         return 'secondary';
@@ -124,14 +106,8 @@ export const grantUtils = {
     switch (status) {
       case 'open':
         return 'Open for Applications';
-      case 'partially_active':
-        return 'Partially Active';
-      case 'active':
-        return 'Active';
-      case 'completed':
-        return 'Completed';
-      case 'cancelled':
-        return 'Cancelled';
+      case 'closed':
+        return 'Closed';
       default:
         return 'Unknown';
     }
@@ -179,7 +155,10 @@ export const grantUtils = {
 
   // Calculate total tranche amount
   calculateTotalTrancheAmount: (tranches: GrantTranche[]): number => {
-    return tranches.reduce((sum, tranche) => sum + tranche.amountSats, 0);
+    return tranches.reduce(
+      (sum, tranche) => sum + (tranche.maxAmount || tranche.amount),
+      0
+    );
   },
 
   // Check if tranche sum equals reward amount
@@ -250,5 +229,18 @@ export const grantUtils = {
     return grant.selectedApplicationIds.every((applicationId) =>
       grantUtils.areAllTranchesCompleted(grant, applicationId)
     );
+  },
+
+  // Check if tranche is a single amount
+  isTrancheSingleAmount: (tranche: GrantTranche): boolean => {
+    return !tranche.maxAmount || tranche.amount === tranche.maxAmount;
+  },
+
+  // Format tranche amount display
+  formatTrancheAmount: (tranche: GrantTranche): string => {
+    if (!tranche.maxAmount || tranche.amount === tranche.maxAmount) {
+      return `${tranche.amount.toLocaleString()} sats`;
+    }
+    return `${tranche.amount.toLocaleString()} - ${tranche.maxAmount.toLocaleString()} sats`;
   },
 };

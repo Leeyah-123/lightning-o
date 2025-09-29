@@ -10,7 +10,7 @@ import { profileService } from '@/services/profile-service';
 import { useGrants } from '@/store/grants';
 import type { Grant } from '@/types/grant';
 import { grantUtils } from '@/types/grant';
-import { Award, Calendar, DollarSign, Users, X } from 'lucide-react';
+import { Award, Calendar, DollarSign, Users } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -37,7 +37,9 @@ export function GrantCard({
   const displayStatus = grantUtils.getDisplayStatus(grant);
   const canApply = grantUtils.canApply(grant);
   const canCancel = grantUtils.canCancel(grant);
-  const isFirstTranchePaymentPending = grant.status === 'partially_active';
+  const isFirstTranchePaymentPending =
+    grant.selectedApplicationIds.length > 0 &&
+    grant.tranches.some((tranche) => tranche.status === 'pending');
   const isActive = grantUtils.isActive(grant);
 
   // Check if current user has applied
@@ -123,7 +125,7 @@ export function GrantCard({
       if (result.success && result.lightningInvoice) {
         setLightningInvoice(result.lightningInvoice);
         setPaymentHash(result.paymentHash || '');
-        setFundingAmount(firstTranche.amountSats);
+        setFundingAmount(firstTranche.maxAmount || firstTranche.amount);
         setShowLightningModal(true);
       } else {
         throw new Error(result.error || 'Failed to create invoice');
@@ -181,7 +183,7 @@ export function GrantCard({
 
   return (
     <>
-      <Card className="group hover:shadow-lg transition-all duration-200 border-0 bg-white/50 dark:bg-card/50 backdrop-blur-sm">
+      <Card className="group hover:shadow-lg transition-all duration-200 border border-border/50 bg-card/80 backdrop-blur-sm">
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
             <div className="flex-1 min-w-0">
@@ -204,59 +206,34 @@ export function GrantCard({
         <CardContent className="pt-0">
           <div className="space-y-4">
             {/* Reward and Stats */}
-            <div className="flex items-center justify-between text-sm">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-1 text-foreground">
-                  <DollarSign className="h-4 w-4" />
-                  <span className="font-medium">
-                    {grantUtils.formatReward(grant.reward)}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1 text-muted-foreground">
-                  <Users className="h-4 w-4" />
-                  <span>{grant.applications.length} applications</span>
-                </div>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="flex items-center gap-2 text-foreground">
+                <DollarSign className="h-4 w-4 text-green-600" />
+                <span className="font-medium">
+                  {grantUtils.formatReward(grant.reward)}
+                </span>
               </div>
-              <div className="flex items-center gap-1 text-muted-foreground">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Users className="h-4 w-4" />
+                <span>{grant.applications.length} applications</span>
+              </div>
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Award className="h-4 w-4" />
+                <span>{grant.tranches.length} tranches</span>
+              </div>
+              <div className="flex items-center gap-2 text-muted-foreground">
                 <Calendar className="h-4 w-4" />
                 <span>{grantUtils.getRelativeTime(grant.createdAt)}</span>
               </div>
             </div>
 
-            {/* Tranches */}
-            <div className="space-y-2">
-              <div className="text-sm font-medium text-foreground">
-                Tranches:
-              </div>
-              <div className="space-y-1">
-                {grant.tranches.slice(0, 3).map((tranche, index) => (
-                  <div
-                    key={tranche.id}
-                    className="flex items-center justify-between text-sm"
-                  >
-                    <span className="text-muted-foreground">
-                      {index + 1}. {tranche.description}
-                    </span>
-                    <span className="font-medium">
-                      {tranche.amountSats.toLocaleString()} sats
-                    </span>
-                  </div>
-                ))}
-                {grant.tranches.length > 3 && (
-                  <div className="text-sm text-muted-foreground">
-                    +{grant.tranches.length - 3} more tranches
-                  </div>
-                )}
-              </div>
-            </div>
-
             {/* Actions */}
-            <div className="flex items-center gap-2 pt-2">
+            <div className="space-y-2 pt-2">
               <Button
                 onClick={handleViewDetails}
                 variant="outline"
                 size="sm"
-                className="flex-1"
+                className="w-full"
               >
                 View Details
               </Button>
@@ -264,12 +241,11 @@ export function GrantCard({
               {isOwner && canCancel && (
                 <Button
                   onClick={handleCancel}
-                  variant="outline"
-                  size="sm"
                   disabled={isProcessing}
-                  className="text-red-600 hover:text-red-700 hover:border-red-300"
+                  variant="destructive"
+                  className="w-full"
                 >
-                  <X className="h-4 w-4" />
+                  {isProcessing ? 'Processing...' : 'Cancel Grant'}
                 </Button>
               )}
 
@@ -278,7 +254,7 @@ export function GrantCard({
                   onClick={handleFundFirstTranche}
                   size="sm"
                   disabled={isProcessing}
-                  className="bg-green-600 hover:from-green-700 hover:to-emerald-700"
+                  className="w-full bg-green-600 hover:from-green-700 hover:to-emerald-700"
                 >
                   Fund First Tranche
                 </Button>
@@ -288,7 +264,7 @@ export function GrantCard({
                 <Button
                   onClick={handleApply}
                   size="sm"
-                  className="bg-green-600 hover:from-green-700 hover:to-emerald-700"
+                  className="w-full bg-green-600 hover:from-green-700 hover:to-emerald-700"
                 >
                   <Award className="h-4 w-4 mr-1" />
                   Apply
@@ -300,7 +276,7 @@ export function GrantCard({
                   onClick={handleViewDetails}
                   size="sm"
                   variant="outline"
-                  className="text-green-600 border-green-200 hover:bg-green-50"
+                  className="w-full text-green-600 border-green-200 hover:bg-green-50"
                 >
                   View Application
                 </Button>
@@ -310,7 +286,7 @@ export function GrantCard({
                 <Button
                   onClick={handleViewDetails}
                   size="sm"
-                  className="bg-blue-600 hover:from-blue-700 hover:to-cyan-700"
+                  className="w-full bg-blue-600 hover:from-blue-700 hover:to-cyan-700"
                 >
                   Selected!
                 </Button>

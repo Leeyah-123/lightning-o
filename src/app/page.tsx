@@ -1,8 +1,6 @@
 'use client';
 import { BountyCard } from '@/components/bounty/bounty-card';
 import { GigCard } from '@/components/gig/gig-card';
-import { Footer } from '@/components/layout/footer';
-import { Header } from '@/components/layout/header';
 import { Hero } from '@/components/layout/hero';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -69,39 +67,33 @@ export default function Home() {
     bounties.filter((bounty) => bounty.status === 'open').length +
     gigs.filter((gig) => gig.status === 'open' || gig.status === 'in_progress')
       .length +
-    grants.filter(
-      (grant) =>
-        grant.status === 'open' ||
-        grant.status === 'partially_active' ||
-        grant.status === 'active'
-    ).length;
+    grants.filter((grant) => grant.status === 'open').length;
 
   const recentBounties = bounties.slice(0, 3);
   const recentGigs = gigs.slice(0, 3);
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-
+    <>
       <Hero
         activeOpportunities={activeOpportunities}
         totalOpportunities={totalOpportunities}
         totalRewards={totalRewards}
       />
 
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
         {/* Features Section */}
         <section className="mb-16">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">How LightningO Works</h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              A complete platform for earning opportunities powered by Nostr and
-              Lightning
+              LightningO is a platform where anyone, anywhere can create and
+              have access to earning opportunities powered by Nostr and receive
+              payments instantly with the Lightning Network.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card className="text-center p-6 hover:shadow-lg transition-shadow">
+            <Card className="text-center hover:shadow-lg transition-shadow">
               <CardContent>
                 <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Award className="h-8 w-8 text-white" />
@@ -119,7 +111,7 @@ export default function Home() {
               </CardContent>
             </Card>
 
-            <Card className="text-center p-6 hover:shadow-lg transition-shadow">
+            <Card className="text-center hover:shadow-lg transition-shadow">
               <CardContent>
                 <div className="w-16 h-16 bg-gradient-to-br from-orange-600 to-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Briefcase className="h-8 w-8 text-white" />
@@ -137,7 +129,7 @@ export default function Home() {
               </CardContent>
             </Card>
 
-            <Card className="text-center p-6 hover:shadow-lg transition-shadow">
+            <Card className="text-center hover:shadow-lg transition-shadow">
               <CardContent>
                 <div className="w-16 h-16 bg-gradient-to-br from-green-600 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Zap className="h-8 w-8 text-white" />
@@ -246,9 +238,7 @@ export default function Home() {
             )}
           </div>
         </section>
-      </main>
-
-      <Footer />
-    </div>
+      </div>
+    </>
   );
 }

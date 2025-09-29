@@ -3,8 +3,6 @@
 import { LoginModal } from '@/components/auth/login-modal';
 import { MilestoneReviewModal } from '@/components/gig/milestone-review-modal';
 import { MilestoneSubmissionModal } from '@/components/gig/milestone-submission-modal';
-import { Footer } from '@/components/layout/footer';
-import { Header } from '@/components/layout/header';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -103,24 +101,20 @@ export default function GigDetailPage({ params }: GigDetailPageProps) {
 
   if (!gig) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center py-12">
-            <Briefcase className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h1 className="text-2xl font-bold mb-2">Gig not found</h1>
-            <p className="text-muted-foreground mb-4">
-              The gig you're looking for doesn't exist or has been removed.
-            </p>
-            <Link href="/gigs">
-              <Button variant="outline">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Gigs
-              </Button>
-            </Link>
-          </div>
-        </main>
-        <Footer />
+      <div className="container min-h-screen mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center py-12">
+          <Briefcase className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <h1 className="text-2xl font-bold mb-2">Gig not found</h1>
+          <p className="text-muted-foreground mb-4">
+            The gig you're looking for doesn't exist or has been removed.
+          </p>
+          <Link href="/gigs">
+            <Button variant="outline">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Gigs
+            </Button>
+          </Link>
+        </div>
       </div>
     );
   }
@@ -277,10 +271,8 @@ export default function GigDetailPage({ params }: GigDetailPageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button */}
         <div className="mb-6">
           <Link href="/gigs">
@@ -547,9 +539,7 @@ export default function GigDetailPage({ params }: GigDetailPageProps) {
             )}
           </div>
         </div>
-      </main>
-
-      <Footer />
+      </div>
 
       {selectedMilestone && (
         <MilestoneSubmissionModal
@@ -603,6 +593,6 @@ export default function GigDetailPage({ params }: GigDetailPageProps) {
         onClose={() => setShowLoginModal(false)}
         onSuccess={handleLoginSuccess}
       />
-    </div>
+    </>
   );
 }

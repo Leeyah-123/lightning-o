@@ -24,7 +24,8 @@ interface GrantsState {
       maxAmount?: number;
     };
     tranches: Array<{
-      amountSats: number;
+      amount: number;
+      maxAmount?: number;
       description: string;
     }>;
   }): Promise<void>;

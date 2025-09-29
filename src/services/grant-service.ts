@@ -1,10 +1,10 @@
+import { nostrValidation } from '@/lib/nostr-validation';
 import type { Grant, GrantApplication, GrantTranche } from '@/types/grant';
 import type {
   GrantContent,
   GrantContentApply,
   GrantContentApproveTranche,
   GrantContentCancel,
-  GrantContentComplete,
   GrantContentCreate,
   GrantContentFunded,
   GrantContentRejectTranche,
@@ -13,6 +13,7 @@ import type {
   NostrEventBase,
 } from '@/types/nostr';
 import { v4 as uuidv4 } from 'uuid';
+import { GrantEventRouter } from './grant-event-handlers';
 import { lightningService } from './lightning-service';
 import { nostrService, type NostrKeys } from './nostr-service';
 
@@ -20,8 +21,13 @@ class GrantService {
   private grants: Map<string, Grant> = new Map();
   private systemKeys?: NostrKeys;
   private onChangeCallback?: () => void;
+  private eventRouter: GrantEventRouter;
 
   constructor() {
+    this.eventRouter = new GrantEventRouter(
+      this.grants,
+      this.notifyChange.bind(this)
+    );
     this.startWatchers();
   }
 
@@ -40,10 +46,12 @@ class GrantService {
 
   // Grant CRUD operations
   list(): Grant[] {
-    return Array.from(this.grants.values());
+    return Array.from(this.grants.values()).sort(
+      (a, b) => b.createdAt - a.createdAt
+    );
   }
 
-  get(id: string): Grant | undefined {
+  findById(id: string): Grant | undefined {
     return this.grants.get(id);
   }
 
@@ -57,7 +65,8 @@ class GrantService {
       maxAmount?: number;
     };
     tranches: Array<{
-      amountSats: number;
+      amount: number;
+      maxAmount?: number;
       description: string;
     }>;
     sponsorKeys: NostrKeys;
@@ -69,7 +78,8 @@ class GrantService {
       // Create tranches
       const tranches: GrantTranche[] = input.tranches.map((tranche) => ({
         id: uuidv4(),
-        amountSats: tranche.amountSats,
+        amount: tranche.amount,
+        maxAmount: tranche.maxAmount,
         description: tranche.description,
         status: 'pending',
       }));
@@ -91,16 +101,19 @@ class GrantService {
 
       this.grants.set(grantId, grant);
 
-      // Publish Nostr event
       const content: GrantContentCreate = {
         type: 'create',
-        grantId,
-        title: input.title,
-        shortDescription: input.shortDescription,
-        description: input.description,
-        sponsorPubkey: input.sponsorKeys.pk,
-        reward: input.reward,
-        tranches: input.tranches,
+        grantId: grant.id,
+        title: grant.title,
+        shortDescription: grant.shortDescription,
+        description: grant.description,
+        sponsorPubkey: grant.sponsorPubkey,
+        reward: grant.reward,
+        tranches: grant.tranches.map((t) => ({
+          amount: t.amount,
+          maxAmount: t.maxAmount,
+          description: t.description,
+        })),
       };
 
       await nostrService.publishGrantEvent(
@@ -110,7 +123,7 @@ class GrantService {
       );
       this.notifyChange();
 
-      return { success: true, grantId };
+      return { success: true, grantId: grant.id };
     } catch (error) {
       console.error('Failed to create grant:', error);
       return {
@@ -131,37 +144,33 @@ class GrantService {
     try {
       const grant = this.grants.get(input.grantId);
       if (!grant) throw new Error('Grant not found');
-      if (grant.status !== 'open' && grant.status !== 'partially_active') {
-        throw new Error('Grant is not accepting applications');
-      }
+      if (grant.status !== 'open')
+        throw new Error('Grant is not open for applications');
 
       const applicationId = uuidv4();
-      const now = Date.now();
-
-      const application: GrantApplication = {
+      const newApplication: GrantApplication = {
         id: applicationId,
         grantId: input.grantId,
         applicantPubkey: input.applicantKeys.pk,
         portfolioLink: input.portfolioLink,
         proposal: input.proposal,
         budgetRequest: input.budgetRequest,
-        submittedAt: now,
+        submittedAt: Date.now(),
         status: 'pending',
       };
 
-      grant.applications.push(application);
-      grant.updatedAt = now;
+      grant.applications.push(newApplication);
+      grant.updatedAt = Date.now();
       this.grants.set(input.grantId, grant);
 
-      // Publish Nostr event
       const content: GrantContentApply = {
         type: 'apply',
-        grantId: input.grantId,
-        applicationId,
-        applicantPubkey: input.applicantKeys.pk,
-        portfolioLink: input.portfolioLink,
-        proposal: input.proposal,
-        budgetRequest: input.budgetRequest,
+        grantId: grant.id,
+        applicationId: newApplication.id,
+        applicantPubkey: newApplication.applicantPubkey,
+        portfolioLink: newApplication.portfolioLink,
+        proposal: newApplication.proposal,
+        budgetRequest: newApplication.budgetRequest,
       };
 
       await nostrService.publishGrantEvent(
@@ -171,7 +180,7 @@ class GrantService {
       );
       this.notifyChange();
 
-      return { success: true, applicationId };
+      return { success: true, applicationId: newApplication.id };
     } catch (error) {
       console.error('Failed to apply to grant:', error);
       return {
@@ -185,44 +194,35 @@ class GrantService {
   async selectApplication(input: {
     grantId: string;
     applicationId: string;
-    finalAllocation?: number;
     sponsorKeys: NostrKeys;
+    finalAllocation?: number;
   }): Promise<{ success: boolean; error?: string }> {
     try {
       const grant = this.grants.get(input.grantId);
       if (!grant) throw new Error('Grant not found');
-      if (grant.sponsorPubkey !== input.sponsorKeys.pk) {
+      if (grant.sponsorPubkey !== input.sponsorKeys.pk)
         throw new Error('Only grant creator can select applications');
-      }
 
       const application = grant.applications.find(
         (app) => app.id === input.applicationId
       );
       if (!application) throw new Error('Application not found');
+      if (application.status !== 'pending')
+        throw new Error('Application is not pending');
 
       application.status = 'selected';
-      application.selectedAt = Date.now();
       application.finalAllocation = input.finalAllocation;
-
-      if (!grant.selectedApplicationIds.includes(input.applicationId)) {
-        grant.selectedApplicationIds.push(input.applicationId);
-      }
-
-      // Update grant status
-      if (grant.status === 'open') {
-        grant.status = 'partially_active';
-      }
+      grant.selectedApplicationIds.push(application.id);
 
       grant.updatedAt = Date.now();
       this.grants.set(input.grantId, grant);
 
-      // Publish Nostr event
       const content: GrantContentSelect = {
         type: 'select',
-        grantId: input.grantId,
-        applicationId: input.applicationId,
-        sponsorPubkey: input.sponsorKeys.pk,
-        finalAllocation: input.finalAllocation,
+        grantId: grant.id,
+        applicationId: application.id,
+        sponsorPubkey: grant.sponsorPubkey,
+        finalAllocation: application.finalAllocation,
       };
 
       await nostrService.publishGrantEvent(
@@ -256,25 +256,20 @@ class GrantService {
     paymentHash?: string;
     error?: string;
   }> {
+    const grant = this.grants.get(input.grantId);
+    if (!grant) throw new Error('Grant not found');
+    if (grant.sponsorPubkey !== input.sponsorKeys.pk)
+      throw new Error('Only grant creator can fund tranches');
+    if (!grant.selectedApplicationIds.includes(input.applicationId))
+      throw new Error('Application not selected');
+
+    const tranche = grant.tranches.find((t) => t.id === input.trancheId);
+    if (!tranche) throw new Error('Tranche not found');
+    if (tranche.status !== 'pending') throw new Error('Tranche is not pending');
+
     try {
-      const grant = this.grants.get(input.grantId);
-      if (!grant) throw new Error('Grant not found');
-      if (grant.sponsorPubkey !== input.sponsorKeys.pk) {
-        throw new Error('Only grant creator can fund tranches');
-      }
-      if (!grant.selectedApplicationIds.includes(input.applicationId)) {
-        throw new Error('Application not selected');
-      }
-
-      const tranche = grant.tranches.find((t) => t.id === input.trancheId);
-      if (!tranche) throw new Error('Tranche not found');
-      if (tranche.status !== 'pending') {
-        throw new Error('Tranche is not pending');
-      }
-
-      // Create Lightning invoice
       const invoice = await lightningService.createInvoice(
-        tranche.amountSats,
+        tranche.maxAmount || tranche.amount,
         `Tranche payment for grant ${grant.id}`,
         'grant@lightning.app'
       );
@@ -287,7 +282,7 @@ class GrantService {
       grant.pendingInvoice = {
         applicationId: input.applicationId,
         trancheId: tranche.id,
-        amountSats: tranche.amountSats,
+        amountSats: tranche.maxAmount || tranche.amount,
         paymentHash: mockPaymentHash,
         paymentRequest: invoice.paymentRequest,
       };
@@ -322,30 +317,33 @@ class GrantService {
     try {
       const grant = this.grants.get(input.grantId);
       if (!grant) throw new Error('Grant not found');
-      if (!grant.selectedApplicationIds.includes(input.applicationId)) {
+      if (!grant.selectedApplicationIds.includes(input.applicationId))
         throw new Error('Application not selected');
-      }
+
+      const application = grant.applications.find(
+        (app) => app.id === input.applicationId
+      );
+      if (!application) throw new Error('Application not found');
+      if (application.applicantPubkey !== input.submitterKeys.pk)
+        throw new Error('Only selected applicant can submit tranches');
 
       const tranche = grant.tranches.find((t) => t.id === input.trancheId);
       if (!tranche) throw new Error('Tranche not found');
-      if (tranche.status !== 'funded') {
+      if (tranche.status !== 'funded')
         throw new Error('Tranche is not funded yet');
-      }
 
       tranche.status = 'submitted';
       tranche.submittedAt = Date.now();
       tranche.submittedContent = input.content;
       tranche.submittedLinks = input.links;
-
       grant.updatedAt = Date.now();
       this.grants.set(input.grantId, grant);
 
-      // Publish Nostr event
       const content: GrantContentSubmitTranche = {
         type: 'submit_tranche',
-        grantId: input.grantId,
-        applicationId: input.applicationId,
-        trancheId: input.trancheId,
+        grantId: grant.id,
+        applicationId: application.id,
+        trancheId: tranche.id,
         content: input.content,
         links: input.links,
         submitterPubkey: input.submitterKeys.pk,
@@ -380,45 +378,40 @@ class GrantService {
     try {
       const grant = this.grants.get(input.grantId);
       if (!grant) throw new Error('Grant not found');
-      if (grant.sponsorPubkey !== input.sponsorKeys.pk) {
+      if (grant.sponsorPubkey !== input.sponsorKeys.pk)
         throw new Error('Only grant creator can review tranches');
-      }
+
+      const application = grant.applications.find(
+        (app) => app.id === input.applicationId
+      );
+      if (!application) throw new Error('Application not found');
+      if (!grant.selectedApplicationIds.includes(application.id))
+        throw new Error('Application not selected for this grant');
 
       const tranche = grant.tranches.find((t) => t.id === input.trancheId);
       if (!tranche) throw new Error('Tranche not found');
-      if (tranche.status !== 'submitted') {
-        throw new Error('Tranche is not submitted');
-      }
+      if (tranche.status !== 'submitted' && tranche.status !== 'rejected')
+        throw new Error('Tranche is not submitted or rejected');
 
       if (input.action === 'approve') {
         // Process payment (simulated)
         console.log(
-          `Simulated payment of ${tranche.amountSats} sats for tranche ${tranche.id}`
+          `Simulated payment of ${
+            tranche.maxAmount || tranche.amount
+          } sats for tranche ${tranche.id}`
         );
 
         tranche.status = 'accepted';
         tranche.rejectionReason = undefined;
 
-        // Find the next tranche and make it funded
+        // Find the next tranche and make it pending for funding
         const currentTrancheIndex = grant.tranches.findIndex(
           (t) => t.id === input.trancheId
         );
         const nextTranche = grant.tranches[currentTrancheIndex + 1];
 
         if (nextTranche) {
-          nextTranche.status = 'funded';
-          console.log(`Made next tranche ${nextTranche.id} funded`);
-        } else {
-          // No more tranches, check if all are completed
-          const allCompleted = grant.tranches.every(
-            (t) => t.status === 'accepted'
-          );
-          if (allCompleted) {
-            grant.status = 'completed';
-            console.log(
-              'All tranches completed, grant status updated to completed'
-            );
-          }
+          nextTranche.status = 'pending';
         }
       } else {
         tranche.status = 'rejected';
@@ -476,22 +469,17 @@ class GrantService {
     try {
       const grant = this.grants.get(input.grantId);
       if (!grant) throw new Error('Grant not found');
-      if (grant.sponsorPubkey !== input.sponsorKeys.pk) {
-        throw new Error('Only grant creator can cancel grant');
-      }
-      if (grant.status === 'completed' || grant.status === 'cancelled') {
-        throw new Error('Grant cannot be cancelled');
-      }
+      if (grant.sponsorPubkey !== input.sponsorKeys.pk)
+        throw new Error('Only grant creator can cancel a grant');
+      grant.status = 'closed';
 
-      grant.status = 'cancelled';
       grant.updatedAt = Date.now();
       this.grants.set(input.grantId, grant);
 
-      // Publish Nostr event
       const content: GrantContentCancel = {
         type: 'cancel',
-        grantId: input.grantId,
-        sponsorPubkey: input.sponsorKeys.pk,
+        grantId: grant.id,
+        sponsorPubkey: grant.sponsorPubkey,
         reason: input.reason,
       };
 
@@ -513,24 +501,24 @@ class GrantService {
     }
   }
 
-  // Lightning event handling
+  // Handle payment confirmation from Lightning service
   async handlePaymentConfirmation(paymentHash: string): Promise<boolean> {
     for (const grant of this.grants.values()) {
-      if (grant.pendingInvoice?.paymentHash === paymentHash) {
+      if (
+        grant.pendingInvoice &&
+        grant.pendingInvoice.paymentHash === paymentHash
+      ) {
         const tranche = grant.tranches.find(
           (t) => t.id === grant.pendingInvoice!.trancheId
         );
         if (tranche) {
-          // Update tranche status to funded
           tranche.status = 'funded';
-          grant.status = 'active';
 
           // Clear the pending invoice
           grant.pendingInvoice = undefined;
           grant.updatedAt = Date.now();
           this.grants.set(grant.id, grant);
           this.notifyChange();
-
           return true;
         }
       }
@@ -540,6 +528,55 @@ class GrantService {
 
   // Event watchers
   private startWatchers() {
+    // Load existing events first
+    this.loadExistingEvents();
+
+    // Subscribe to new grant events from Nostr relays
+    nostrService.subscribeKinds(
+      [
+        'grant:create',
+        'grant:apply',
+        'grant:select',
+        'grant:funded',
+        'grant:submit_tranche',
+        'grant:approve_tranche',
+        'grant:reject_tranche',
+        'grant:cancel',
+      ],
+      (event) => {
+        try {
+          // Validate event structure
+          if (!nostrValidation.isValidEvent(event)) {
+            return;
+          }
+
+          // Validate event content
+          if (!nostrValidation.isValidEventContent(event.content)) {
+            return;
+          }
+
+          const content = JSON.parse(event.content) as GrantContent;
+
+          // Check if we should process this event
+          if (!this.validateIncomingEvent(event, content)) {
+            return;
+          }
+
+          this.handleNostrEvent(event, content);
+        } catch (error) {
+          // Only log meaningful errors
+          if (event.content && event.content.trim() !== '') {
+            console.warn(
+              'Failed to parse grant event:',
+              error,
+              'Event content:',
+              event.content
+            );
+          }
+        }
+      }
+    );
+
     // Subscribe to funded events from Lightning service
     lightningService.on((evt) => {
       if (evt.type === 'funded' && evt.data?.entityType === 'grant') {
@@ -556,332 +593,169 @@ class GrantService {
         }
 
         // Handle grant tranche payment confirmation
-        this.handlePaymentConfirmation(paymentHash);
+        this.handlePaymentConfirmation(paymentHash).then((paymentConfirmed) => {
+          if (paymentConfirmed) {
+            // Find the grant that was just funded
+            for (const grant of this.grants.values()) {
+              if (grant.id === grantId) {
+                const application = grant.applications.find(
+                  (app) => app.id === grant.pendingInvoice!.applicationId
+                );
+                if (application) {
+                  const tranche = grant.tranches.find(
+                    (t) => t.id === grant.pendingInvoice!.trancheId
+                  );
+                  if (tranche) {
+                    // Publish Nostr event for tranche funding
+                    const content: GrantContentFunded = {
+                      type: 'funded',
+                      grantId: grant.id,
+                      applicationId: application.id,
+                      trancheId: tranche.id,
+                      lightningInvoice:
+                        grant.pendingInvoice?.paymentRequest || '',
+                      amountSats: tranche.maxAmount || tranche.amount,
+                      paymentHash: paymentHash,
+                      sponsorPubkey: grant.sponsorPubkey,
+                    };
+
+                    // Use system keys to publish the event
+                    if (this.systemKeys) {
+                      console.log(
+                        'Publishing grant:funded event for tranche:',
+                        tranche.id
+                      );
+                      nostrService
+                        .publishGrantEvent(
+                          this.systemKeys,
+                          'grant:funded',
+                          content
+                        )
+                        .then(() => {
+                          console.log(
+                            'Published grant:funded event for tranche:',
+                            tranche.id
+                          );
+                        })
+                        .catch((error) => {
+                          console.error(
+                            'Failed to publish grant:funded event:',
+                            error
+                          );
+                        });
+                    }
+                  }
+                }
+                break;
+              }
+            }
+          }
+        });
       }
     });
   }
 
-  // Validation of incoming nostr events
-  validateEvent(event: NostrEventBase, content: GrantContent): boolean {
+  // Load existing events from relays
+  private async loadExistingEvents() {
     try {
-      switch (content.type) {
-        case 'create':
-          return event.pubkey === content.sponsorPubkey;
-        case 'apply':
-          return event.pubkey === content.applicantPubkey;
-        case 'select':
-          return event.pubkey === content.sponsorPubkey;
-        case 'funded':
-          return event.pubkey === content.sponsorPubkey;
-        case 'submit_tranche':
-          return event.pubkey === content.submitterPubkey;
-        case 'approve_tranche':
-        case 'reject_tranche':
-          return event.pubkey === content.sponsorPubkey;
-        case 'complete':
-          return event.pubkey === content.sponsorPubkey;
-        case 'cancel':
-          return event.pubkey === content.sponsorPubkey;
-        default:
-          return false;
-      }
+      // This would typically load existing events from Nostr relays
+      // For now, we'll just log that we're loading events
+      console.log('Loading existing grant events from relays...');
     } catch (error) {
-      console.error('Error validating grant event:', error);
-      return false;
+      console.error('Failed to load existing grant events:', error);
     }
   }
 
-  // Handle incoming nostr events
-  async handleNostrEvent(event: NostrEventBase): Promise<boolean> {
+  // Validate incoming event before processing
+  private validateIncomingEvent(
+    event: NostrEventBase,
+    content: GrantContent
+  ): boolean {
     try {
-      const content = JSON.parse(event.content) as GrantContent;
-
-      if (!this.validateEvent(event, content)) {
-        console.warn('Invalid grant event:', event);
+      // Basic validation - check if content structure is valid
+      if (!content || typeof content !== 'object') {
         return false;
       }
 
+      // Check required fields based on content type
       switch (content.type) {
         case 'create':
-          return this.handleCreateGrant(event, content);
+          return !!(
+            content.grantId &&
+            content.title &&
+            content.shortDescription &&
+            content.description &&
+            content.sponsorPubkey &&
+            content.reward &&
+            content.tranches &&
+            Array.isArray(content.tranches)
+          );
+
         case 'apply':
-          return this.handleApplyToGrant(event, content);
+          return !!(
+            content.grantId &&
+            content.applicationId &&
+            content.applicantPubkey &&
+            content.proposal
+          );
+
         case 'select':
-          return this.handleSelectApplication(event, content);
+          return !!(
+            content.grantId &&
+            content.applicationId &&
+            content.sponsorPubkey
+          );
+
         case 'funded':
-          return this.handleFundTranche(event, content);
+          return !!(
+            content.grantId &&
+            content.applicationId &&
+            content.trancheId &&
+            content.lightningInvoice &&
+            content.amountSats &&
+            content.paymentHash &&
+            content.sponsorPubkey
+          );
+
         case 'submit_tranche':
-          return this.handleSubmitTranche(event, content);
+          return !!(
+            content.grantId &&
+            content.applicationId &&
+            content.trancheId &&
+            content.content &&
+            content.submitterPubkey
+          );
+
         case 'approve_tranche':
-          return this.handleApproveTranche(event, content);
         case 'reject_tranche':
-          return this.handleRejectTranche(event, content);
-        case 'complete':
-          return this.handleCompleteGrant(event, content);
+          return !!(
+            content.grantId &&
+            content.applicationId &&
+            content.trancheId &&
+            content.sponsorPubkey
+          );
+
         case 'cancel':
-          return this.handleCancelGrant(event, content);
+          return !!(content.grantId && content.sponsorPubkey);
+
         default:
-          console.warn('Unknown grant event type:', content);
           return false;
       }
     } catch (error) {
-      console.error('Error handling grant event:', error);
+      console.warn('Failed to validate incoming grant event:', error);
       return false;
     }
   }
 
-  private async handleCreateGrant(
+  // Handle Nostr events using the event router
+  private async handleNostrEvent(
     event: NostrEventBase,
-    content: GrantContentCreate
-  ): Promise<boolean> {
+    content: GrantContent
+  ): Promise<void> {
     try {
-      const now = Date.now();
-      const tranches: GrantTranche[] = content.tranches.map((tranche) => ({
-        id: uuidv4(),
-        amountSats: tranche.amountSats,
-        description: tranche.description,
-        status: 'pending',
-      }));
-
-      const grant: Grant = {
-        id: content.grantId,
-        title: content.title,
-        shortDescription: content.shortDescription,
-        description: content.description,
-        sponsorPubkey: content.sponsorPubkey,
-        reward: content.reward,
-        tranches,
-        status: 'open',
-        applications: [],
-        selectedApplicationIds: [],
-        createdAt: now,
-        updatedAt: now,
-      };
-
-      this.grants.set(content.grantId, grant);
-      this.notifyChange();
-      return true;
+      await this.eventRouter.handleEvent(event, content);
     } catch (error) {
-      console.error('Failed to handle create grant event:', error);
-      return false;
-    }
-  }
-
-  private async handleApplyToGrant(
-    event: NostrEventBase,
-    content: GrantContentApply
-  ): Promise<boolean> {
-    try {
-      const grant = this.grants.get(content.grantId);
-      if (!grant) return false;
-
-      const application: GrantApplication = {
-        id: content.applicationId,
-        grantId: content.grantId,
-        applicantPubkey: content.applicantPubkey,
-        portfolioLink: content.portfolioLink,
-        proposal: content.proposal,
-        budgetRequest: content.budgetRequest,
-        submittedAt: event.created_at * 1000,
-        status: 'pending',
-      };
-
-      grant.applications.push(application);
-      grant.updatedAt = event.created_at * 1000;
-      this.grants.set(content.grantId, grant);
-      this.notifyChange();
-      return true;
-    } catch (error) {
-      console.error('Failed to handle apply to grant event:', error);
-      return false;
-    }
-  }
-
-  private async handleSelectApplication(
-    event: NostrEventBase,
-    content: GrantContentSelect
-  ): Promise<boolean> {
-    try {
-      const grant = this.grants.get(content.grantId);
-      if (!grant) return false;
-
-      const application = grant.applications.find(
-        (app) => app.id === content.applicationId
-      );
-      if (!application) return false;
-
-      application.status = 'selected';
-      application.selectedAt = event.created_at * 1000;
-      application.finalAllocation = content.finalAllocation;
-
-      if (!grant.selectedApplicationIds.includes(content.applicationId)) {
-        grant.selectedApplicationIds.push(content.applicationId);
-      }
-
-      if (grant.status === 'open') {
-        grant.status = 'partially_active';
-      }
-
-      grant.updatedAt = event.created_at * 1000;
-      this.grants.set(content.grantId, grant);
-      this.notifyChange();
-      return true;
-    } catch (error) {
-      console.error('Failed to handle select application event:', error);
-      return false;
-    }
-  }
-
-  private async handleFundTranche(
-    event: NostrEventBase,
-    content: GrantContentFunded
-  ): Promise<boolean> {
-    try {
-      const grant = this.grants.get(content.grantId);
-      if (!grant) return false;
-
-      const tranche = grant.tranches.find((t) => t.id === content.trancheId);
-      if (!tranche) return false;
-
-      tranche.status = 'funded';
-      grant.status = 'active';
-      grant.updatedAt = event.created_at * 1000;
-      this.grants.set(content.grantId, grant);
-      this.notifyChange();
-      return true;
-    } catch (error) {
-      console.error('Failed to handle fund tranche event:', error);
-      return false;
-    }
-  }
-
-  private async handleSubmitTranche(
-    event: NostrEventBase,
-    content: GrantContentSubmitTranche
-  ): Promise<boolean> {
-    try {
-      const grant = this.grants.get(content.grantId);
-      if (!grant) return false;
-
-      const tranche = grant.tranches.find((t) => t.id === content.trancheId);
-      if (!tranche) return false;
-
-      tranche.status = 'submitted';
-      tranche.submittedAt = event.created_at * 1000;
-      tranche.submittedContent = content.content;
-      tranche.submittedLinks = content.links;
-
-      grant.updatedAt = event.created_at * 1000;
-      this.grants.set(content.grantId, grant);
-      this.notifyChange();
-      return true;
-    } catch (error) {
-      console.error('Failed to handle submit tranche event:', error);
-      return false;
-    }
-  }
-
-  private async handleApproveTranche(
-    event: NostrEventBase,
-    content: GrantContentApproveTranche
-  ): Promise<boolean> {
-    try {
-      const grant = this.grants.get(content.grantId);
-      if (!grant) return false;
-
-      const tranche = grant.tranches.find((t) => t.id === content.trancheId);
-      if (!tranche) return false;
-
-      tranche.status = 'accepted';
-      tranche.rejectionReason = undefined;
-
-      // Find the next tranche and make it funded
-      const currentTrancheIndex = grant.tranches.findIndex(
-        (t) => t.id === content.trancheId
-      );
-      const nextTranche = grant.tranches[currentTrancheIndex + 1];
-
-      if (nextTranche) {
-        nextTranche.status = 'funded';
-      } else {
-        // No more tranches, check if all are completed
-        const allCompleted = grant.tranches.every(
-          (t) => t.status === 'accepted'
-        );
-        if (allCompleted) {
-          grant.status = 'completed';
-        }
-      }
-
-      grant.updatedAt = event.created_at * 1000;
-      this.grants.set(content.grantId, grant);
-      this.notifyChange();
-      return true;
-    } catch (error) {
-      console.error('Failed to handle approve tranche event:', error);
-      return false;
-    }
-  }
-
-  private async handleRejectTranche(
-    event: NostrEventBase,
-    content: GrantContentRejectTranche
-  ): Promise<boolean> {
-    try {
-      const grant = this.grants.get(content.grantId);
-      if (!grant) return false;
-
-      const tranche = grant.tranches.find((t) => t.id === content.trancheId);
-      if (!tranche) return false;
-
-      tranche.status = 'rejected';
-      tranche.rejectionReason = content.rejectionReason;
-
-      grant.updatedAt = event.created_at * 1000;
-      this.grants.set(content.grantId, grant);
-      this.notifyChange();
-      return true;
-    } catch (error) {
-      console.error('Failed to handle reject tranche event:', error);
-      return false;
-    }
-  }
-
-  private async handleCompleteGrant(
-    event: NostrEventBase,
-    content: GrantContentComplete
-  ): Promise<boolean> {
-    try {
-      const grant = this.grants.get(content.grantId);
-      if (!grant) return false;
-
-      grant.status = 'completed';
-      grant.updatedAt = event.created_at * 1000;
-      this.grants.set(content.grantId, grant);
-      this.notifyChange();
-      return true;
-    } catch (error) {
-      console.error('Failed to handle complete grant event:', error);
-      return false;
-    }
-  }
-
-  private async handleCancelGrant(
-    event: NostrEventBase,
-    content: GrantContentCancel
-  ): Promise<boolean> {
-    try {
-      const grant = this.grants.get(content.grantId);
-      if (!grant) return false;
-
-      grant.status = 'cancelled';
-      grant.updatedAt = event.created_at * 1000;
-      this.grants.set(content.grantId, grant);
-      this.notifyChange();
-      return true;
-    } catch (error) {
-      console.error('Failed to handle cancel grant event:', error);
-      return false;
+      console.error('Error handling grant Nostr event:', error);
     }
   }
 }

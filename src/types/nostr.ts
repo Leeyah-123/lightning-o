@@ -19,7 +19,6 @@ export type NostrEventKind =
   | 'grant:submit_tranche'
   | 'grant:approve_tranche'
   | 'grant:reject_tranche'
-  | 'grant:complete'
   | 'grant:cancel';
 
 // Mapping from string kinds to numeric kinds
@@ -44,8 +43,7 @@ export const NOSTR_KIND_MAP: Record<NostrEventKind, number> = {
   'grant:submit_tranche': 51505,
   'grant:approve_tranche': 51506,
   'grant:reject_tranche': 51507,
-  'grant:complete': 51508,
-  'grant:cancel': 51509,
+  'grant:cancel': 51508,
 };
 
 // Helper function to convert string kind to number
@@ -219,7 +217,8 @@ export interface GrantContentCreate {
     maxAmount?: number;
   };
   tranches: Array<{
-    amountSats: number;
+    amount: number;
+    maxAmount?: number;
     description: string;
   }>;
 }
@@ -281,13 +280,6 @@ export interface GrantContentRejectTranche {
   rejectionReason: string;
 }
 
-export interface GrantContentComplete {
-  type: 'complete';
-  grantId: string;
-  applicationId: string;
-  sponsorPubkey: string;
-}
-
 export interface GrantContentCancel {
   type: 'cancel';
   grantId: string;
@@ -303,7 +295,6 @@ export type GrantContent =
   | GrantContentSubmitTranche
   | GrantContentApproveTranche
   | GrantContentRejectTranche
-  | GrantContentComplete
   | GrantContentCancel;
 
 export const SYSTEM_PUBKEY_TAG = 'system-pubkey';
