@@ -217,6 +217,7 @@ export interface GrantContentCreate {
     maxAmount?: number;
   };
   tranches: Array<{
+    id: string;
     amount: number;
     maxAmount?: number;
     description: string;

@@ -78,7 +78,7 @@ export const grantUtils = {
 
   // Check if grant is active (has selected applications)
   isActive: (grant: Grant): boolean => {
-    return grant.selectedApplicationIds.length > 0;
+    return grant.status === 'open';
   },
 
   // Get status badge variant

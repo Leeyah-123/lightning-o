@@ -11,6 +11,7 @@ import type {
   GrantContentSubmitTranche,
   NostrEventBase,
 } from '@/types/nostr';
+import { uuidv4 } from 'zod';
 
 /**
  * Helper functions for grant event processing
@@ -156,36 +157,6 @@ export class GrantEventHelpers {
       return false;
     }
   }
-
-  /**
-   * Validate event pubkey matches content
-   */
-  static validateEventPubkey(
-    event: NostrEventBase,
-    content: GrantContent
-  ): boolean {
-    try {
-      // For sponsor actions, pubkey should match sponsorPubkey
-      if ('sponsorPubkey' in content && content.sponsorPubkey) {
-        return event.pubkey === content.sponsorPubkey;
-      }
-
-      // For applicant actions, pubkey should match applicantPubkey
-      if ('applicantPubkey' in content && content.applicantPubkey) {
-        return event.pubkey === content.applicantPubkey;
-      }
-
-      // For submitter actions, pubkey should match submitterPubkey
-      if ('submitterPubkey' in content && content.submitterPubkey) {
-        return event.pubkey === content.submitterPubkey;
-      }
-
-      return true;
-    } catch (error) {
-      console.warn('Failed to validate event pubkey:', error);
-      return false;
-    }
-  }
 }
 
 /**
@@ -219,15 +190,6 @@ export class GrantEventRouter {
       // Validate content structure
       if (!GrantEventHelpers.validateGrantContent(content)) {
         console.warn('Invalid grant content structure:', content);
-        return false;
-      }
-
-      // Validate event pubkey matches content
-      if (!GrantEventHelpers.validateEventPubkey(event, content)) {
-        console.warn('Event pubkey does not match content:', {
-          eventPubkey: event.pubkey,
-          content,
-        });
         return false;
       }
 
@@ -287,9 +249,7 @@ export class GrantEventRouter {
         sponsorPubkey: content.sponsorPubkey,
         reward: content.reward,
         tranches: content.tranches.map((t) => ({
-          id: `tranche-${Date.now()}-${Math.random()
-            .toString(36)
-            .substr(2, 9)}`,
+          id: t.id || uuidv4().toString(),
           amount: t.amount,
           maxAmount: t.maxAmount,
           description: t.description,

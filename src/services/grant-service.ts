@@ -28,7 +28,6 @@ class GrantService {
       this.grants,
       this.notifyChange.bind(this)
     );
-    this.startWatchers();
   }
 
   setSystemKeys(keys: NostrKeys) {
@@ -110,6 +109,7 @@ class GrantService {
         sponsorPubkey: grant.sponsorPubkey,
         reward: grant.reward,
         tranches: grant.tranches.map((t) => ({
+          id: t.id,
           amount: t.amount,
           maxAmount: t.maxAmount,
           description: t.description,
@@ -214,6 +214,11 @@ class GrantService {
       application.finalAllocation = input.finalAllocation;
       grant.selectedApplicationIds.push(application.id);
 
+      // Make the first tranche pending for funding when an application is selected
+      if (grant.tranches.length > 0) {
+        grant.tranches[0].status = 'pending';
+      }
+
       grant.updatedAt = Date.now();
       this.grants.set(input.grantId, grant);
 
@@ -266,6 +271,32 @@ class GrantService {
     const tranche = grant.tranches.find((t) => t.id === input.trancheId);
     if (!tranche) throw new Error('Tranche not found');
     if (tranche.status !== 'pending') throw new Error('Tranche is not pending');
+
+    // Check if this is the next tranche that should be funded (sequential funding)
+    const currentTrancheIndex = grant.tranches.findIndex(
+      (t) => t.id === input.trancheId
+    );
+    const previousTranche = grant.tranches[currentTrancheIndex - 1];
+
+    // If this is not the first tranche, the previous one must be accepted
+    if (
+      currentTrancheIndex > 0 &&
+      (!previousTranche || previousTranche.status !== 'accepted')
+    ) {
+      throw new Error(
+        'Previous tranche must be completed before funding this tranche'
+      );
+    }
+
+    // Check if there's already a pending invoice for this application
+    if (
+      grant.pendingInvoice &&
+      grant.pendingInvoice.applicationId === input.applicationId
+    ) {
+      throw new Error(
+        'Another tranche is already being funded for this application'
+      );
+    }
 
     try {
       const invoice = await lightningService.createInvoice(
@@ -513,9 +544,6 @@ class GrantService {
         );
         if (tranche) {
           tranche.status = 'funded';
-
-          // Clear the pending invoice
-          grant.pendingInvoice = undefined;
           grant.updatedAt = Date.now();
           this.grants.set(grant.id, grant);
           this.notifyChange();
@@ -527,7 +555,7 @@ class GrantService {
   }
 
   // Event watchers
-  private startWatchers() {
+  startWatchers() {
     // Load existing events first
     this.loadExistingEvents().catch(console.error);
 
@@ -621,10 +649,6 @@ class GrantService {
 
                     // Use system keys to publish the event
                     if (this.systemKeys) {
-                      console.log(
-                        'Publishing grant:funded event for tranche:',
-                        tranche.id
-                      );
                       nostrService
                         .publishGrantEvent(
                           this.systemKeys,
@@ -646,6 +670,10 @@ class GrantService {
                     }
                   }
                 }
+                grant.pendingInvoice = undefined;
+                grant.updatedAt = Date.now();
+                this.grants.set(grant.id, grant);
+                this.notifyChange();
                 break;
               }
             }

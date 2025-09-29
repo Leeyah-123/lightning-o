@@ -186,7 +186,7 @@ class NostrService {
       setTimeout(() => {
         sub.close();
         resolve(events);
-      }, 5000); // 5 second timeout
+      }, 10000); // 10 second timeout
     });
   }
 

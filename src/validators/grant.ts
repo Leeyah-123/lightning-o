@@ -8,7 +8,7 @@ export const grantCreateSchema = z
       .max(100, 'Title must be less than 100 characters'),
     shortDescription: z
       .string()
-      .min(1, 'Short description is required')
+      .min(10, 'Short description is required')
       .max(200, 'Short description must be less than 200 characters'),
     description: z.string().min(1, 'Description is required'),
     reward: z.object({

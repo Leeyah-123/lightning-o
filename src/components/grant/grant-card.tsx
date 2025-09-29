@@ -3,9 +3,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { LightningInvoiceModal } from '@/components/ui/lightning-invoice-modal';
 import { useToast } from '@/lib/hooks/use-toast';
-import { lightningService } from '@/services/lightning-service';
 import { profileService } from '@/services/profile-service';
 import { useGrants } from '@/store/grants';
 import type { Grant } from '@/types/grant';
@@ -26,21 +24,13 @@ export function GrantCard({
   currentUserPubkey,
 }: GrantCardProps) {
   const router = useRouter();
-  const { cancelGrant, fundTranche } = useGrants();
+  const { cancelGrant } = useGrants();
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [showLightningModal, setShowLightningModal] = useState(false);
-  const [lightningInvoice, setLightningInvoice] = useState<string>('');
-  const [fundingAmount, setFundingAmount] = useState<number>(0);
-  const [paymentHash, setPaymentHash] = useState<string>('');
 
   const displayStatus = grantUtils.getDisplayStatus(grant);
   const canApply = grantUtils.canApply(grant);
   const canCancel = grantUtils.canCancel(grant);
-  const isFirstTranchePaymentPending =
-    grant.selectedApplicationIds.length > 0 &&
-    grant.tranches.some((tranche) => tranche.status === 'pending');
-  const isActive = grantUtils.isActive(grant);
 
   // Check if current user has applied
   const hasUserApplied =
@@ -103,218 +93,113 @@ export function GrantCard({
     }
   };
 
-  const handleFundFirstTranche = async () => {
-    if (!isFirstTranchePaymentPending) return;
-    setIsProcessing(true);
-    try {
-      const selectedApplication = grant.applications.find((app) =>
-        grant.selectedApplicationIds.includes(app.id)
-      );
-      if (!selectedApplication) {
-        throw new Error('No selected application found');
-      }
-      const firstTranche = grant.tranches.find((t) => t.status === 'pending');
-      if (!firstTranche) {
-        throw new Error('No pending tranche found');
-      }
-      const result = await fundTranche({
-        grantId: grant.id,
-        applicationId: selectedApplication.id,
-        trancheId: firstTranche.id,
-      });
-      if (result.success && result.lightningInvoice) {
-        setLightningInvoice(result.lightningInvoice);
-        setPaymentHash(result.paymentHash || '');
-        setFundingAmount(firstTranche.maxAmount || firstTranche.amount);
-        setShowLightningModal(true);
-      } else {
-        throw new Error(result.error || 'Failed to create invoice');
-      }
-    } catch (error) {
-      console.error('Failed to fund tranche:', error);
-      toast({
-        title: 'Failed to Fund Tranche',
-        description:
-          error instanceof Error
-            ? error.message
-            : 'An unexpected error occurred. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  const handleDevPayment = async () => {
-    if (!grant || !paymentHash) return;
-    const response = await fetch('/api/lightning/pay-invoice', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        request: lightningInvoice,
-        reference: `dev-grant-payment-${grant.id}-${Date.now()}`,
-        customerEmail: 'dev@lightning.app',
-      }),
-    });
-    if (response.ok) {
-      const eventData = {
-        type: 'funded' as const,
-        data: {
-          entityType: 'grant' as const,
-          grantId: grant.id,
-          paymentHash: paymentHash,
-          amount: fundingAmount,
-          paidAt: new Date().toISOString(),
-          request: lightningInvoice,
-          status: 'completed',
-        },
-      };
-      lightningService.emitEvent(eventData);
-      console.log(
-        'Emitted funded event for grant:',
-        grant.id,
-        'with paymentHash:',
-        paymentHash
-      );
-    } else {
-      throw new Error('Dev payment failed');
-    }
-  };
-
   return (
-    <>
-      <Card className="group hover:shadow-lg transition-all duration-200 border border-border/50 bg-card/80 backdrop-blur-sm">
-        <CardHeader className="pb-3">
-          <div className="flex items-start justify-between">
-            <div className="flex-1 min-w-0">
-              <CardTitle className="text-lg font-semibold text-foreground mb-2 line-clamp-2">
-                {grant.title}
-              </CardTitle>
-              <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                {grant.shortDescription}
-              </p>
-            </div>
-            <Badge
-              variant={grantUtils.getStatusBadgeVariant(displayStatus)}
-              className="ml-2 shrink-0"
-            >
-              {grantUtils.getStatusText(displayStatus)}
-            </Badge>
+    <Card className="group hover:shadow-lg transition-all duration-200 border border-border/50 bg-card/80 backdrop-blur-sm">
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between">
+          <div className="flex-1 min-w-0">
+            <CardTitle className="text-lg font-semibold text-foreground mb-2 line-clamp-2">
+              {grant.title}
+            </CardTitle>
+            <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+              {grant.shortDescription}
+            </p>
           </div>
-        </CardHeader>
+          <Badge
+            variant={grantUtils.getStatusBadgeVariant(displayStatus)}
+            className="ml-2 shrink-0"
+          >
+            {grantUtils.getStatusText(displayStatus)}
+          </Badge>
+        </div>
+      </CardHeader>
 
-        <CardContent className="pt-0">
-          <div className="space-y-4">
-            {/* Reward and Stats */}
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div className="flex flex-col items-center text-center">
-                <DollarSign className="h-5 w-5 text-green-600 mb-1" />
-                <span className="font-medium text-foreground">
-                  {grantUtils.formatReward(grant.reward)}
-                </span>
-              </div>
-              <div className="flex flex-col items-center text-center">
-                <Users className="h-5 w-5 text-muted-foreground mb-1" />
-                <span className="text-muted-foreground">
-                  {grant.applications.length} applications
-                </span>
-              </div>
-              <div className="flex flex-col items-center text-center">
-                <Award className="h-5 w-5 text-muted-foreground mb-1" />
-                <span className="text-muted-foreground">
-                  {grant.tranches.length} tranches
-                </span>
-              </div>
-              <div className="flex flex-col items-center text-center">
-                <Calendar className="h-5 w-5 text-muted-foreground mb-1" />
-                <span className="text-muted-foreground">
-                  {grantUtils.getRelativeTime(grant.createdAt)}
-                </span>
-              </div>
+      <CardContent className="pt-0">
+        <div className="space-y-4">
+          {/* Reward and Stats */}
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="flex flex-col items-center text-center">
+              <DollarSign className="h-5 w-5 text-green-600 mb-1" />
+              <span className="font-medium text-foreground">
+                {grantUtils.formatReward(grant.reward)}
+              </span>
             </div>
+            <div className="flex flex-col items-center text-center">
+              <Users className="h-5 w-5 text-muted-foreground mb-1" />
+              <span className="text-muted-foreground">
+                {grant.applications.length} applications
+              </span>
+            </div>
+            <div className="flex flex-col items-center text-center">
+              <Award className="h-5 w-5 text-muted-foreground mb-1" />
+              <span className="text-muted-foreground">
+                {grant.tranches.length} tranches
+              </span>
+            </div>
+            <div className="flex flex-col items-center text-center">
+              <Calendar className="h-5 w-5 text-muted-foreground mb-1" />
+              <span className="text-muted-foreground">
+                {grantUtils.getRelativeTime(grant.createdAt)}
+              </span>
+            </div>
+          </div>
 
-            {/* Actions */}
-            <div className="space-y-2 pt-2">
+          {/* Actions */}
+          <div className="space-y-2 pt-2">
+            <Button
+              onClick={handleViewDetails}
+              variant="outline"
+              size="sm"
+              className="w-full"
+            >
+              View Details
+            </Button>
+
+            {isOwner && canCancel && (
               <Button
-                onClick={handleViewDetails}
-                variant="outline"
-                size="sm"
+                onClick={handleCancel}
+                disabled={isProcessing}
+                variant="destructive"
                 className="w-full"
               >
-                View Details
+                {isProcessing ? 'Processing...' : 'Cancel Grant'}
               </Button>
+            )}
 
-              {isOwner && canCancel && (
-                <Button
-                  onClick={handleCancel}
-                  disabled={isProcessing}
-                  variant="destructive"
-                  className="w-full"
-                >
-                  {isProcessing ? 'Processing...' : 'Cancel Grant'}
-                </Button>
-              )}
+            {!isOwner && canApply && !hasUserApplied && (
+              <Button
+                onClick={handleApply}
+                size="sm"
+                className="w-full bg-green-600 hover:from-green-700 hover:to-emerald-700"
+              >
+                <Award className="h-4 w-4 mr-1" />
+                Apply
+              </Button>
+            )}
 
-              {isOwner && isFirstTranchePaymentPending && (
-                <Button
-                  onClick={handleFundFirstTranche}
-                  size="sm"
-                  disabled={isProcessing}
-                  className="w-full bg-green-600 hover:from-green-700 hover:to-emerald-700"
-                >
-                  Fund First Tranche
-                </Button>
-              )}
+            {!isOwner && hasUserApplied && (
+              <Button
+                onClick={handleViewDetails}
+                size="sm"
+                variant="outline"
+                className="w-full text-green-600 border-green-200 hover:bg-green-50"
+              >
+                View Application
+              </Button>
+            )}
 
-              {!isOwner && canApply && !hasUserApplied && (
-                <Button
-                  onClick={handleApply}
-                  size="sm"
-                  className="w-full bg-green-600 hover:from-green-700 hover:to-emerald-700"
-                >
-                  <Award className="h-4 w-4 mr-1" />
-                  Apply
-                </Button>
-              )}
-
-              {!isOwner && hasUserApplied && (
-                <Button
-                  onClick={handleViewDetails}
-                  size="sm"
-                  variant="outline"
-                  className="w-full text-green-600 border-green-200 hover:bg-green-50"
-                >
-                  View Application
-                </Button>
-              )}
-
-              {!isOwner && isUserSelected && (
-                <Button
-                  onClick={handleViewDetails}
-                  size="sm"
-                  className="w-full bg-blue-600 hover:from-blue-700 hover:to-cyan-700"
-                >
-                  Selected!
-                </Button>
-              )}
-            </div>
+            {!isOwner && isUserSelected && (
+              <Button
+                onClick={handleViewDetails}
+                size="sm"
+                className="w-full bg-blue-600 hover:from-blue-700 hover:to-cyan-700"
+              >
+                Selected!
+              </Button>
+            )}
           </div>
-        </CardContent>
-      </Card>
-
-      <LightningInvoiceModal
-        isOpen={showLightningModal}
-        onClose={() => setShowLightningModal(false)}
-        lightningInvoice={lightningInvoice}
-        amountSats={fundingAmount}
-        title="Fund Grant Tranche"
-        description="for the first tranche"
-        onDevPayment={handleDevPayment}
-        onPaymentComplete={() => {
-          setShowLightningModal(false);
-          // The grant will be updated via webhook
-        }}
-      />
-    </>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

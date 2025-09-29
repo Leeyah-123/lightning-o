@@ -78,7 +78,8 @@ export const useGrants = create<GrantsState>((set, get) => ({
       grantService.setOnChangeCallback(() => {
         set({ grants: grantService.list() });
       });
-      set({ grants: grantService.list() });
+      grantService.startWatchers();
+      set({ grants: grantService.list(), systemKeys });
     } catch (error) {
       console.error('Failed to initialize grants:', error);
     }

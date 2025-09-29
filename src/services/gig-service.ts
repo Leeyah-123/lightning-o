@@ -686,6 +686,10 @@ class GigService {
                     }
                   }
                 }
+                gig.pendingInvoice = undefined;
+                gig.updatedAt = Date.now();
+                this.gigs.set(gig.id, gig);
+                this.notifyChange();
                 break;
               }
             }

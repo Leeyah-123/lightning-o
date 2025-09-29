@@ -1,7 +1,5 @@
 'use client';
 
-import { Footer } from '@/components/layout/footer';
-import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LightningInvoiceModal } from '@/components/ui/lightning-invoice-modal';
@@ -298,6 +296,26 @@ export default function ApplicationDetailPage({
     }
   };
 
+  // Check if a tranche can be funded (only the next sequential tranche)
+  const canFundTranche = (trancheIndex: number) => {
+    if (!grant) return false;
+
+    // First tranche can always be funded if it's pending
+    if (trancheIndex === 0) {
+      return grant.tranches[trancheIndex].status === 'pending';
+    }
+
+    // For subsequent tranches, the previous one must be accepted
+    const previousTranche = grant.tranches[trancheIndex - 1];
+    const currentTranche = grant.tranches[trancheIndex];
+
+    return (
+      currentTranche.status === 'pending' &&
+      previousTranche &&
+      previousTranche.status === 'accepted'
+    );
+  };
+
   const isApplicationCompleted = () => {
     if (!grant || !application) return false;
     return grant.tranches.every((tranche) => tranche.status === 'accepted');
@@ -305,46 +323,38 @@ export default function ApplicationDetailPage({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <LoadingSpinner className="h-8 w-8 mb-4" />
-              <h3 className="text-lg font-semibold mb-2">
-                Loading Application...
-              </h3>
-              <p className="text-muted-foreground">
-                Fetching application details from the network
-              </p>
-            </div>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <LoadingSpinner className="h-8 w-8 mb-4" />
+            <h3 className="text-lg font-semibold mb-2">
+              Loading Application...
+            </h3>
+            <p className="text-muted-foreground">
+              Fetching application details from the network
+            </p>
           </div>
-        </main>
-        <Footer />
+        </div>
       </div>
     );
   }
 
   if (!grant || !application) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center py-12">
-            <h1 className="text-2xl font-bold mb-4">Application Not Found</h1>
-            <p className="text-muted-foreground mb-6">
-              The application you're looking for doesn't exist or has been
-              removed.
-            </p>
-            <Link href={`/grants/${id}`}>
-              <Button variant="outline">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Grant
-              </Button>
-            </Link>
-          </div>
-        </main>
-        <Footer />
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center py-12">
+          <h1 className="text-2xl font-bold mb-4">Application Not Found</h1>
+          <p className="text-muted-foreground mb-6">
+            The application you're looking for doesn't exist or has been
+            removed.
+          </p>
+          <Link href={`/grants/${id}`}>
+            <Button variant="outline">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Grant
+            </Button>
+          </Link>
+        </div>
       </div>
     );
   }
@@ -352,13 +362,11 @@ export default function ApplicationDetailPage({
   const isCompleted = isApplicationCompleted();
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-4 mb-4">
+          <div className="flex flex-col gap-4 mb-4">
             <Link href={`/grants/${grant.id}`}>
               <Button variant="outline" size="sm">
                 <ArrowLeft className="h-4 w-4 mr-2" />
@@ -502,7 +510,7 @@ export default function ApplicationDetailPage({
                     </div>
 
                     {/* Actions */}
-                    {isOwner && tranche.status === 'pending' && (
+                    {isOwner && canFundTranche(index) && (
                       <Button
                         onClick={() => handleFundTranche(tranche.id)}
                         size="sm"
@@ -621,7 +629,7 @@ export default function ApplicationDetailPage({
             )}
           </div>
         </div>
-      </main>
+      </div>
 
       {/* Lightning Invoice Modal */}
       <LightningInvoiceModal
@@ -719,8 +727,6 @@ export default function ApplicationDetailPage({
           </div>
         </div>
       )}
-
-      <Footer />
-    </div>
+    </>
   );
 }
