@@ -1,16 +1,20 @@
 'use client';
 
 import { bountyService } from '@/services/bounty-service';
+import { cacheService } from '@/services/cache-service';
 import { nostrService } from '@/services/nostr-service';
 import { profileService } from '@/services/profile-service';
 import type { Bounty } from '@/types/bounty';
 import { create } from 'zustand';
 import { useAuth } from './auth';
+import { useCache } from './cache';
 
 export type KeyPair = { sk: string; pk: string };
 
 interface BountiesState {
   bounties: Bounty[];
+  isLoading: boolean;
+  error: string | null;
   systemKeys?: KeyPair;
   init(): Promise<void>;
   getOrCreateSystemKeys(): Promise<KeyPair>;
@@ -38,24 +42,46 @@ interface BountiesState {
     escrowTxId?: string;
     error?: string;
   }>;
-  refresh(): void;
+  refresh(): Promise<void>;
 }
 
 export const useBounties = create<BountiesState>((set, get) => ({
   bounties: [],
+  isLoading: false,
+  error: null,
   async init() {
-    // Generate or retrieve system keys for platform operations
-    // These keys are used to sign platform events (bounty open, completed)
-    const systemKeys = await get().getOrCreateSystemKeys();
-    bountyService.setSystemKeys(systemKeys);
+    try {
+      set({ isLoading: true, error: null });
 
-    // Set up callback to update store when bounties change
-    bountyService.setOnChangeCallback(() => {
-      set({ bounties: bountyService.list() });
-    });
+      // Use cache service for initialization
+      await cacheService.initializeBounties();
 
-    bountyService.startWatchers();
-    set({ systemKeys, bounties: bountyService.list() });
+      // Get data from cache
+      const cache = useCache.getState();
+      set({
+        bounties: cache.bounties,
+        isLoading: cache.isLoading.bounties,
+        error: cache.errors.bounties,
+      });
+
+      // Subscribe to cache changes
+      const unsubscribe = useCache.subscribe((state) => {
+        set({
+          bounties: state.bounties,
+          isLoading: state.isLoading.bounties,
+          error: state.errors.bounties,
+        });
+      });
+
+      // Store unsubscribe function for cleanup
+      (get() as any).unsubscribe = unsubscribe;
+    } catch (error) {
+      console.error('Failed to initialize bounties:', error);
+      set({
+        error: error instanceof Error ? error.message : 'Unknown error',
+        isLoading: false,
+      });
+    }
   },
 
   async getOrCreateSystemKeys(): Promise<KeyPair> {
@@ -112,7 +138,7 @@ export const useBounties = create<BountiesState>((set, get) => ({
       pk: profileService.getHexFromNpub(user.pubkey),
     };
     await bountyService.create({ ...input, sponsorKeys });
-    set({ bounties: bountyService.list() });
+    // Cache will be updated via the onChangeCallback
   },
   async fundBounty(bountyId) {
     const { user } = useAuth.getState();
@@ -122,7 +148,7 @@ export const useBounties = create<BountiesState>((set, get) => ({
       pk: profileService.getHexFromNpub(user.pubkey),
     };
     const result = await bountyService.fund(bountyId, sponsorKeys);
-    set({ bounties: bountyService.list() });
+    // Cache will be updated via the onChangeCallback
     return result;
   },
   async completeBounty(bountyId, selectedSubmissionIds) {
@@ -133,7 +159,7 @@ export const useBounties = create<BountiesState>((set, get) => ({
       pk: profileService.getHexFromNpub(user.pubkey),
     };
     await bountyService.complete(bountyId, sponsorKeys, selectedSubmissionIds);
-    set({ bounties: bountyService.list() });
+    // Cache will be updated via the onChangeCallback
   },
 
   async submitToBounty(bountyId, content, lightningAddress) {
@@ -149,10 +175,16 @@ export const useBounties = create<BountiesState>((set, get) => ({
       content,
       lightningAddress
     );
-    set({ bounties: bountyService.list() });
+    // Cache will be updated via the onChangeCallback
   },
-  refresh() {
-    set({ bounties: bountyService.list() });
+  async refresh() {
+    await cacheService.refresh('bounties');
+    const cache = useCache.getState();
+    set({
+      bounties: cache.bounties,
+      isLoading: cache.isLoading.bounties,
+      error: cache.errors.bounties,
+    });
   },
 
   resetSystemKeys() {

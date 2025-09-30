@@ -1,16 +1,20 @@
 'use client';
 
+import { cacheService } from '@/services/cache-service';
 import { gigService } from '@/services/gig-service';
 import { nostrService } from '@/services/nostr-service';
 import { profileService } from '@/services/profile-service';
 import type { Gig } from '@/types/gig';
 import { create } from 'zustand';
 import { useAuth } from './auth';
+import { useCache } from './cache';
 
 export type KeyPair = { sk: string; pk: string };
 
 interface GigsState {
   gigs: Gig[];
+  isLoading: boolean;
+  error: string | null;
   systemKeys?: KeyPair;
   init(): Promise<void>;
   getOrCreateSystemKeys(): Promise<KeyPair>;
@@ -57,23 +61,46 @@ interface GigsState {
     rejectionReason?: string;
   }): Promise<void>;
   cancelGig(input: { gigId: string; reason?: string }): Promise<void>;
-  refresh(): void;
+  refresh(): Promise<void>;
 }
 
 export const useGigs = create<GigsState>((set, get) => ({
   gigs: [],
+  isLoading: false,
+  error: null,
   async init() {
-    // Generate or retrieve system keys for platform operations
-    const systemKeys = await get().getOrCreateSystemKeys();
-    gigService.setSystemKeys(systemKeys);
+    try {
+      set({ isLoading: true, error: null });
 
-    // Set up callback to update store when gigs change
-    gigService.setOnChangeCallback(() => {
-      set({ gigs: gigService.list() });
-    });
+      // Use cache service for initialization
+      await cacheService.initializeGigs();
 
-    gigService.startWatchers();
-    set({ systemKeys, gigs: gigService.list() });
+      // Get data from cache
+      const cache = useCache.getState();
+      set({
+        gigs: cache.gigs,
+        isLoading: cache.isLoading.gigs,
+        error: cache.errors.gigs,
+      });
+
+      // Subscribe to cache changes
+      const unsubscribe = useCache.subscribe((state) => {
+        set({
+          gigs: state.gigs,
+          isLoading: state.isLoading.gigs,
+          error: state.errors.gigs,
+        });
+      });
+
+      // Store unsubscribe function for cleanup
+      (get() as any).unsubscribe = unsubscribe;
+    } catch (error) {
+      console.error('Failed to initialize gigs:', error);
+      set({
+        error: error instanceof Error ? error.message : 'Unknown error',
+        isLoading: false,
+      });
+    }
   },
 
   async getOrCreateSystemKeys(): Promise<KeyPair> {
@@ -131,7 +158,7 @@ export const useGigs = create<GigsState>((set, get) => ({
       pk: profileService.getHexFromNpub(user.pubkey),
     };
     await gigService.create({ ...input, sponsorKeys });
-    set({ gigs: gigService.list() });
+    // Cache will be updated via the onChangeCallback
   },
 
   async applyToGig(input) {
@@ -142,7 +169,7 @@ export const useGigs = create<GigsState>((set, get) => ({
       pk: profileService.getHexFromNpub(user.pubkey),
     };
     await gigService.apply({ ...input, applicantKeys });
-    set({ gigs: gigService.list() });
+    // Cache will be updated via the onChangeCallback
   },
 
   async selectApplication(input) {
@@ -153,7 +180,7 @@ export const useGigs = create<GigsState>((set, get) => ({
       pk: profileService.getHexFromNpub(user.pubkey),
     };
     await gigService.selectApplication({ ...input, sponsorKeys });
-    set({ gigs: gigService.list() });
+    // Cache will be updated via the onChangeCallback
   },
 
   async fundMilestone(input) {
@@ -164,7 +191,7 @@ export const useGigs = create<GigsState>((set, get) => ({
       pk: profileService.getHexFromNpub(user.pubkey),
     };
     const result = await gigService.fundMilestone({ ...input, sponsorKeys });
-    set({ gigs: gigService.list() });
+    // Cache will be updated via the onChangeCallback
     return result;
   },
 
@@ -176,7 +203,7 @@ export const useGigs = create<GigsState>((set, get) => ({
       pk: profileService.getHexFromNpub(user.pubkey),
     };
     await gigService.submitMilestone({ ...input, submitterKeys });
-    set({ gigs: gigService.list() });
+    // Cache will be updated via the onChangeCallback
   },
 
   async reviewMilestone(input) {
@@ -187,7 +214,7 @@ export const useGigs = create<GigsState>((set, get) => ({
       pk: profileService.getHexFromNpub(user.pubkey),
     };
     await gigService.reviewMilestone({ ...input, sponsorKeys });
-    set({ gigs: gigService.list() });
+    // Cache will be updated via the onChangeCallback
   },
 
   async cancelGig(input) {
@@ -198,11 +225,17 @@ export const useGigs = create<GigsState>((set, get) => ({
       pk: profileService.getHexFromNpub(user.pubkey),
     };
     await gigService.cancelGig({ ...input, sponsorKeys });
-    set({ gigs: gigService.list() });
+    // Cache will be updated via the onChangeCallback
   },
 
-  refresh() {
-    set({ gigs: gigService.list() });
+  async refresh() {
+    await cacheService.refresh('gigs');
+    const cache = useCache.getState();
+    set({
+      gigs: cache.gigs,
+      isLoading: cache.isLoading.gigs,
+      error: cache.errors.gigs,
+    });
   },
 
   resetSystemKeys() {
