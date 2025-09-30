@@ -16,6 +16,7 @@ interface GigsState {
   isLoading: boolean;
   error: string | null;
   systemKeys?: KeyPair;
+  unsubscribe?: () => void;
   init(): Promise<void>;
   getOrCreateSystemKeys(): Promise<KeyPair>;
   resetSystemKeys(): void;
@@ -64,7 +65,7 @@ interface GigsState {
   refresh(): Promise<void>;
 }
 
-export const useGigs = create<GigsState>((set, get) => ({
+export const useGigs = create<GigsState>((set) => ({
   gigs: [],
   isLoading: false,
   error: null,
@@ -93,7 +94,7 @@ export const useGigs = create<GigsState>((set, get) => ({
       });
 
       // Store unsubscribe function for cleanup
-      (get() as any).unsubscribe = unsubscribe;
+      set({ unsubscribe });
     } catch (error) {
       console.error('Failed to initialize gigs:', error);
       set({
@@ -104,50 +105,19 @@ export const useGigs = create<GigsState>((set, get) => ({
   },
 
   async getOrCreateSystemKeys(): Promise<KeyPair> {
-    const STORAGE_KEY = 'lightning-gig-system-keys';
-
-    // Try to get existing system keys from localStorage
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        try {
-          const keys = JSON.parse(stored);
-          if (keys.sk && keys.pk) {
-            return keys;
-          }
-        } catch (error) {
-          console.warn('Failed to parse stored gig system keys:', error);
-        }
-      }
-    }
-
     // Fetch system keys from server
     try {
       const response = await fetch('/api/system-keys');
       if (response.ok) {
         const { privateKey, publicKey } = await response.json();
-        const systemKeys = { sk: privateKey, pk: publicKey };
-
-        // Store in localStorage for persistence
-        if (typeof window !== 'undefined') {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(systemKeys));
-        }
-
-        return systemKeys;
+        return { sk: privateKey, pk: publicKey };
       }
     } catch (error) {
       console.warn('Failed to fetch system keys from server:', error);
     }
 
     // Fallback: Generate new system keys locally
-    const systemKeys = nostrService.generateKeys();
-
-    // Store in localStorage for persistence
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(systemKeys));
-    }
-
-    return systemKeys;
+    return nostrService.generateKeys();
   },
 
   async createGig(input) {
@@ -239,10 +209,6 @@ export const useGigs = create<GigsState>((set, get) => ({
   },
 
   resetSystemKeys() {
-    const STORAGE_KEY = 'lightning-gig-system-keys';
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem(STORAGE_KEY);
-    }
     const newSystemKeys = nostrService.generateKeys();
     gigService.setSystemKeys(newSystemKeys);
     set({ systemKeys: newSystemKeys });

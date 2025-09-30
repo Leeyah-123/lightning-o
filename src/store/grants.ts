@@ -15,6 +15,7 @@ interface GrantsState {
   isLoading: boolean;
   error: string | null;
   systemKeys?: KeyPair;
+  unsubscribe?: () => void;
   init(): Promise<void>;
   getOrCreateSystemKeys(): Promise<KeyPair>;
   resetSystemKeys(): void;
@@ -72,7 +73,7 @@ interface GrantsState {
   refresh(): Promise<void>;
 }
 
-export const useGrants = create<GrantsState>((set, get) => ({
+export const useGrants = create<GrantsState>((set) => ({
   grants: [],
   isLoading: false,
   error: null,
@@ -103,7 +104,7 @@ export const useGrants = create<GrantsState>((set, get) => ({
       });
 
       // Store unsubscribe function for cleanup
-      (get() as any).unsubscribe = unsubscribe;
+      set({ unsubscribe });
     } catch (error) {
       console.error('Failed to initialize grants:', error);
       set({
@@ -114,37 +115,14 @@ export const useGrants = create<GrantsState>((set, get) => ({
   },
 
   async getOrCreateSystemKeys(): Promise<KeyPair> {
-    const STORAGE_KEY = 'lightning-system-keys';
-
-    // Try to get existing system keys from localStorage
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        try {
-          const keys = JSON.parse(stored);
-          if (keys.sk && keys.pk) {
-            return keys;
-          }
-        } catch (error) {
-          console.warn('Failed to parse stored system keys:', error);
-        }
-      }
-    }
-
     // Fetch system keys from server
     try {
       const response = await fetch('/api/system-keys');
       if (!response.ok) {
         throw new Error('Failed to fetch system keys');
       }
-      const keys = await response.json();
-
-      // Store in localStorage for future use
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(keys));
-      }
-
-      return keys;
+      const { privateKey, publicKey } = await response.json();
+      return { sk: privateKey, pk: publicKey };
     } catch (error) {
       console.error('Failed to get system keys:', error);
       throw error;
@@ -153,9 +131,6 @@ export const useGrants = create<GrantsState>((set, get) => ({
 
   resetSystemKeys() {
     set({ systemKeys: undefined });
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('lightning-system-keys');
-    }
   },
 
   async createGrant(input) {

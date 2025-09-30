@@ -16,6 +16,7 @@ interface BountiesState {
   isLoading: boolean;
   error: string | null;
   systemKeys?: KeyPair;
+  unsubscribe?: () => void;
   init(): Promise<void>;
   getOrCreateSystemKeys(): Promise<KeyPair>;
   resetSystemKeys(): void;
@@ -45,7 +46,7 @@ interface BountiesState {
   refresh(): Promise<void>;
 }
 
-export const useBounties = create<BountiesState>((set, get) => ({
+export const useBounties = create<BountiesState>((set) => ({
   bounties: [],
   isLoading: false,
   error: null,
@@ -74,7 +75,7 @@ export const useBounties = create<BountiesState>((set, get) => ({
       });
 
       // Store unsubscribe function for cleanup
-      (get() as any).unsubscribe = unsubscribe;
+      set({ unsubscribe });
     } catch (error) {
       console.error('Failed to initialize bounties:', error);
       set({
@@ -85,50 +86,19 @@ export const useBounties = create<BountiesState>((set, get) => ({
   },
 
   async getOrCreateSystemKeys(): Promise<KeyPair> {
-    const STORAGE_KEY = 'lightning-system-keys';
-
-    // Try to get existing system keys from localStorage
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        try {
-          const keys = JSON.parse(stored);
-          if (keys.sk && keys.pk) {
-            return keys;
-          }
-        } catch (error) {
-          console.warn('Failed to parse stored system keys:', error);
-        }
-      }
-    }
-
     // Fetch system keys from server
     try {
       const response = await fetch('/api/system-keys');
       if (response.ok) {
         const { privateKey, publicKey } = await response.json();
-        const systemKeys = { sk: privateKey, pk: publicKey };
-
-        // Store in localStorage for persistence
-        if (typeof window !== 'undefined') {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(systemKeys));
-        }
-
-        return systemKeys;
+        return { sk: privateKey, pk: publicKey };
       }
     } catch (error) {
       console.warn('Failed to fetch system keys from server:', error);
     }
 
     // Fallback: Generate new system keys locally
-    const systemKeys = nostrService.generateKeys();
-
-    // Store in localStorage for persistence
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(systemKeys));
-    }
-
-    return systemKeys;
+    return nostrService.generateKeys();
   },
   async createBounty(input) {
     const { user } = useAuth.getState();
@@ -188,10 +158,6 @@ export const useBounties = create<BountiesState>((set, get) => ({
   },
 
   resetSystemKeys() {
-    const STORAGE_KEY = 'lightning-system-keys';
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem(STORAGE_KEY);
-    }
     const newSystemKeys = nostrService.generateKeys();
     bountyService.setSystemKeys(newSystemKeys);
     set({ systemKeys: newSystemKeys });

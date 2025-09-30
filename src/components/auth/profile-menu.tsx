@@ -89,6 +89,7 @@ export function ProfileMenu({ onLogout }: ProfileMenuProps) {
       >
         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
           {user.profile?.picture ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={user.profile.picture}
               alt={user.profile.name || 'Profile'}

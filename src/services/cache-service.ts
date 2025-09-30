@@ -19,50 +19,19 @@ class CacheService {
 
   // Get or create system keys
   private async getOrCreateSystemKeys(): Promise<{ sk: string; pk: string }> {
-    const STORAGE_KEY = 'lightning-system-keys';
-
-    // Try to get existing system keys from localStorage
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        try {
-          const keys = JSON.parse(stored);
-          if (keys.sk && keys.pk) {
-            return keys;
-          }
-        } catch (error) {
-          console.warn('Failed to parse stored system keys:', error);
-        }
-      }
-    }
-
     // Fetch system keys from server
     try {
       const response = await fetch('/api/system-keys');
       if (response.ok) {
         const { privateKey, publicKey } = await response.json();
-        const systemKeys = { sk: privateKey, pk: publicKey };
-
-        // Store in localStorage for persistence
-        if (typeof window !== 'undefined') {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(systemKeys));
-        }
-
-        return systemKeys;
+        return { sk: privateKey, pk: publicKey };
       }
     } catch (error) {
       console.warn('Failed to fetch system keys from server:', error);
     }
 
     // Fallback: Generate new system keys locally
-    const systemKeys = nostrService.generateKeys();
-
-    // Store in localStorage for persistence
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(systemKeys));
-    }
-
-    return systemKeys;
+    return nostrService.generateKeys();
   }
 
   // Initialize all services with cache integration
