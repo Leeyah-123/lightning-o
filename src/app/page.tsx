@@ -13,25 +13,44 @@ import { validationUtils } from '@/lib/validation';
 import { useBounties } from '@/store/bounties';
 import { useGigs } from '@/store/gigs';
 import { useGrants } from '@/store/grants';
+import { useEffect } from 'react';
 
 export default function Home() {
   const {
     bounties,
     isLoading: bountiesLoading,
     error: bountiesError,
+    init: initBounties,
   } = useBounties();
-  const { gigs, isLoading: gigsLoading, error: gigsError } = useGigs();
-  const { grants, isLoading: grantsLoading, error: grantsError } = useGrants();
+  const {
+    gigs,
+    isLoading: gigsLoading,
+    error: gigsError,
+    init: initGigs,
+  } = useGigs();
+  const {
+    grants,
+    isLoading: grantsLoading,
+    error: grantsError,
+    init: initGrants,
+  } = useGrants();
   const {
     isInitialized,
     isLoading: cacheLoading,
     error: cacheError,
   } = useCacheInitialization();
 
+  // Initialize all stores when component mounts
+  useEffect(() => {
+    initBounties();
+    initGigs();
+    initGrants();
+  }, [initBounties, initGigs, initGrants]);
+
   // Check if any data is still loading
   const isLoading =
     cacheLoading || bountiesLoading || gigsLoading || grantsLoading;
-  const hasError = cacheError || bountiesError || gigsError || grantsError;
+  const hasError = !!(cacheError || bountiesError || gigsError || grantsError);
 
   // Calculate combined stats
   const totalBountyReward = bounties.reduce(
@@ -125,6 +144,8 @@ export default function Home() {
         activeOpportunities={activeOpportunities}
         totalOpportunities={totalOpportunities}
         totalRewards={totalRewards}
+        isLoading={isLoading}
+        hasError={hasError}
       />
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
