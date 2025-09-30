@@ -2,6 +2,7 @@
 
 import { buttonVariants } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton-loader';
 import { Activity, Award, Zap } from 'lucide-react';
 import Link from 'next/link';
 
@@ -9,12 +10,16 @@ interface HeroSectionProps {
   totalOpportunities: number;
   totalRewards: number;
   activeOpportunities: number;
+  isLoading?: boolean;
+  hasError?: boolean;
 }
 
 export function HeroSection({
   totalOpportunities,
   totalRewards,
   activeOpportunities,
+  isLoading = false,
+  hasError = false,
 }: HeroSectionProps) {
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-blue-950/20 dark:via-background dark:to-purple-950/20">
@@ -75,7 +80,13 @@ export function HeroSection({
                   <Award className="h-6 w-6 text-blue-600" />
                 </div>
                 <div className="text-2xl font-bold text-foreground mb-1">
-                  {totalOpportunities}
+                  {isLoading ? (
+                    <Skeleton className="h-8 w-16 mx-auto" />
+                  ) : hasError ? (
+                    <span className="text-red-500">--</span>
+                  ) : (
+                    totalOpportunities
+                  )}
                 </div>
                 <div className="text-sm text-muted-foreground">
                   Total Opportunities
@@ -89,7 +100,13 @@ export function HeroSection({
                   <Zap className="h-6 w-6 text-green-600" />
                 </div>
                 <div className="text-2xl font-bold text-foreground mb-1">
-                  {totalRewards.toLocaleString()}
+                  {isLoading ? (
+                    <Skeleton className="h-8 w-20 mx-auto" />
+                  ) : hasError ? (
+                    <span className="text-red-500">--</span>
+                  ) : (
+                    totalRewards.toLocaleString()
+                  )}
                 </div>
                 <div className="text-sm text-muted-foreground">
                   Total Rewards (sats)
@@ -103,7 +120,13 @@ export function HeroSection({
                   <Activity className="h-6 w-6 text-purple-600" />
                 </div>
                 <div className="text-2xl font-bold text-foreground mb-1">
-                  {activeOpportunities}
+                  {isLoading ? (
+                    <Skeleton className="h-8 w-16 mx-auto" />
+                  ) : hasError ? (
+                    <span className="text-red-500">--</span>
+                  ) : (
+                    activeOpportunities
+                  )}
                 </div>
                 <div className="text-sm text-muted-foreground">
                   Active Opportunities

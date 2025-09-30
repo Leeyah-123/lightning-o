@@ -3,8 +3,9 @@
 import { BountyCard } from '@/components/bounty/bounty-card';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { PageErrorState } from '@/components/ui/error-state';
 import { Input } from '@/components/ui/input';
-import { LoadingSpinner } from '@/components/ui/loading';
+import { PageSkeleton } from '@/components/ui/page-skeleton';
 import { Select } from '@/components/ui/select';
 import { areKeysEqual } from '@/lib/utils';
 import { useAuth } from '@/store/auth';
@@ -14,33 +15,15 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 export default function BountiesPage() {
-  const { bounties, init } = useBounties();
+  const { bounties, isLoading, error, init } = useBounties();
   const { user } = useAuth();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     init();
   }, [init]);
-
-  useEffect(() => {
-    if (bounties.length > 0) {
-      setIsLoading(false);
-    }
-  }, [bounties]);
-
-  // Set a timeout to stop loading after 60 seconds
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (isLoading) {
-        setIsLoading(false);
-      }
-    }, 60 * 1000);
-
-    return () => clearTimeout(timeout);
-  }, [isLoading]);
 
   const filteredBounties = bounties.filter((bounty) => {
     const matchesSearch =
@@ -57,6 +40,20 @@ export default function BountiesPage() {
     }
     return sum + bounty.rewardSats;
   }, 0);
+
+  // Show error state if there's an error
+  if (error) {
+    return (
+      <div className="container mx-auto pt-4 px-4 sm:px-6 lg:px-8 py-16">
+        <PageErrorState type="bounties" onRetry={() => init()} />
+      </div>
+    );
+  }
+
+  // Show skeleton loader while loading
+  if (isLoading) {
+    return <PageSkeleton type="bounties" />;
+  }
 
   return (
     <div className="container mx-auto pt-4 px-4 sm:px-6 lg:px-8 py-16">
@@ -142,17 +139,7 @@ export default function BountiesPage() {
       </div>
 
       {/* Bounties Grid */}
-      {isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <LoadingSpinner className="h-8 w-8 mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Loading Bounties...</h3>
-            <p className="text-muted-foreground">
-              Fetching bounties from the network
-            </p>
-          </div>
-        </div>
-      ) : filteredBounties.length > 0 ? (
+      {filteredBounties.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredBounties.map((bounty) => (
             <BountyCard

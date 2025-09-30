@@ -3,7 +3,8 @@
 import { GrantCard } from '@/components/grant/grant-card';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { LoadingSpinner } from '@/components/ui/loading';
+import { PageErrorState } from '@/components/ui/error-state';
+import { PageSkeleton } from '@/components/ui/page-skeleton';
 import { profileService } from '@/services/profile-service';
 import { useAuth } from '@/store/auth';
 import { useGrants } from '@/store/grants';
@@ -21,9 +22,8 @@ type PriceRangeFilter =
   | '100000+';
 
 export default function GrantsPage() {
-  const { grants, init } = useGrants();
+  const { grants, isLoading, error, init } = useGrants();
   const { user } = useAuth();
-  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [priceRangeFilter, setPriceRangeFilter] =
@@ -32,23 +32,6 @@ export default function GrantsPage() {
   useEffect(() => {
     init();
   }, [init]);
-
-  useEffect(() => {
-    if (grants.length > 0) {
-      setIsLoading(false);
-    }
-  }, [grants]);
-
-  // Set a timeout to stop loading after 60 seconds
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (isLoading) {
-        setIsLoading(false);
-      }
-    }, 60 * 1000);
-
-    return () => clearTimeout(timeout);
-  }, [isLoading]);
 
   // Filter grants based on search and filters
   const filteredGrants = useMemo(() => {
@@ -108,6 +91,20 @@ export default function GrantsPage() {
   const activeGrantsCount = grants.filter((grant) =>
     grantUtils.isActive(grant)
   ).length;
+
+  // Show error state if there's an error
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <PageErrorState type="grants" onRetry={() => init()} />
+      </div>
+    );
+  }
+
+  // Show skeleton loader while loading
+  if (isLoading) {
+    return <PageSkeleton type="grants" />;
+  }
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -220,76 +217,64 @@ export default function GrantsPage() {
       </div>
 
       {/* Grants List */}
-      {isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <LoadingSpinner className="h-8 w-8 mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Loading Grants...</h3>
-            <p className="text-muted-foreground">
-              Fetching grants from the network
-            </p>
+      <div id="grants-list">
+        {filteredGrants.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredGrants.map((grant) => {
+              const userHexPubkey = user?.pubkey
+                ? profileService.getHexFromNpub(user.pubkey)
+                : undefined;
+              return (
+                <GrantCard
+                  key={grant.id}
+                  grant={grant}
+                  isOwner={userHexPubkey === grant.sponsorPubkey}
+                  currentUserPubkey={user?.pubkey}
+                />
+              );
+            })}
           </div>
-        </div>
-      ) : (
-        <div id="grants-list">
-          {filteredGrants.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredGrants.map((grant) => {
-                const userHexPubkey = user?.pubkey
-                  ? profileService.getHexFromNpub(user.pubkey)
-                  : undefined;
-                return (
-                  <GrantCard
-                    key={grant.id}
-                    grant={grant}
-                    isOwner={userHexPubkey === grant.sponsorPubkey}
-                    currentUserPubkey={user?.pubkey}
-                  />
-                );
-              })}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <Award className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">
-                {searchQuery ||
-                statusFilter !== 'all' ||
-                priceRangeFilter !== 'all'
-                  ? 'No grants match your filters'
-                  : 'No grants yet'}
-              </h3>
-              <p className="text-muted-foreground mb-6">
-                {searchQuery ||
-                statusFilter !== 'all' ||
-                priceRangeFilter !== 'all'
-                  ? 'Try adjusting your search or filter criteria.'
-                  : 'Be the first to create a grant and start funding innovative projects.'}
-              </p>
+        ) : (
+          <div className="text-center py-12">
+            <Award className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">
               {searchQuery ||
               statusFilter !== 'all' ||
-              priceRangeFilter !== 'all' ? (
-                <Button
-                  onClick={() => {
-                    setSearchQuery('');
-                    setStatusFilter('all');
-                    setPriceRangeFilter('all');
-                  }}
-                  variant="outline"
-                >
-                  Clear Filters
+              priceRangeFilter !== 'all'
+                ? 'No grants match your filters'
+                : 'No grants yet'}
+            </h3>
+            <p className="text-muted-foreground mb-6">
+              {searchQuery ||
+              statusFilter !== 'all' ||
+              priceRangeFilter !== 'all'
+                ? 'Try adjusting your search or filter criteria.'
+                : 'Be the first to create a grant and start funding innovative projects.'}
+            </p>
+            {searchQuery ||
+            statusFilter !== 'all' ||
+            priceRangeFilter !== 'all' ? (
+              <Button
+                onClick={() => {
+                  setSearchQuery('');
+                  setStatusFilter('all');
+                  setPriceRangeFilter('all');
+                }}
+                variant="outline"
+              >
+                Clear Filters
+              </Button>
+            ) : (
+              <Link href="/grants/create">
+                <Button className="bg-green-600 hover:from-green-700 hover:to-emerald-700">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create First Grant
                 </Button>
-              ) : (
-                <Link href="/grants/create">
-                  <Button className="bg-green-600 hover:from-green-700 hover:to-emerald-700">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create First Grant
-                  </Button>
-                </Link>
-              )}
-            </div>
-          )}
-        </div>
-      )}
+              </Link>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -3,7 +3,8 @@
 import { GigCard } from '@/components/gig/gig-card';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { LoadingSpinner } from '@/components/ui/loading';
+import { PageErrorState } from '@/components/ui/error-state';
+import { PageSkeleton } from '@/components/ui/page-skeleton';
 import { profileService } from '@/services/profile-service';
 import { useAuth } from '@/store/auth';
 import { useGigs } from '@/store/gigs';
@@ -12,32 +13,14 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 export default function GigsPage() {
-  const { gigs, init } = useGigs();
+  const { gigs, isLoading, error, init } = useGigs();
   const { user } = useAuth();
-  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
   useEffect(() => {
     init();
   }, [init]);
-
-  useEffect(() => {
-    if (gigs.length > 0) {
-      setIsLoading(false);
-    }
-  }, [gigs]);
-
-  // Set a timeout to stop loading after 60 seconds
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (isLoading) {
-        setIsLoading(false);
-      }
-    }, 60 * 1000);
-
-    return () => clearTimeout(timeout);
-  }, [isLoading]);
 
   const filteredGigs = gigs.filter((gig) => {
     const searchText =
@@ -68,6 +51,20 @@ export default function GigsPage() {
   };
 
   const statusCounts = getStatusCounts();
+
+  // Show error state if there's an error
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <PageErrorState type="gigs" onRetry={() => init()} />
+      </div>
+    );
+  }
+
+  // Show skeleton loader while loading
+  if (isLoading) {
+    return <PageSkeleton type="gigs" />;
+  }
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -171,17 +168,7 @@ export default function GigsPage() {
       </div>
 
       {/* Gigs Grid */}
-      {isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <LoadingSpinner className="h-8 w-8 mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Loading Gigs...</h3>
-            <p className="text-muted-foreground">
-              Fetching gigs from the network
-            </p>
-          </div>
-        </div>
-      ) : filteredGigs.length > 0 ? (
+      {filteredGigs.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredGigs.map((gig) => {
             const userHexPubkey = user?.pubkey

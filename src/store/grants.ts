@@ -1,16 +1,21 @@
 'use client';
 
+import { cacheService } from '@/services/cache-service';
 import { grantService } from '@/services/grant-service';
 import { profileService } from '@/services/profile-service';
 import type { Grant } from '@/types/grant';
 import { create } from 'zustand';
 import { useAuth } from './auth';
+import { useCache } from './cache';
 
 export type KeyPair = { sk: string; pk: string };
 
 interface GrantsState {
   grants: Grant[];
+  isLoading: boolean;
+  error: string | null;
   systemKeys?: KeyPair;
+  unsubscribe?: () => void;
   init(): Promise<void>;
   getOrCreateSystemKeys(): Promise<KeyPair>;
   resetSystemKeys(): void;
@@ -65,58 +70,59 @@ interface GrantsState {
     rejectionReason?: string;
   }): Promise<void>;
   cancelGrant(input: { grantId: string; reason?: string }): Promise<void>;
+  refresh(): Promise<void>;
 }
 
-export const useGrants = create<GrantsState>((set, get) => ({
+export const useGrants = create<GrantsState>((set) => ({
   grants: [],
+  isLoading: false,
+  error: null,
   systemKeys: undefined,
 
   async init() {
     try {
-      const systemKeys = await get().getOrCreateSystemKeys();
-      grantService.setSystemKeys(systemKeys);
-      grantService.setOnChangeCallback(() => {
-        set({ grants: grantService.list() });
+      set({ isLoading: true, error: null });
+
+      // Use cache service for initialization
+      await cacheService.initializeGrants();
+
+      // Get data from cache
+      const cache = useCache.getState();
+      set({
+        grants: cache.grants,
+        isLoading: cache.isLoading.grants,
+        error: cache.errors.grants,
       });
-      grantService.startWatchers();
-      set({ grants: grantService.list(), systemKeys });
+
+      // Subscribe to cache changes
+      const unsubscribe = useCache.subscribe((state) => {
+        set({
+          grants: state.grants,
+          isLoading: state.isLoading.grants,
+          error: state.errors.grants,
+        });
+      });
+
+      // Store unsubscribe function for cleanup
+      set({ unsubscribe });
     } catch (error) {
       console.error('Failed to initialize grants:', error);
+      set({
+        error: error instanceof Error ? error.message : 'Unknown error',
+        isLoading: false,
+      });
     }
   },
 
   async getOrCreateSystemKeys(): Promise<KeyPair> {
-    const STORAGE_KEY = 'lightning-system-keys';
-
-    // Try to get existing system keys from localStorage
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        try {
-          const keys = JSON.parse(stored);
-          if (keys.sk && keys.pk) {
-            return keys;
-          }
-        } catch (error) {
-          console.warn('Failed to parse stored system keys:', error);
-        }
-      }
-    }
-
     // Fetch system keys from server
     try {
       const response = await fetch('/api/system-keys');
       if (!response.ok) {
         throw new Error('Failed to fetch system keys');
       }
-      const keys = await response.json();
-
-      // Store in localStorage for future use
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(keys));
-      }
-
-      return keys;
+      const { privateKey, publicKey } = await response.json();
+      return { sk: privateKey, pk: publicKey };
     } catch (error) {
       console.error('Failed to get system keys:', error);
       throw error;
@@ -125,9 +131,6 @@ export const useGrants = create<GrantsState>((set, get) => ({
 
   resetSystemKeys() {
     set({ systemKeys: undefined });
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('lightning-system-keys');
-    }
   },
 
   async createGrant(input) {
@@ -144,7 +147,7 @@ export const useGrants = create<GrantsState>((set, get) => ({
       throw new Error(result.error || 'Failed to create grant');
     }
 
-    set({ grants: grantService.list() });
+    // Cache will be updated via the onChangeCallback
   },
 
   async applyToGrant(input) {
@@ -161,7 +164,7 @@ export const useGrants = create<GrantsState>((set, get) => ({
       throw new Error(result.error || 'Failed to apply to grant');
     }
 
-    set({ grants: grantService.list() });
+    // Cache will be updated via the onChangeCallback
   },
 
   async selectApplication(input) {
@@ -181,7 +184,7 @@ export const useGrants = create<GrantsState>((set, get) => ({
       throw new Error(result.error || 'Failed to select application');
     }
 
-    set({ grants: grantService.list() });
+    // Cache will be updated via the onChangeCallback
   },
 
   async fundTranche(input) {
@@ -194,7 +197,7 @@ export const useGrants = create<GrantsState>((set, get) => ({
     };
 
     const result = await grantService.fundTranche({ ...input, sponsorKeys });
-    set({ grants: grantService.list() });
+    // Cache will be updated via the onChangeCallback
     return result;
   },
 
@@ -215,7 +218,7 @@ export const useGrants = create<GrantsState>((set, get) => ({
       throw new Error(result.error || 'Failed to submit tranche');
     }
 
-    set({ grants: grantService.list() });
+    // Cache will be updated via the onChangeCallback
   },
 
   async reviewTranche(input) {
@@ -232,7 +235,7 @@ export const useGrants = create<GrantsState>((set, get) => ({
       throw new Error(result.error || 'Failed to review tranche');
     }
 
-    set({ grants: grantService.list() });
+    // Cache will be updated via the onChangeCallback
   },
 
   async cancelGrant(input) {
@@ -249,6 +252,16 @@ export const useGrants = create<GrantsState>((set, get) => ({
       throw new Error(result.error || 'Failed to cancel grant');
     }
 
-    set({ grants: grantService.list() });
+    // Cache will be updated via the onChangeCallback
+  },
+
+  async refresh() {
+    await cacheService.refresh('grants');
+    const cache = useCache.getState();
+    set({
+      grants: cache.grants,
+      isLoading: cache.isLoading.grants,
+      error: cache.errors.grants,
+    });
   },
 }));

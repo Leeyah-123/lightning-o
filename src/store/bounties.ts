@@ -1,17 +1,22 @@
 'use client';
 
 import { bountyService } from '@/services/bounty-service';
+import { cacheService } from '@/services/cache-service';
 import { nostrService } from '@/services/nostr-service';
 import { profileService } from '@/services/profile-service';
 import type { Bounty } from '@/types/bounty';
 import { create } from 'zustand';
 import { useAuth } from './auth';
+import { useCache } from './cache';
 
 export type KeyPair = { sk: string; pk: string };
 
 interface BountiesState {
   bounties: Bounty[];
+  isLoading: boolean;
+  error: string | null;
   systemKeys?: KeyPair;
+  unsubscribe?: () => void;
   init(): Promise<void>;
   getOrCreateSystemKeys(): Promise<KeyPair>;
   resetSystemKeys(): void;
@@ -38,71 +43,62 @@ interface BountiesState {
     escrowTxId?: string;
     error?: string;
   }>;
-  refresh(): void;
+  refresh(): Promise<void>;
 }
 
-export const useBounties = create<BountiesState>((set, get) => ({
+export const useBounties = create<BountiesState>((set) => ({
   bounties: [],
+  isLoading: false,
+  error: null,
   async init() {
-    // Generate or retrieve system keys for platform operations
-    // These keys are used to sign platform events (bounty open, completed)
-    const systemKeys = await get().getOrCreateSystemKeys();
-    bountyService.setSystemKeys(systemKeys);
+    try {
+      set({ isLoading: true, error: null });
 
-    // Set up callback to update store when bounties change
-    bountyService.setOnChangeCallback(() => {
-      set({ bounties: bountyService.list() });
-    });
+      // Use cache service for initialization
+      await cacheService.initializeBounties();
 
-    bountyService.startWatchers();
-    set({ systemKeys, bounties: bountyService.list() });
+      // Get data from cache
+      const cache = useCache.getState();
+      set({
+        bounties: cache.bounties,
+        isLoading: cache.isLoading.bounties,
+        error: cache.errors.bounties,
+      });
+
+      // Subscribe to cache changes
+      const unsubscribe = useCache.subscribe((state) => {
+        set({
+          bounties: state.bounties,
+          isLoading: state.isLoading.bounties,
+          error: state.errors.bounties,
+        });
+      });
+
+      // Store unsubscribe function for cleanup
+      set({ unsubscribe });
+    } catch (error) {
+      console.error('Failed to initialize bounties:', error);
+      set({
+        error: error instanceof Error ? error.message : 'Unknown error',
+        isLoading: false,
+      });
+    }
   },
 
   async getOrCreateSystemKeys(): Promise<KeyPair> {
-    const STORAGE_KEY = 'lightning-system-keys';
-
-    // Try to get existing system keys from localStorage
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        try {
-          const keys = JSON.parse(stored);
-          if (keys.sk && keys.pk) {
-            return keys;
-          }
-        } catch (error) {
-          console.warn('Failed to parse stored system keys:', error);
-        }
-      }
-    }
-
     // Fetch system keys from server
     try {
       const response = await fetch('/api/system-keys');
       if (response.ok) {
         const { privateKey, publicKey } = await response.json();
-        const systemKeys = { sk: privateKey, pk: publicKey };
-
-        // Store in localStorage for persistence
-        if (typeof window !== 'undefined') {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(systemKeys));
-        }
-
-        return systemKeys;
+        return { sk: privateKey, pk: publicKey };
       }
     } catch (error) {
       console.warn('Failed to fetch system keys from server:', error);
     }
 
     // Fallback: Generate new system keys locally
-    const systemKeys = nostrService.generateKeys();
-
-    // Store in localStorage for persistence
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(systemKeys));
-    }
-
-    return systemKeys;
+    return nostrService.generateKeys();
   },
   async createBounty(input) {
     const { user } = useAuth.getState();
@@ -112,7 +108,7 @@ export const useBounties = create<BountiesState>((set, get) => ({
       pk: profileService.getHexFromNpub(user.pubkey),
     };
     await bountyService.create({ ...input, sponsorKeys });
-    set({ bounties: bountyService.list() });
+    // Cache will be updated via the onChangeCallback
   },
   async fundBounty(bountyId) {
     const { user } = useAuth.getState();
@@ -122,7 +118,7 @@ export const useBounties = create<BountiesState>((set, get) => ({
       pk: profileService.getHexFromNpub(user.pubkey),
     };
     const result = await bountyService.fund(bountyId, sponsorKeys);
-    set({ bounties: bountyService.list() });
+    // Cache will be updated via the onChangeCallback
     return result;
   },
   async completeBounty(bountyId, selectedSubmissionIds) {
@@ -133,7 +129,7 @@ export const useBounties = create<BountiesState>((set, get) => ({
       pk: profileService.getHexFromNpub(user.pubkey),
     };
     await bountyService.complete(bountyId, sponsorKeys, selectedSubmissionIds);
-    set({ bounties: bountyService.list() });
+    // Cache will be updated via the onChangeCallback
   },
 
   async submitToBounty(bountyId, content, lightningAddress) {
@@ -149,17 +145,19 @@ export const useBounties = create<BountiesState>((set, get) => ({
       content,
       lightningAddress
     );
-    set({ bounties: bountyService.list() });
+    // Cache will be updated via the onChangeCallback
   },
-  refresh() {
-    set({ bounties: bountyService.list() });
+  async refresh() {
+    await cacheService.refresh('bounties');
+    const cache = useCache.getState();
+    set({
+      bounties: cache.bounties,
+      isLoading: cache.isLoading.bounties,
+      error: cache.errors.bounties,
+    });
   },
 
   resetSystemKeys() {
-    const STORAGE_KEY = 'lightning-system-keys';
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem(STORAGE_KEY);
-    }
     const newSystemKeys = nostrService.generateKeys();
     bountyService.setSystemKeys(newSystemKeys);
     set({ systemKeys: newSystemKeys });
