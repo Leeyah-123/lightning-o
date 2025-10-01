@@ -99,7 +99,7 @@ export default function CreateGrantPage() {
 
     setIsSubmitting(true);
     try {
-      await createGrant({
+      const grant = await createGrant({
         ...data,
         tranches: data.tranches.map((t) => ({
           amount: t.amount,
@@ -114,7 +114,7 @@ export default function CreateGrantPage() {
           'Your grant has been published and is now accepting applications.',
       });
 
-      router.push('/grants');
+      router.push(`/grants/${grant.id}`);
     } catch (error) {
       toast({
         title: 'Failed to Create Grant',

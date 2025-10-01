@@ -33,7 +33,7 @@ interface GrantsState {
       maxAmount?: number;
       description: string;
     }>;
-  }): Promise<void>;
+  }): Promise<Grant>;
   applyToGrant(input: {
     grantId: string;
     portfolioLink?: string;
@@ -133,7 +133,7 @@ export const useGrants = create<GrantsState>((set) => ({
     set({ systemKeys: undefined });
   },
 
-  async createGrant(input) {
+  async createGrant(input): Promise<Grant> {
     const { user } = useAuth.getState();
     if (!user) throw new Error('Not authenticated');
 
@@ -143,10 +143,11 @@ export const useGrants = create<GrantsState>((set) => ({
     };
 
     const result = await grantService.createGrant({ ...input, sponsorKeys });
-    if (!result.success) {
+    if (!result.success || !result.grant) {
       throw new Error(result.error || 'Failed to create grant');
     }
 
+    return result.grant;
     // Cache will be updated via the onChangeCallback
   },
 

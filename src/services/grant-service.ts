@@ -69,7 +69,7 @@ class GrantService {
       description: string;
     }>;
     sponsorKeys: NostrKeys;
-  }): Promise<{ success: boolean; grantId?: string; error?: string }> {
+  }): Promise<{ success: boolean; error?: string; grant: Grant | null }> {
     try {
       const grantId = uuidv4();
       const now = Date.now();
@@ -123,13 +123,14 @@ class GrantService {
       );
       this.notifyChange();
 
-      return { success: true, grantId: grant.id };
+      return { success: true, grant };
     } catch (error) {
       console.error('Failed to create grant:', error);
       return {
         success: false,
         error:
           error instanceof Error ? error.message : 'Failed to create grant',
+        grant: null,
       };
     }
   }

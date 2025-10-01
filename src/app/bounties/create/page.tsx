@@ -65,8 +65,8 @@ export default function CreateBountyPage() {
 
     setIsSubmitting(true);
     try {
-      await createBounty(data);
-      router.push('/bounties');
+      const bounty = await createBounty(data);
+      router.push(`/bounties/${bounty.id}`);
     } catch (error) {
       console.error('Failed to create bounty:', error);
       alert('Failed to create bounty. Please try again.');

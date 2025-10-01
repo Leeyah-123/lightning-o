@@ -28,7 +28,7 @@ interface GigsState {
       minSats: number;
       maxSats: number;
     };
-  }): Promise<void>;
+  }): Promise<Gig>;
   applyToGig(input: {
     gigId: string;
     portfolioLink?: string;
@@ -120,14 +120,14 @@ export const useGigs = create<GigsState>((set) => ({
     return nostrService.generateKeys();
   },
 
-  async createGig(input) {
+  async createGig(input): Promise<Gig> {
     const { user } = useAuth.getState();
     if (!user) throw new Error('Not authenticated');
     const sponsorKeys = {
       sk: profileService.getHexFromNsec(user.secretKey),
       pk: profileService.getHexFromNpub(user.pubkey),
     };
-    await gigService.create({ ...input, sponsorKeys });
+    return gigService.create({ ...input, sponsorKeys });
     // Cache will be updated via the onChangeCallback
   },
 

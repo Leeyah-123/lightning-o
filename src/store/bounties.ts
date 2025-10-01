@@ -27,7 +27,7 @@ interface BountiesState {
     rewardSats: number | number[];
     submissionDeadline: Date;
     judgingDeadline: Date;
-  }): Promise<void>;
+  }): Promise<Bounty>;
   submitToBounty(
     bountyId: string,
     content: string,
@@ -100,14 +100,14 @@ export const useBounties = create<BountiesState>((set) => ({
     // Fallback: Generate new system keys locally
     return nostrService.generateKeys();
   },
-  async createBounty(input) {
+  async createBounty(input): Promise<Bounty> {
     const { user } = useAuth.getState();
     if (!user) throw new Error('Not authenticated');
     const sponsorKeys = {
       sk: profileService.getHexFromNsec(user.secretKey),
       pk: profileService.getHexFromNpub(user.pubkey),
     };
-    await bountyService.create({ ...input, sponsorKeys });
+    return bountyService.create({ ...input, sponsorKeys });
     // Cache will be updated via the onChangeCallback
   },
   async fundBounty(bountyId) {

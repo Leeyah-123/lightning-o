@@ -65,7 +65,7 @@ export default function CreateGigPage() {
   const onSubmit = async (data: CreateGigFormData) => {
     setIsCreating(true);
     try {
-      await createGig(data);
+      const gig = await createGig(data);
       toast.toast({
         title: 'Gig Created Successfully',
         description:
@@ -75,7 +75,7 @@ export default function CreateGigPage() {
         },
       });
       reset();
-      router.push('/gigs');
+      router.push(`/gigs/${gig.id}`);
     } catch (error) {
       console.error('Gig creation error:', error);
       toast.toast({
