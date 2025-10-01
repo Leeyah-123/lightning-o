@@ -175,14 +175,11 @@ export default function GigsPage() {
       {filteredGigs.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredGigs.map((gig) => {
-            const userHexPubkey = user?.pubkey
-              ? profileService.getHexFromNpub(user.pubkey)
-              : undefined;
             return (
               <GigCard
                 key={gig.id}
                 gig={gig}
-                isOwner={userHexPubkey === gig.sponsorPubkey}
+                isOwner={user?.pubkey === gig.sponsorPubkey}
                 currentUserPubkey={user?.pubkey}
               />
             );

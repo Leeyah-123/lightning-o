@@ -104,8 +104,8 @@ export const useBounties = create<BountiesState>((set) => ({
     const { user } = useAuth.getState();
     if (!user) throw new Error('Not authenticated');
     const sponsorKeys = {
-      sk: profileService.getHexFromNsec(user.secretKey),
-      pk: profileService.getHexFromNpub(user.pubkey),
+      sk: user.secretKey,
+      pk: user.pubkey,
     };
     return bountyService.create({ ...input, sponsorKeys });
     // Cache will be updated via the onChangeCallback
@@ -114,8 +114,8 @@ export const useBounties = create<BountiesState>((set) => ({
     const { user } = useAuth.getState();
     if (!user) throw new Error('Not authenticated');
     const sponsorKeys = {
-      sk: profileService.getHexFromNsec(user.secretKey),
-      pk: profileService.getHexFromNpub(user.pubkey),
+      sk: user.secretKey,
+      pk: user.pubkey,
     };
     const result = await bountyService.fund(bountyId, sponsorKeys);
     // Cache will be updated via the onChangeCallback
@@ -125,8 +125,8 @@ export const useBounties = create<BountiesState>((set) => ({
     const { user } = useAuth.getState();
     if (!user) throw new Error('Not authenticated');
     const sponsorKeys = {
-      sk: profileService.getHexFromNsec(user.secretKey),
-      pk: profileService.getHexFromNpub(user.pubkey),
+      sk: user.secretKey,
+      pk: user.pubkey,
     };
     await bountyService.complete(bountyId, sponsorKeys, selectedSubmissionIds);
     // Cache will be updated via the onChangeCallback
@@ -136,8 +136,8 @@ export const useBounties = create<BountiesState>((set) => ({
     const { user } = useAuth.getState();
     if (!user) throw new Error('Not authenticated');
     const submitterKeys = {
-      sk: profileService.getHexFromNsec(user.secretKey),
-      pk: profileService.getHexFromNpub(user.pubkey),
+      sk: user.secretKey,
+      pk: user.pubkey,
     };
     await bountyService.submitToBounty(
       bountyId,

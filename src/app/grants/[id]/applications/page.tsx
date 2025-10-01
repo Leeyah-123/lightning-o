@@ -38,10 +38,7 @@ export default function ApplicationsPage({ params }: ApplicationsPageProps) {
   const { id } = use(params);
 
   // Check if user is the grant owner
-  const userHexPubkey = user?.pubkey
-    ? profileService.getHexFromNpub(user.pubkey)
-    : undefined;
-  const isOwner = grant && userHexPubkey === grant.sponsorPubkey;
+  const isOwner = grant && user?.pubkey === grant.sponsorPubkey;
 
   useEffect(() => {
     init();

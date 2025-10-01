@@ -111,25 +111,15 @@ export default function GrantDetailPage({ params }: GrantDetailPageProps) {
     );
   }
 
-  const userHexPubkey = user?.pubkey
-    ? profileService.getHexFromNpub(user.pubkey)
-    : undefined;
-  const isOwner = userHexPubkey === grant.sponsorPubkey;
+  const isOwner = user?.pubkey === grant.sponsorPubkey;
   const hasUserApplied =
-    userHexPubkey &&
-    grant.applications.some(
-      (app) =>
-        profileService.getHexFromNpub(userHexPubkey) === app.applicantPubkey
-    );
+    user?.pubkey &&
+    grant.applications.some((app) => user.pubkey === app.applicantPubkey);
   const isUserSelected =
-    userHexPubkey &&
+    user?.pubkey &&
     grant.selectedApplicationIds.some((appId) => {
       const application = grant.applications.find((app) => app.id === appId);
-      return (
-        application &&
-        profileService.getHexFromNpub(userHexPubkey) ===
-          application.applicantPubkey
-      );
+      return application && user.pubkey === application.applicantPubkey;
     });
 
   const displayStatus = grantUtils.getDisplayStatus(grant);

@@ -225,14 +225,11 @@ export default function GrantsPage() {
         {filteredGrants.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredGrants.map((grant) => {
-              const userHexPubkey = user?.pubkey
-                ? profileService.getHexFromNpub(user.pubkey)
-                : undefined;
               return (
                 <GrantCard
                   key={grant.id}
                   grant={grant}
-                  isOwner={userHexPubkey === grant.sponsorPubkey}
+                  isOwner={user?.pubkey === grant.sponsorPubkey}
                   currentUserPubkey={user?.pubkey}
                 />
               );

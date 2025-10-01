@@ -4,7 +4,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/lib/hooks/use-toast';
-import { profileService } from '@/services/profile-service';
 import { useGrants } from '@/store/grants';
 import type { Grant } from '@/types/grant';
 import { grantUtils } from '@/types/grant';
@@ -35,21 +34,14 @@ export function GrantCard({
   // Check if current user has applied
   const hasUserApplied =
     currentUserPubkey &&
-    grant.applications.some(
-      (app) =>
-        profileService.getHexFromNpub(currentUserPubkey) === app.applicantPubkey
-    );
+    grant.applications.some((app) => currentUserPubkey === app.applicantPubkey);
 
   // Check if current user is selected
   const isUserSelected =
     currentUserPubkey &&
     grant.selectedApplicationIds.some((appId) => {
       const application = grant.applications.find((app) => app.id === appId);
-      return (
-        application &&
-        profileService.getHexFromNpub(currentUserPubkey) ===
-          application.applicantPubkey
-      );
+      return application && currentUserPubkey === application.applicantPubkey;
     });
 
   const handleViewDetails = () => {

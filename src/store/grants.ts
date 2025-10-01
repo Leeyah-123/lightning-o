@@ -138,8 +138,8 @@ export const useGrants = create<GrantsState>((set) => ({
     if (!user) throw new Error('Not authenticated');
 
     const sponsorKeys = {
-      sk: profileService.getHexFromNsec(user.secretKey),
-      pk: profileService.getHexFromNpub(user.pubkey),
+      sk: user.secretKey,
+      pk: user.pubkey,
     };
 
     const result = await grantService.createGrant({ ...input, sponsorKeys });
@@ -156,8 +156,8 @@ export const useGrants = create<GrantsState>((set) => ({
     if (!user) throw new Error('Not authenticated');
 
     const applicantKeys = {
-      sk: profileService.getHexFromNsec(user.secretKey),
-      pk: profileService.getHexFromNpub(user.pubkey),
+      sk: user.secretKey,
+      pk: user.pubkey,
     };
 
     const result = await grantService.applyToGrant({ ...input, applicantKeys });
@@ -173,8 +173,8 @@ export const useGrants = create<GrantsState>((set) => ({
     if (!user) throw new Error('Not authenticated');
 
     const sponsorKeys = {
-      sk: profileService.getHexFromNsec(user.secretKey),
-      pk: profileService.getHexFromNpub(user.pubkey),
+      sk: user.secretKey,
+      pk: user.pubkey,
     };
 
     const result = await grantService.selectApplication({
@@ -193,8 +193,8 @@ export const useGrants = create<GrantsState>((set) => ({
     if (!user) throw new Error('Not authenticated');
 
     const sponsorKeys = {
-      sk: profileService.getHexFromNsec(user.secretKey),
-      pk: profileService.getHexFromNpub(user.pubkey),
+      sk: user.secretKey,
+      pk: user.pubkey,
     };
 
     const result = await grantService.fundTranche({ ...input, sponsorKeys });
@@ -207,8 +207,8 @@ export const useGrants = create<GrantsState>((set) => ({
     if (!user) throw new Error('Not authenticated');
 
     const submitterKeys = {
-      sk: profileService.getHexFromNsec(user.secretKey),
-      pk: profileService.getHexFromNpub(user.pubkey),
+      sk: user.secretKey,
+      pk: user.pubkey,
     };
 
     const result = await grantService.submitTranche({
@@ -227,8 +227,8 @@ export const useGrants = create<GrantsState>((set) => ({
     if (!user) throw new Error('Not authenticated');
 
     const sponsorKeys = {
-      sk: profileService.getHexFromNsec(user.secretKey),
-      pk: profileService.getHexFromNpub(user.pubkey),
+      sk: user.secretKey,
+      pk: user.pubkey,
     };
 
     const result = await grantService.reviewTranche({ ...input, sponsorKeys });
@@ -244,8 +244,8 @@ export const useGrants = create<GrantsState>((set) => ({
     if (!user) throw new Error('Not authenticated');
 
     const sponsorKeys = {
-      sk: profileService.getHexFromNsec(user.secretKey),
-      pk: profileService.getHexFromNpub(user.pubkey),
+      sk: user.secretKey,
+      pk: user.pubkey,
     };
 
     const result = await grantService.cancelGrant({ ...input, sponsorKeys });

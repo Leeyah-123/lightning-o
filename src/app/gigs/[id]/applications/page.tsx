@@ -5,7 +5,6 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/lib/hooks/use-toast';
 import { normalizeToNpub, truncateMiddle } from '@/lib/utils';
-import { profileService } from '@/services/profile-service';
 import { useAuth } from '@/store/auth';
 import { useGigs } from '@/store/gigs';
 import { gigUtils } from '@/types/gig';
@@ -81,10 +80,7 @@ export default function ApplicationsPage({ params }: ApplicationsPageProps) {
     );
   }
 
-  const userHexPubkey = user?.pubkey
-    ? profileService.getHexFromNpub(user.pubkey)
-    : undefined;
-  const isOwner = userHexPubkey === gig.sponsorPubkey;
+  const isOwner = user?.pubkey === gig.sponsorPubkey;
 
   if (!isOwner) {
     return (

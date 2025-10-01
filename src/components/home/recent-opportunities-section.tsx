@@ -4,7 +4,6 @@ import { BountyCard } from '@/components/bounty/bounty-card';
 import { GigCard } from '@/components/gig/gig-card';
 import { GrantCard } from '@/components/grant/grant-card';
 import { Button } from '@/components/ui/button';
-import { profileService } from '@/services/profile-service';
 import { useAuth } from '@/store/auth';
 import { Bounty } from '@/types/bounty';
 import { Gig } from '@/types/gig';
@@ -64,40 +63,31 @@ export function RecentOpportunitiesSection({
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {recentBounties.map((bounty) => {
-          const userHexPubkey = user?.pubkey
-            ? profileService.getHexFromNpub(user.pubkey)
-            : undefined;
           return (
             <BountyCard
               key={bounty.id}
               bounty={bounty}
-              isOwner={userHexPubkey === bounty.sponsorPubkey}
+              isOwner={user?.pubkey === bounty.sponsorPubkey}
               currentUserPubkey={user?.pubkey}
             />
           );
         })}
         {recentGigs.map((gig) => {
-          const userHexPubkey = user?.pubkey
-            ? profileService.getHexFromNpub(user.pubkey)
-            : undefined;
           return (
             <GigCard
               key={gig.id}
               gig={gig}
-              isOwner={userHexPubkey === gig.sponsorPubkey}
+              isOwner={user?.pubkey === gig.sponsorPubkey}
               currentUserPubkey={user?.pubkey}
             />
           );
         })}
         {recentGrants.map((grant) => {
-          const userHexPubkey = user?.pubkey
-            ? profileService.getHexFromNpub(user.pubkey)
-            : undefined;
           return (
             <GrantCard
               key={grant.id}
               grant={grant}
-              isOwner={userHexPubkey === grant.sponsorPubkey}
+              isOwner={user?.pubkey === grant.sponsorPubkey}
               currentUserPubkey={user?.pubkey}
             />
           );

@@ -11,7 +11,6 @@ import { LoadingSpinner } from '@/components/ui/loading';
 import { useToast } from '@/lib/hooks/use-toast';
 import { normalizeToNpub, truncateMiddle } from '@/lib/utils';
 import { lightningService } from '@/services/lightning-service';
-import { profileService } from '@/services/profile-service';
 import { useAuth } from '@/store/auth';
 import { useGigs } from '@/store/gigs';
 import {
@@ -129,21 +128,18 @@ export default function GigDetailPage({ params }: GigDetailPageProps) {
     );
   }
 
-  const userHexPubkey = user?.pubkey
-    ? profileService.getHexFromNpub(user.pubkey)
-    : undefined;
-  const isOwner = userHexPubkey === gig.sponsorPubkey;
+  const isOwner = user?.pubkey === gig.sponsorPubkey;
   const hasUserApplied =
-    userHexPubkey &&
+    user?.pubkey &&
     gig.applications.some(
-      (app: GigApplication) => app.applicantPubkey === userHexPubkey
+      (app: GigApplication) => app.applicantPubkey === user.pubkey
     );
   const isUserSelected =
-    userHexPubkey &&
+    user?.pubkey &&
     gig.selectedApplicationId &&
     gig.applications.find(
       (app: GigApplication) => app.id === gig.selectedApplicationId
-    )?.applicantPubkey === userHexPubkey;
+    )?.applicantPubkey === user.pubkey;
 
   const displayStatus = gigUtils.getDisplayStatus(gig);
   const canApply = gigUtils.canApply(gig);

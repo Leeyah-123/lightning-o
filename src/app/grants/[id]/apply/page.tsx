@@ -8,7 +8,6 @@ import { LoadingSpinner } from '@/components/ui/loading';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { customResolver } from '@/lib/form-validation';
 import { useToast } from '@/lib/hooks/use-toast';
-import { profileService } from '@/services/profile-service';
 import { useAuth } from '@/store/auth';
 import { useGrants } from '@/store/grants';
 import { grantUtils, type Grant } from '@/types/grant';
@@ -36,10 +35,7 @@ export default function ApplyPage({ params }: ApplyPageProps) {
   const { id } = use(params);
 
   // Check if user is the grant owner
-  const userHexPubkey = user?.pubkey
-    ? profileService.getHexFromNpub(user.pubkey)
-    : undefined;
-  const isOwner = grant && userHexPubkey === grant.sponsorPubkey;
+  const isOwner = grant && user?.pubkey === grant.sponsorPubkey;
 
   const {
     register,

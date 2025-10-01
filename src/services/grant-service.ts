@@ -32,7 +32,6 @@ class GrantService {
 
   setSystemKeys(keys: NostrKeys) {
     this.systemKeys = keys;
-    nostrService.setSystemKeys(keys);
   }
 
   setOnChangeCallback(callback: () => void) {

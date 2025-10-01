@@ -124,8 +124,8 @@ export const useGigs = create<GigsState>((set) => ({
     const { user } = useAuth.getState();
     if (!user) throw new Error('Not authenticated');
     const sponsorKeys = {
-      sk: profileService.getHexFromNsec(user.secretKey),
-      pk: profileService.getHexFromNpub(user.pubkey),
+      sk: user.secretKey,
+      pk: user.pubkey,
     };
     return gigService.create({ ...input, sponsorKeys });
     // Cache will be updated via the onChangeCallback
@@ -135,8 +135,8 @@ export const useGigs = create<GigsState>((set) => ({
     const { user } = useAuth.getState();
     if (!user) throw new Error('Not authenticated');
     const applicantKeys = {
-      sk: profileService.getHexFromNsec(user.secretKey),
-      pk: profileService.getHexFromNpub(user.pubkey),
+      sk: user.secretKey,
+      pk: user.pubkey,
     };
     await gigService.apply({ ...input, applicantKeys });
     // Cache will be updated via the onChangeCallback
@@ -146,8 +146,8 @@ export const useGigs = create<GigsState>((set) => ({
     const { user } = useAuth.getState();
     if (!user) throw new Error('Not authenticated');
     const sponsorKeys = {
-      sk: profileService.getHexFromNsec(user.secretKey),
-      pk: profileService.getHexFromNpub(user.pubkey),
+      sk: user.secretKey,
+      pk: user.pubkey,
     };
     await gigService.selectApplication({ ...input, sponsorKeys });
     // Cache will be updated via the onChangeCallback
@@ -157,8 +157,8 @@ export const useGigs = create<GigsState>((set) => ({
     const { user } = useAuth.getState();
     if (!user) throw new Error('Not authenticated');
     const sponsorKeys = {
-      sk: profileService.getHexFromNsec(user.secretKey),
-      pk: profileService.getHexFromNpub(user.pubkey),
+      sk: user.secretKey,
+      pk: user.pubkey,
     };
     const result = await gigService.fundMilestone({ ...input, sponsorKeys });
     // Cache will be updated via the onChangeCallback
@@ -169,8 +169,8 @@ export const useGigs = create<GigsState>((set) => ({
     const { user } = useAuth.getState();
     if (!user) throw new Error('Not authenticated');
     const submitterKeys = {
-      sk: profileService.getHexFromNsec(user.secretKey),
-      pk: profileService.getHexFromNpub(user.pubkey),
+      sk: user.secretKey,
+      pk: user.pubkey,
     };
     await gigService.submitMilestone({ ...input, submitterKeys });
     // Cache will be updated via the onChangeCallback
@@ -180,8 +180,8 @@ export const useGigs = create<GigsState>((set) => ({
     const { user } = useAuth.getState();
     if (!user) throw new Error('Not authenticated');
     const sponsorKeys = {
-      sk: profileService.getHexFromNsec(user.secretKey),
-      pk: profileService.getHexFromNpub(user.pubkey),
+      sk: user.secretKey,
+      pk: user.pubkey,
     };
     await gigService.reviewMilestone({ ...input, sponsorKeys });
     // Cache will be updated via the onChangeCallback
@@ -191,8 +191,8 @@ export const useGigs = create<GigsState>((set) => ({
     const { user } = useAuth.getState();
     if (!user) throw new Error('Not authenticated');
     const sponsorKeys = {
-      sk: profileService.getHexFromNsec(user.secretKey),
-      pk: profileService.getHexFromNpub(user.pubkey),
+      sk: user.secretKey,
+      pk: user.pubkey,
     };
     await gigService.cancelGig({ ...input, sponsorKeys });
     // Cache will be updated via the onChangeCallback

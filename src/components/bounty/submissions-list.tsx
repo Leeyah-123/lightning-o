@@ -300,9 +300,10 @@ export function SubmissionsList({
 
                   {expandedSubmission === submission.id && (
                     <div className="mt-3 p-3 bg-muted/50 rounded-md">
-                      <p className="text-sm whitespace-pre-wrap">
-                        {submission.content}
-                      </p>
+                      <div
+                        className="rich-text-content"
+                        dangerouslySetInnerHTML={{ __html: submission.content }}
+                      />
                     </div>
                   )}
                 </div>

@@ -23,15 +23,10 @@ export interface NostrKeys {
 class NostrService {
   private pool: SimplePool;
   private relays: string[];
-  private systemKeys?: NostrKeys;
 
   constructor(relays: string[]) {
     this.pool = new SimplePool();
     this.relays = relays;
-  }
-
-  setSystemKeys(keys: NostrKeys) {
-    this.systemKeys = keys;
   }
 
   generateKeys(): NostrKeys {
@@ -56,17 +51,15 @@ class NostrService {
     // Convert kind string to number
     const kindNumber = getKindNumber(kind);
 
-    // Convert bech32 keys to hex for internal use
-    const pkHex = this.getHexFromNpub(keys.pk);
-    const skHex = this.getHexFromNsec(keys.sk);
-
     const unsigned = {
       kind: kindNumber,
       created_at,
       tags,
       content: JSON.stringify(content),
-      pubkey: pkHex,
+      pubkey: keys.pk,
     };
+
+    const skHex = this.getHexFromNsec(keys.sk);
 
     const sk = Buffer.from(skHex, 'hex');
     const signed = finalizeEvent(unsigned, sk);
@@ -86,18 +79,15 @@ class NostrService {
     // Convert kind string to number
     const kindNumber = getKindNumber(kind);
 
-    // Convert bech32 keys to hex for internal use
-    const pkHex = this.getHexFromNpub(keys.pk);
-    const skHex = this.getHexFromNsec(keys.sk);
-
     const unsigned = {
       kind: kindNumber,
       created_at,
       tags,
       content: JSON.stringify(content),
-      pubkey: pkHex,
+      pubkey: keys.pk,
     };
 
+    const skHex = this.getHexFromNsec(keys.sk);
     const sk = Buffer.from(skHex, 'hex');
     const signed = finalizeEvent(unsigned, sk);
     if (!verifyEvent(signed)) throw new Error('Invalid signature');
@@ -116,18 +106,15 @@ class NostrService {
     // Convert kind string to number
     const kindNumber = getKindNumber(kind);
 
-    // Convert bech32 keys to hex for internal use
-    const pkHex = this.getHexFromNpub(keys.pk);
-    const skHex = this.getHexFromNsec(keys.sk);
-
     const unsigned = {
       kind: kindNumber,
       created_at,
       tags,
       content: JSON.stringify(content),
-      pubkey: pkHex,
+      pubkey: keys.pk,
     };
 
+    const skHex = this.getHexFromNsec(keys.sk);
     const sk = Buffer.from(skHex, 'hex');
     const signed = finalizeEvent(unsigned, sk);
     if (!verifyEvent(signed)) throw new Error('Invalid signature');
