@@ -7,7 +7,6 @@ import { PageErrorState } from '@/components/ui/error-state';
 import { Input } from '@/components/ui/input';
 import { PageSkeleton } from '@/components/ui/page-skeleton';
 import { Select } from '@/components/ui/select';
-import { useCacheInitialization } from '@/lib/hooks/use-cache-initialization';
 import { areKeysEqual } from '@/lib/utils';
 import { useAuth } from '@/store/auth';
 import { useBounties } from '@/store/bounties';
@@ -18,16 +17,13 @@ import { useEffect, useState } from 'react';
 export default function BountiesPage() {
   const { bounties, isLoading, error, init } = useBounties();
   const { user } = useAuth();
-  const { isInitialized, isLoading: cacheLoading } = useCacheInitialization();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
   useEffect(() => {
-    if (isInitialized) {
-      init();
-    }
-  }, [init, isInitialized]);
+    init();
+  }, [init]);
 
   const filteredBounties = bounties.filter((bounty) => {
     const matchesSearch =
@@ -55,7 +51,7 @@ export default function BountiesPage() {
   }
 
   // Show skeleton loader while loading
-  if (isLoading || cacheLoading) {
+  if (isLoading) {
     return <PageSkeleton type="bounties" />;
   }
 

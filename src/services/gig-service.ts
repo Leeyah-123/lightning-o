@@ -21,7 +21,6 @@ import { nostrService, type NostrKeys } from './nostr-service';
 class GigService {
   private gigs: Map<string, Gig> = new Map();
   private systemKeys?: NostrKeys;
-  private onChangeCallback?: () => void;
   private eventRouter: GigEventRouter;
 
   constructor() {
@@ -30,16 +29,6 @@ class GigService {
 
   setSystemKeys(keys: NostrKeys) {
     this.systemKeys = keys;
-  }
-
-  setOnChangeCallback(callback: () => void) {
-    this.onChangeCallback = callback;
-  }
-
-  private notifyChange() {
-    if (this.onChangeCallback) {
-      this.onChangeCallback();
-    }
   }
 
   list(): Gig[] {
@@ -54,7 +43,6 @@ class GigService {
     gigs.forEach((gig) => {
       this.gigs.set(gig.id, gig);
     });
-    this.notifyChange();
   }
 
   getById(id: string): Gig | undefined {
@@ -88,7 +76,6 @@ class GigService {
     };
 
     this.gigs.set(id, gig);
-    this.notifyChange();
 
     // Publish to Nostr
     const content: GigContentCreate = {
@@ -160,7 +147,6 @@ class GigService {
     gig.applications.push(application);
     gig.updatedAt = now;
     this.gigs.set(input.gigId, gig);
-    this.notifyChange();
 
     // Publish to Nostr
     const content: GigContentApply = {
@@ -211,7 +197,6 @@ class GigService {
     gig.status = 'application_selected';
     gig.updatedAt = Date.now();
     this.gigs.set(input.gigId, gig);
-    this.notifyChange();
 
     // Publish to Nostr
     const content: GigContentSelect = {
@@ -281,7 +266,6 @@ class GigService {
 
       gig.updatedAt = Date.now();
       this.gigs.set(input.gigId, gig);
-      this.notifyChange();
 
       return {
         success: true,
@@ -329,7 +313,6 @@ class GigService {
     milestone.submittedLightningAddress = input.lightningAddress;
     gig.updatedAt = Date.now();
     this.gigs.set(input.gigId, gig);
-    this.notifyChange();
 
     // Publish to Nostr
     const content: GigContentSubmitMilestone = {
@@ -423,7 +406,6 @@ class GigService {
 
     gig.updatedAt = Date.now();
     this.gigs.set(input.gigId, gig);
-    this.notifyChange();
 
     // Publish to Nostr
     const content: GigContentApproveMilestone | GigContentRejectMilestone =
@@ -471,7 +453,6 @@ class GigService {
     gig.status = 'completed';
     gig.updatedAt = Date.now();
     this.gigs.set(gigId, gig);
-    this.notifyChange();
 
     // Publish to Nostr
     const content: GigContentComplete = {
@@ -500,7 +481,6 @@ class GigService {
     gig.status = 'cancelled';
     gig.updatedAt = Date.now();
     this.gigs.set(input.gigId, gig);
-    this.notifyChange();
 
     // Publish to Nostr
     const content: GigContentCancel = {
@@ -571,7 +551,6 @@ class GigService {
       console.log(
         `Loaded ${sortedEvents.length} existing gig events, ${this.gigs.size} gigs in cache`
       );
-      this.notifyChange();
     } catch (error) {
       console.warn('Failed to load existing gig events:', error);
     }
@@ -702,7 +681,6 @@ class GigService {
                 gig.pendingInvoice = undefined;
                 gig.updatedAt = Date.now();
                 this.gigs.set(gig.id, gig);
-                this.notifyChange();
                 break;
               }
             }
@@ -756,7 +734,6 @@ class GigService {
             gig.status = 'in_progress';
             gig.updatedAt = Date.now();
             this.gigs.set(gig.id, gig);
-            this.notifyChange();
 
             return true;
           }
@@ -773,7 +750,6 @@ class GigService {
 
       // Only notify listeners if there were actual changes
       if (hasChanges) {
-        this.notifyChange();
       }
     } catch (error) {
       console.error(`Failed to handle gig event ${event.id}:`, error);

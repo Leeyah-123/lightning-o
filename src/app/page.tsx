@@ -8,7 +8,6 @@ import {
   SkeletonList,
   SkeletonStats,
 } from '@/components/ui/skeleton-loader';
-import { useCacheInitialization } from '@/lib/hooks/use-cache-initialization';
 import { validationUtils } from '@/lib/validation';
 import { useBounties } from '@/store/bounties';
 import { useGigs } from '@/store/gigs';
@@ -34,11 +33,6 @@ export default function Home() {
     error: grantsError,
     init: initGrants,
   } = useGrants();
-  const {
-    isInitialized,
-    isLoading: cacheLoading,
-    error: cacheError,
-  } = useCacheInitialization();
 
   // Initialize all stores when component mounts
   useEffect(() => {
@@ -48,9 +42,8 @@ export default function Home() {
   }, [initBounties, initGigs, initGrants]);
 
   // Check if any data is still loading
-  const isLoading =
-    cacheLoading || bountiesLoading || gigsLoading || grantsLoading;
-  const hasError = !!(cacheError || bountiesError || gigsError || grantsError);
+  const isLoading = bountiesLoading || gigsLoading || grantsLoading;
+  const hasError = !!(bountiesError || gigsError || grantsError);
 
   // Calculate combined stats
   const totalBountyReward = bounties.reduce(
@@ -97,7 +90,7 @@ export default function Home() {
   const recentGrants = grants.slice(0, 2);
 
   // Show loading state for hero section stats
-  if (!isInitialized || isLoading) {
+  if (isLoading) {
     return (
       <>
         <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-blue-950/20 dark:via-background dark:to-purple-950/20">
@@ -155,7 +148,6 @@ export default function Home() {
           recentBounties={recentBounties}
           recentGigs={recentGigs}
           recentGrants={recentGrants}
-          isInitialized={isInitialized}
         />
 
         <CtaSection />

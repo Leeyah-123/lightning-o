@@ -20,26 +20,14 @@ import { nostrService, type NostrKeys } from './nostr-service';
 class GrantService {
   private grants: Map<string, Grant> = new Map();
   private systemKeys?: NostrKeys;
-  private onChangeCallback?: () => void;
   private eventRouter: GrantEventRouter;
 
   constructor() {
-    this.eventRouter = new GrantEventRouter(
-      this.grants,
-      this.notifyChange.bind(this)
-    );
+    this.eventRouter = new GrantEventRouter(this.grants);
   }
 
   setSystemKeys(keys: NostrKeys) {
     this.systemKeys = keys;
-  }
-
-  setOnChangeCallback(callback: () => void) {
-    this.onChangeCallback = callback;
-  }
-
-  private notifyChange() {
-    this.onChangeCallback?.();
   }
 
   // Grant CRUD operations
@@ -55,7 +43,6 @@ class GrantService {
     grants.forEach((grant) => {
       this.grants.set(grant.id, grant);
     });
-    this.notifyChange();
   }
 
   findById(id: string): Grant | undefined {
@@ -129,7 +116,6 @@ class GrantService {
         'grant:create',
         content
       );
-      this.notifyChange();
 
       return { success: true, grant };
     } catch (error) {
@@ -187,7 +173,6 @@ class GrantService {
         'grant:apply',
         content
       );
-      this.notifyChange();
 
       return { success: true, applicationId: newApplication.id };
     } catch (error) {
@@ -244,7 +229,6 @@ class GrantService {
         'grant:select',
         content
       );
-      this.notifyChange();
 
       return { success: true };
     } catch (error) {
@@ -329,7 +313,6 @@ class GrantService {
 
       grant.updatedAt = Date.now();
       this.grants.set(input.grantId, grant);
-      this.notifyChange();
 
       return {
         success: true,
@@ -394,7 +377,6 @@ class GrantService {
         'grant:submit_tranche',
         content
       );
-      this.notifyChange();
 
       return { success: true };
     } catch (error) {
@@ -488,7 +470,6 @@ class GrantService {
           : 'grant:reject_tranche',
         content
       );
-      this.notifyChange();
 
       return { success: true };
     } catch (error) {
@@ -528,7 +509,6 @@ class GrantService {
         'grant:cancel',
         content
       );
-      this.notifyChange();
 
       return { success: true };
     } catch (error) {
@@ -555,7 +535,6 @@ class GrantService {
           tranche.status = 'funded';
           grant.updatedAt = Date.now();
           this.grants.set(grant.id, grant);
-          this.notifyChange();
           return true;
         }
       }
@@ -687,7 +666,6 @@ class GrantService {
                 grant.pendingInvoice = undefined;
                 grant.updatedAt = Date.now();
                 this.grants.set(grant.id, grant);
-                this.notifyChange();
                 break;
               }
             }

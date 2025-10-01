@@ -5,8 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { PageErrorState } from '@/components/ui/error-state';
 import { PageSkeleton } from '@/components/ui/page-skeleton';
-import { useCacheInitialization } from '@/lib/hooks/use-cache-initialization';
-import { profileService } from '@/services/profile-service';
 import { useAuth } from '@/store/auth';
 import { useGrants } from '@/store/grants';
 import { grantUtils } from '@/types/grant';
@@ -25,17 +23,14 @@ type PriceRangeFilter =
 export default function GrantsPage() {
   const { grants, isLoading, error, init } = useGrants();
   const { user } = useAuth();
-  const { isInitialized, isLoading: cacheLoading } = useCacheInitialization();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [priceRangeFilter, setPriceRangeFilter] =
     useState<PriceRangeFilter>('all');
 
   useEffect(() => {
-    if (isInitialized) {
-      init();
-    }
-  }, [init, isInitialized]);
+    init();
+  }, [init]);
 
   // Filter grants based on search and filters
   const filteredGrants = useMemo(() => {
@@ -106,7 +101,7 @@ export default function GrantsPage() {
   }
 
   // Show skeleton loader while loading
-  if (isLoading || cacheLoading) {
+  if (isLoading) {
     return <PageSkeleton type="grants" />;
   }
 

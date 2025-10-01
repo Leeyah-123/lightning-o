@@ -1,13 +1,10 @@
 'use client';
 
-import { cacheService } from '@/services/cache-service';
 import { gigService } from '@/services/gig-service';
 import { nostrService } from '@/services/nostr-service';
-import { profileService } from '@/services/profile-service';
 import type { Gig } from '@/types/gig';
 import { create } from 'zustand';
 import { useAuth } from './auth';
-import { useCache } from './cache';
 
 export type KeyPair = { sk: string; pk: string };
 
@@ -73,28 +70,15 @@ export const useGigs = create<GigsState>((set) => ({
     try {
       set({ isLoading: true, error: null });
 
-      // Use cache service for initialization
-      await cacheService.initializeGigs();
+      // Initialize gig service directly
+      gigService.startWatchers();
 
-      // Get data from cache
-      const cache = useCache.getState();
+      // Get data from service
+      const gigs = gigService.list();
       set({
-        gigs: cache.gigs,
-        isLoading: cache.isLoading.gigs,
-        error: cache.errors.gigs,
+        gigs,
+        isLoading: false,
       });
-
-      // Subscribe to cache changes
-      const unsubscribe = useCache.subscribe((state) => {
-        set({
-          gigs: state.gigs,
-          isLoading: state.isLoading.gigs,
-          error: state.errors.gigs,
-        });
-      });
-
-      // Store unsubscribe function for cleanup
-      set({ unsubscribe });
     } catch (error) {
       console.error('Failed to initialize gigs:', error);
       set({
@@ -199,13 +183,18 @@ export const useGigs = create<GigsState>((set) => ({
   },
 
   async refresh() {
-    await cacheService.refresh('gigs');
-    const cache = useCache.getState();
-    set({
-      gigs: cache.gigs,
-      isLoading: cache.isLoading.gigs,
-      error: cache.errors.gigs,
-    });
+    // Re-initialize the service
+    set({ isLoading: true, error: null });
+    try {
+      gigService.startWatchers();
+      const gigs = gigService.list();
+      set({ gigs, isLoading: false });
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : 'Unknown error',
+        isLoading: false,
+      });
+    }
   },
 
   resetSystemKeys() {

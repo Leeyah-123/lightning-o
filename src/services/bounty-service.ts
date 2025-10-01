@@ -14,7 +14,6 @@ import { nostrService, type NostrKeys } from './nostr-service';
 class BountyService {
   private bounties: Map<string, Bounty> = new Map();
   private systemKeys?: NostrKeys;
-  private onChangeCallback?: () => void;
   private eventRouter: BountyEventRouter;
 
   constructor() {
@@ -23,16 +22,6 @@ class BountyService {
 
   setSystemKeys(keys: NostrKeys) {
     this.systemKeys = keys;
-  }
-
-  setOnChangeCallback(callback: () => void) {
-    this.onChangeCallback = callback;
-  }
-
-  private notifyChange() {
-    if (this.onChangeCallback) {
-      this.onChangeCallback();
-    }
   }
 
   list(): Bounty[] {
@@ -47,7 +36,6 @@ class BountyService {
     bounties.forEach((bounty) => {
       this.bounties.set(bounty.id, bounty);
     });
-    this.notifyChange();
   }
 
   async create(input: {
@@ -74,7 +62,6 @@ class BountyService {
       createdAt: Date.now(),
     };
     this.bounties.set(id, bounty);
-    this.notifyChange();
 
     const content: BountyContent = {
       type: 'pending',
@@ -165,7 +152,6 @@ class BountyService {
     bounty.submissions = bounty.submissions || [];
     bounty.submissions.push(submission);
     this.bounties.set(bountyId, bounty);
-    this.notifyChange();
 
     // Publish submission event to Nostr
     const submissionContent: BountyContentSubmit = {
@@ -307,7 +293,6 @@ class BountyService {
         `Loaded ${sortedEvents.length} existing events, ${this.bounties.size} bounties in cache`
       );
       // Notify listeners that we've loaded existing events
-      this.notifyChange();
     } catch (error) {
       console.warn('Failed to load existing bounty events:', error);
     }
@@ -407,7 +392,6 @@ class BountyService {
           .then(() => {
             const updated = { ...b, status: 'open', escrowTxId } as Bounty;
             this.bounties.set(bountyId, updated);
-            this.notifyChange();
           });
       } else if (evt.type === 'payouts') {
         const { bountyId, proofs } = evt.data as {
@@ -427,7 +411,6 @@ class BountyService {
           }));
         const updated = { ...b, status: 'completed', winners } as Bounty;
         this.bounties.set(bountyId, updated);
-        this.notifyChange();
       }
     });
   }
@@ -466,7 +449,6 @@ class BountyService {
 
       // Only notify listeners if there were actual changes
       if (hasChanges) {
-        this.notifyChange();
       }
     } catch (error) {
       console.error(`Failed to handle bounty event ${event.id}:`, error);

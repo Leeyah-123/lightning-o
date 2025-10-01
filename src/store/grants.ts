@@ -1,12 +1,9 @@
 'use client';
 
-import { cacheService } from '@/services/cache-service';
 import { grantService } from '@/services/grant-service';
-import { profileService } from '@/services/profile-service';
 import type { Grant } from '@/types/grant';
 import { create } from 'zustand';
 import { useAuth } from './auth';
-import { useCache } from './cache';
 
 export type KeyPair = { sk: string; pk: string };
 
@@ -83,28 +80,15 @@ export const useGrants = create<GrantsState>((set) => ({
     try {
       set({ isLoading: true, error: null });
 
-      // Use cache service for initialization
-      await cacheService.initializeGrants();
+      // Initialize grant service directly
+      grantService.startWatchers();
 
-      // Get data from cache
-      const cache = useCache.getState();
+      // Get data from service
+      const grants = grantService.list();
       set({
-        grants: cache.grants,
-        isLoading: cache.isLoading.grants,
-        error: cache.errors.grants,
+        grants,
+        isLoading: false,
       });
-
-      // Subscribe to cache changes
-      const unsubscribe = useCache.subscribe((state) => {
-        set({
-          grants: state.grants,
-          isLoading: state.isLoading.grants,
-          error: state.errors.grants,
-        });
-      });
-
-      // Store unsubscribe function for cleanup
-      set({ unsubscribe });
     } catch (error) {
       console.error('Failed to initialize grants:', error);
       set({
@@ -257,12 +241,17 @@ export const useGrants = create<GrantsState>((set) => ({
   },
 
   async refresh() {
-    await cacheService.refresh('grants');
-    const cache = useCache.getState();
-    set({
-      grants: cache.grants,
-      isLoading: cache.isLoading.grants,
-      error: cache.errors.grants,
-    });
+    // Re-initialize the service
+    set({ isLoading: true, error: null });
+    try {
+      grantService.startWatchers();
+      const grants = grantService.list();
+      set({ grants, isLoading: false });
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : 'Unknown error',
+        isLoading: false,
+      });
+    }
   },
 }));

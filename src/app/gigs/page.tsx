@@ -5,8 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { PageErrorState } from '@/components/ui/error-state';
 import { PageSkeleton } from '@/components/ui/page-skeleton';
-import { useCacheInitialization } from '@/lib/hooks/use-cache-initialization';
-import { profileService } from '@/services/profile-service';
 import { useAuth } from '@/store/auth';
 import { useGigs } from '@/store/gigs';
 import { Briefcase, Plus, Search } from 'lucide-react';
@@ -16,15 +14,12 @@ import { useEffect, useState } from 'react';
 export default function GigsPage() {
   const { gigs, isLoading, error, init } = useGigs();
   const { user } = useAuth();
-  const { isInitialized, isLoading: cacheLoading } = useCacheInitialization();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
   useEffect(() => {
-    if (isInitialized) {
-      init();
-    }
-  }, [init, isInitialized]);
+    init();
+  }, [init]);
 
   const filteredGigs = gigs.filter((gig) => {
     const searchText =
@@ -66,7 +61,7 @@ export default function GigsPage() {
   }
 
   // Show skeleton loader while loading
-  if (isLoading || cacheLoading) {
+  if (isLoading) {
     return <PageSkeleton type="gigs" />;
   }
 

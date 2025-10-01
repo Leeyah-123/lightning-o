@@ -1,13 +1,10 @@
 'use client';
 
 import { bountyService } from '@/services/bounty-service';
-import { cacheService } from '@/services/cache-service';
 import { nostrService } from '@/services/nostr-service';
-import { profileService } from '@/services/profile-service';
 import type { Bounty } from '@/types/bounty';
 import { create } from 'zustand';
 import { useAuth } from './auth';
-import { useCache } from './cache';
 
 export type KeyPair = { sk: string; pk: string };
 
@@ -54,28 +51,15 @@ export const useBounties = create<BountiesState>((set) => ({
     try {
       set({ isLoading: true, error: null });
 
-      // Use cache service for initialization
-      await cacheService.initializeBounties();
+      // Initialize bounty service directly
+      bountyService.startWatchers();
 
-      // Get data from cache
-      const cache = useCache.getState();
+      // Get data from service
+      const bounties = bountyService.list();
       set({
-        bounties: cache.bounties,
-        isLoading: cache.isLoading.bounties,
-        error: cache.errors.bounties,
+        bounties,
+        isLoading: false,
       });
-
-      // Subscribe to cache changes
-      const unsubscribe = useCache.subscribe((state) => {
-        set({
-          bounties: state.bounties,
-          isLoading: state.isLoading.bounties,
-          error: state.errors.bounties,
-        });
-      });
-
-      // Store unsubscribe function for cleanup
-      set({ unsubscribe });
     } catch (error) {
       console.error('Failed to initialize bounties:', error);
       set({
@@ -148,13 +132,18 @@ export const useBounties = create<BountiesState>((set) => ({
     // Cache will be updated via the onChangeCallback
   },
   async refresh() {
-    await cacheService.refresh('bounties');
-    const cache = useCache.getState();
-    set({
-      bounties: cache.bounties,
-      isLoading: cache.isLoading.bounties,
-      error: cache.errors.bounties,
-    });
+    // Re-initialize the service
+    set({ isLoading: true, error: null });
+    try {
+      bountyService.startWatchers();
+      const bounties = bountyService.list();
+      set({ bounties, isLoading: false });
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : 'Unknown error',
+        isLoading: false,
+      });
+    }
   },
 
   resetSystemKeys() {

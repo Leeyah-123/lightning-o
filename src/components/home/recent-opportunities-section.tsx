@@ -15,22 +15,19 @@ interface RecentOpportunitiesSectionProps {
   recentBounties: Bounty[];
   recentGigs: Gig[];
   recentGrants: Grant[];
-  isInitialized: boolean;
 }
 
 export function RecentOpportunitiesSection({
   recentBounties,
   recentGigs,
   recentGrants,
-  isInitialized,
 }: RecentOpportunitiesSectionProps) {
   const { user } = useAuth();
 
   if (
-    !isInitialized ||
-    (recentBounties.length === 0 &&
-      recentGigs.length === 0 &&
-      recentGrants.length === 0)
+    recentBounties.length === 0 &&
+    recentGigs.length === 0 &&
+    recentGrants.length === 0
   ) {
     return null;
   }

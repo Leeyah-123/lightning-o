@@ -164,20 +164,11 @@ export class GrantEventHelpers {
  */
 export class GrantEventRouter {
   private grants: Map<string, Grant>;
-  private onChangeCallback?: () => void;
 
-  constructor(grants: Map<string, Grant>, onChangeCallback?: () => void) {
+  constructor(grants: Map<string, Grant>) {
     this.grants = grants;
-    this.onChangeCallback = onChangeCallback;
   }
 
-  setOnChangeCallback(callback: () => void) {
-    this.onChangeCallback = callback;
-  }
-
-  private notifyChange() {
-    this.onChangeCallback?.();
-  }
 
   /**
    * Route grant events to appropriate handlers
@@ -226,7 +217,7 @@ export class GrantEventRouter {
       }
 
       if (handled) {
-        this.notifyChange();
+        // Event was handled successfully
       }
 
       return handled;
