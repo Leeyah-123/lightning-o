@@ -77,14 +77,26 @@ export default function BountyDetailPage() {
         });
       }
     } catch (error) {
-      toast({
-        title: 'Funding Error',
-        description:
-          error instanceof Error
-            ? error.message
-            : 'An unexpected error occurred',
-        variant: 'destructive',
-      });
+      const errorMessage =
+        error instanceof Error ? error.message : 'An unexpected error occurred';
+
+      // Handle specific "Bounty not found" error
+      if (errorMessage === 'Bounty not found') {
+        toast({
+          title: 'Bounty Not Found',
+          description:
+            'The bounty is still loading. Please wait a moment and try again.',
+          variant: 'destructive',
+        });
+        // Try to refresh bounties
+        init();
+      } else {
+        toast({
+          title: 'Funding Error',
+          description: errorMessage,
+          variant: 'destructive',
+        });
+      }
     } finally {
       setIsProcessing(false);
     }
@@ -103,6 +115,8 @@ export default function BountyDetailPage() {
         request: lightningInvoice,
         reference: `dev-bounty-payment-${bounty.id}-${Date.now()}`,
         customerEmail: 'dev@lightning.app',
+        entityType: 'bounty',
+        entityId: bounty.id,
       }),
     });
 
@@ -211,13 +225,20 @@ export default function BountyDetailPage() {
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Bounty Not Found</h1>
           <p className="text-muted-foreground mb-4">
-            The bounty you&apos;re looking for doesn&apos;t exist or has been
-            removed.
+            The bounty you&apos;re looking for might still be loading from the
+            network. This can happen if you just created the bounty or refreshed
+            the page.
           </p>
-          <Button onClick={() => router.push('/bounties')}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Bounties
-          </Button>
+          <div className="flex gap-3 justify-center">
+            <Button onClick={() => init()}>
+              <Zap className="h-4 w-4 mr-2" />
+              Retry Loading
+            </Button>
+            <Button variant="outline" onClick={() => router.push('/bounties')}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Bounties
+            </Button>
+          </div>
         </div>
       </div>
     );

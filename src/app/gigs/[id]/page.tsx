@@ -108,15 +108,22 @@ export default function GigDetailPage({ params }: GigDetailPageProps) {
           <Briefcase className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h1 className="text-2xl font-bold mb-2">Gig not found</h1>
           <p className="text-muted-foreground mb-4">
-            The gig you&apos;re looking for doesn&apos;t exist or has been
-            removed.
+            The gig you&apos;re looking for might still be loading from the
+            network. This can happen if you just created the gig or refreshed
+            the page.
           </p>
-          <Link href="/gigs">
-            <Button variant="outline">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Gigs
+          <div className="flex gap-3 justify-center">
+            <Button onClick={() => init()}>
+              <Zap className="h-4 w-4 mr-2" />
+              Retry Loading
             </Button>
-          </Link>
+            <Link href="/gigs">
+              <Button variant="outline">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Gigs
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
     );

@@ -134,38 +134,37 @@ export function BountyCard({
   return (
     <Card className="group hover:shadow-lg transition-all duration-300 animate-fade-in">
       <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <CardTitle className="text-xl font-bold text-foreground group-hover:text-primary transition-colors truncate">
-              {bounty.title}
-            </CardTitle>
-            {isUserWinner && (
-              <Badge
-                variant="default"
-                className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-2 py-1 text-xs flex-shrink-0"
-              >
-                🏆 {userWinnerInfo?.rank}
-                {userWinnerInfo?.rank === 1
-                  ? 'st'
-                  : userWinnerInfo?.rank === 2
-                  ? 'nd'
-                  : userWinnerInfo?.rank === 3
-                  ? 'rd'
-                  : 'th'}
-              </Badge>
-            )}
-          </div>
-          <Badge
-            variant={getStatusVariant(displayStatus)}
-            className="flex items-center gap-1"
-          >
-            {getStatusIcon(displayStatus)}
-            {bountyUtils.getStatusText(displayStatus).toUpperCase()}
-          </Badge>
-        </div>
+        <Badge
+          variant={getStatusVariant(displayStatus)}
+          className="w-fit mx-auto flex items-center gap-1"
+        >
+          {getStatusIcon(displayStatus)}
+          {bountyUtils.getStatusText(displayStatus).toUpperCase()}
+        </Badge>
       </CardHeader>
 
       <CardContent className="space-y-4">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <CardTitle className="text-xl font-bold text-foreground group-hover:text-primary transition-colors truncate">
+            {bounty.title}
+          </CardTitle>
+          {isUserWinner && (
+            <Badge
+              variant="default"
+              className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-2 py-1 text-xs flex-shrink-0"
+            >
+              🏆 {userWinnerInfo?.rank}
+              {userWinnerInfo?.rank === 1
+                ? 'st'
+                : userWinnerInfo?.rank === 2
+                ? 'nd'
+                : userWinnerInfo?.rank === 3
+                ? 'rd'
+                : 'th'}
+            </Badge>
+          )}
+        </div>
+
         <p className="text-muted-foreground line-clamp-3 leading-relaxed">
           {bounty.shortDescription}
         </p>

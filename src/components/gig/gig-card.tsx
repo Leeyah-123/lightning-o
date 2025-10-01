@@ -204,31 +204,30 @@ export function GigCard({
   return (
     <Card className="group hover:shadow-lg transition-all duration-300 animate-fade-in">
       <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <CardTitle className="text-xl font-bold text-foreground group-hover:text-primary transition-colors truncate">
-              {gig.title}
-            </CardTitle>
-            {isUserSelected && (
-              <Badge
-                variant="default"
-                className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-2 py-1 text-xs flex-shrink-0"
-              >
-                🎯 Selected
-              </Badge>
-            )}
-          </div>
-          <Badge
-            variant={getStatusVariant(displayStatus)}
-            className="flex items-center gap-1"
-          >
-            {getStatusIcon(displayStatus)}
-            {gigUtils.getStatusText(displayStatus).toUpperCase()}
-          </Badge>
-        </div>
+        <Badge
+          variant={getStatusVariant(displayStatus)}
+          className="w-fit mx-auto flex items-center gap-1"
+        >
+          {getStatusIcon(displayStatus)}
+          {gigUtils.getStatusText(displayStatus).toUpperCase()}
+        </Badge>
       </CardHeader>
 
       <CardContent className="space-y-4">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <CardTitle className="text-xl font-bold text-foreground group-hover:text-primary transition-colors truncate">
+            {gig.title}
+          </CardTitle>
+          {isUserSelected && (
+            <Badge
+              variant="default"
+              className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-2 py-1 text-xs flex-shrink-0"
+            >
+              🎯 Selected
+            </Badge>
+          )}
+        </div>
+
         <p className="text-muted-foreground line-clamp-3 leading-relaxed">
           {gig.shortDescription}
         </p>

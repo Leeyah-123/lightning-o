@@ -20,6 +20,7 @@ import {
   FileText,
   Users,
   XCircle,
+  Zap,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -88,15 +89,22 @@ export default function GrantDetailPage({ params }: GrantDetailPageProps) {
             <Award className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h1 className="text-2xl font-bold mb-2">Grant not found</h1>
             <p className="text-muted-foreground mb-4">
-              The grant you&apos;re looking for doesn&apos;t exist or has been
-              removed.
+              The grant you&apos;re looking for might still be loading from the
+              network. This can happen if you just created the grant or
+              refreshed the page.
             </p>
-            <Link href="/grants">
-              <Button variant="outline">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Grants
+            <div className="flex gap-3 justify-center">
+              <Button onClick={() => init()}>
+                <Zap className="h-4 w-4 mr-2" />
+                Retry Loading
               </Button>
-            </Link>
+              <Link href="/grants">
+                <Button variant="outline">
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back to Grants
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </div>

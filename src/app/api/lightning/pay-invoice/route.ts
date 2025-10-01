@@ -7,7 +7,13 @@ const BITNOB_API_KEY = process.env.BITNOB_API_KEY;
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { request: paymentRequest, reference, customerEmail } = body;
+    const {
+      request: paymentRequest,
+      reference,
+      customerEmail,
+      entityType,
+      entityId,
+    } = body;
 
     if (!paymentRequest || !reference || !customerEmail) {
       return NextResponse.json(
@@ -31,6 +37,8 @@ export async function POST(request: NextRequest) {
           paymentRequest,
           customerEmail,
           createdAt: new Date().toISOString(),
+          entityType,
+          entityId,
         },
       };
 

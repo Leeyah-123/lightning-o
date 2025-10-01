@@ -8,7 +8,7 @@ import { profileService } from '@/services/profile-service';
 import { useGrants } from '@/store/grants';
 import type { Grant } from '@/types/grant';
 import { grantUtils } from '@/types/grant';
-import { Award, Calendar, DollarSign, Users } from 'lucide-react';
+import { Award, Calendar, DollarSign, ExternalLink, Users } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -93,28 +93,43 @@ export function GrantCard({
     }
   };
 
+  const getStatusVariant = (status: typeof displayStatus) => {
+    return grantUtils.getStatusBadgeVariant(status);
+  };
+
+  const getStatusIcon = (status: typeof displayStatus) => {
+    switch (status) {
+      case 'open':
+        return <Users className="h-3 w-3" />;
+      case 'closed':
+        return <ExternalLink className="h-3 w-3" />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <Card className="group hover:shadow-lg transition-all duration-200 border border-border/50 bg-card/80 backdrop-blur-sm">
       <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex-1 min-w-0">
-            <CardTitle className="text-lg font-semibold text-foreground mb-2 line-clamp-2">
-              {grant.title}
-            </CardTitle>
-            <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-              {grant.shortDescription}
-            </p>
-          </div>
-          <Badge
-            variant={grantUtils.getStatusBadgeVariant(displayStatus)}
-            className="ml-2 shrink-0"
-          >
-            {grantUtils.getStatusText(displayStatus)}
-          </Badge>
-        </div>
+        <Badge
+          variant={getStatusVariant(displayStatus)}
+          className="w-fit mx-auto flex items-center gap-1"
+        >
+          {getStatusIcon(displayStatus)}
+          {grantUtils.getStatusText(displayStatus)}
+        </Badge>
       </CardHeader>
 
       <CardContent className="pt-0">
+        <div className="flex-1 min-w-0">
+          <CardTitle className="text-lg font-semibold text-foreground mb-2 line-clamp-2">
+            {grant.title}
+          </CardTitle>
+          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+            {grant.shortDescription}
+          </p>
+        </div>
+
         <div className="space-y-4">
           {/* Reward and Stats */}
           <div className="grid grid-cols-2 gap-4 text-sm">

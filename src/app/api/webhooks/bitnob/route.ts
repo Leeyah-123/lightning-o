@@ -26,30 +26,53 @@ export async function POST(request: NextRequest) {
 
     console.log('Processed webhook event:', event);
 
-    const { paymentHash } = event.data as {
-      entityType: 'gig' | 'grant' | 'bounty';
+    const { paymentHash, entityType, entityId } = event.data as {
+      entityType?: 'gig' | 'grant' | 'bounty';
       paymentHash: string;
+      entityId?: string;
     };
 
-    // Handle gig milestone payments
+    // Handle different entity types
     if (event.type === 'funded' && paymentHash) {
-      const gigPaymentConfirmed = await gigService.handlePaymentConfirmation(
-        paymentHash
-      );
-      if (gigPaymentConfirmed) {
-        console.log('Gig milestone payment confirmed:', paymentHash);
+      if (entityType === 'bounty' && entityId) {
+        // Handle bounty funding
+        console.log('Bounty funding confirmed:', entityId);
+        // Emit the correct event structure for bounty funding
+        const bountyEvent = {
+          type: 'funded' as const,
+          data: {
+            entityType: 'bounty' as const,
+            bountyId: entityId,
+            escrowTxId: `dev-escrow-${Date.now()}`,
+            lightningInvoice: payload.data.paymentRequest || '',
+            amountSats: parseInt(payload.data.amount || '1000'),
+            paymentHash,
+          },
+        };
+        lightningService.emitEvent(bountyEvent);
       } else {
-        // Try grant tranche payments
-        const grantPaymentConfirmed =
-          await grantService.handlePaymentConfirmation(paymentHash);
-        if (grantPaymentConfirmed) {
-          console.log('Grant tranche payment confirmed:', paymentHash);
+        // Handle gig milestone payments
+        const gigPaymentConfirmed = await gigService.handlePaymentConfirmation(
+          paymentHash
+        );
+        if (gigPaymentConfirmed) {
+          console.log('Gig milestone payment confirmed:', paymentHash);
+        } else {
+          // Try grant tranche payments
+          const grantPaymentConfirmed =
+            await grantService.handlePaymentConfirmation(paymentHash);
+          if (grantPaymentConfirmed) {
+            console.log('Grant tranche payment confirmed:', paymentHash);
+          }
         }
-      }
-    }
 
-    // Emit the event to listeners
-    lightningService.emitEvent(event);
+        // Emit the original event for gigs and grants
+        lightningService.emitEvent(event);
+      }
+    } else {
+      // Emit the original event for other event types
+      lightningService.emitEvent(event);
+    }
 
     console.log('Webhook processed successfully:', event);
 

@@ -92,6 +92,12 @@ export type BitnobWebhookPayload = {
     status: string;
     created_at: string;
     paid_at?: string;
+    // Dev mode fields
+    amount?: string;
+    createdAt?: string;
+    paymentRequest?: string;
+    entityType?: string;
+    entityId?: string;
   };
 };
 
@@ -352,9 +358,11 @@ class LightningService {
           type: 'funded',
           data: {
             paymentHash: payload.data.id,
-            amount: parseInt(payload.data.tokens),
-            paidAt: payload.data.paid_at,
-            request: payload.data.request,
+            amount: parseInt(payload.data.tokens || payload.data.amount || '0'),
+            paidAt: payload.data.paid_at || payload.data.createdAt,
+            request: payload.data.request || payload.data.paymentRequest,
+            entityType: payload.data.entityType,
+            entityId: payload.data.entityId,
           },
         };
       case 'payment.failed':
