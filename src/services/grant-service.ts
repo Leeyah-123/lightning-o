@@ -857,7 +857,10 @@ class GrantService {
     content: GrantContent
   ): Promise<void> {
     try {
-      await this.eventRouter.handleEvent(event, content);
+      const hasChanges = await this.eventRouter.handleEvent(event, content);
+      if (hasChanges) {
+        this.notifyChange();
+      }
     } catch (error) {
       console.error('Error handling grant Nostr event:', error);
     }

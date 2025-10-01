@@ -787,6 +787,7 @@ class GigService {
 
       // Only notify listeners if there were actual changes
       if (hasChanges) {
+        this.notifyChange();
       }
     } catch (error) {
       console.error(`Failed to handle gig event ${event.id}:`, error);
