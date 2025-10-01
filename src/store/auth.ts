@@ -61,11 +61,9 @@ export const useAuth = create<AuthState>()(
 
       generateNewKeys: () => {
         const keys = nostrService.generateKeys();
-        const npub = profileService.getNpubFromPubkey(keys.pk);
-        const nsec = profileService.getNsecFromSecretKey(keys.sk);
         const user: User = {
-          pubkey: npub, // Store as npub format
-          secretKey: nsec, // Store as nsec format
+          pubkey: keys.pk, // Store as npub format
+          secretKey: keys.sk, // Store as nsec format
           isAuthenticated: true,
         };
         set({ user });
