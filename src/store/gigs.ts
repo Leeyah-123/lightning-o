@@ -73,7 +73,16 @@ export const useGigs = create<GigsState>((set) => ({
       // Initialize gig service directly
       gigService.startWatchers();
 
-      // Get data from service
+      // Subscribe to changes from the service
+      const unsubscribe = gigService.subscribeToChanges(() => {
+        const gigs = gigService.list();
+        set({ gigs });
+      });
+
+      // Store unsubscribe function for cleanup
+      set({ unsubscribe });
+
+      // Get initial data from service
       const gigs = gigService.list();
       set({
         gigs,

@@ -12,7 +12,6 @@ import { useToast } from '@/lib/hooks/use-toast';
 import { areKeysEqual, normalizeToNpub, truncateMiddle } from '@/lib/utils';
 import { validationUtils } from '@/lib/validation';
 import { lightningService } from '@/services/lightning-service';
-import { profileService } from '@/services/profile-service';
 import { useAuth } from '@/store/auth';
 import { useBounties } from '@/store/bounties';
 import type { Bounty, BountyDisplayStatus } from '@/types/bounty';

@@ -60,7 +60,6 @@ class NostrService {
     };
 
     const skHex = this.getHexFromNsec(keys.sk);
-
     const sk = Buffer.from(skHex, 'hex');
     const signed = finalizeEvent(unsigned, sk);
     if (!verifyEvent(signed)) throw new Error('Invalid signature');

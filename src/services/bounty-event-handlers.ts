@@ -88,7 +88,10 @@ export class BountyEventHelpers {
  * Individual event handlers for bounty events
  */
 export class BountyEventHandlers {
-  constructor(private bounties: Map<string, Bounty>) {}
+  constructor(
+    private bounties: Map<string, Bounty>,
+    private notifyChange?: () => void
+  ) {}
 
   /**
    * Handle bounty creation event
@@ -135,6 +138,7 @@ export class BountyEventHandlers {
       };
 
       this.bounties.set(pendingContent.bountyId, newBounty);
+      this.notifyChange?.();
       console.log(`Created bounty ${pendingContent.bountyId}`);
       return true;
     } else if (bounty.title === 'Loading...') {
@@ -215,6 +219,7 @@ export class BountyEventHandlers {
       };
 
       this.bounties.set(openContent.bountyId, placeholderBounty);
+      this.notifyChange?.();
       console.log(
         `Created placeholder bounty for open event: ${openContent.bountyId}`
       );
@@ -292,6 +297,7 @@ export class BountyEventHandlers {
       };
 
       this.bounties.set(completedContent.bountyId, placeholderBounty);
+      this.notifyChange?.();
       console.log(
         `Created placeholder bounty for completed event: ${completedContent.bountyId}`
       );
@@ -377,8 +383,8 @@ export class BountyEventHandlers {
 export class BountyEventRouter {
   private handlers: BountyEventHandlers;
 
-  constructor(bounties: Map<string, Bounty>) {
-    this.handlers = new BountyEventHandlers(bounties);
+  constructor(bounties: Map<string, Bounty>, notifyChange?: () => void) {
+    this.handlers = new BountyEventHandlers(bounties, notifyChange);
   }
 
   /**

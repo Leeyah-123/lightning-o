@@ -1,3 +1,4 @@
+import { bech32 } from 'bech32';
 import { z } from 'zod';
 
 // Common validation schemas
@@ -109,14 +110,46 @@ export const validationUtils = {
     return judgingDeadline > submissionDeadline;
   },
 
-  // Validate Nostr pubkey format (basic check)
+  // Validate Nostr pubkey format
   isValidPubkey: (pubkey: string): boolean => {
-    return /^[0-9a-f]{64}$/i.test(pubkey);
+    // Check if it's a bech32 npub string
+    if (/^npub1[0-9a-z]{58}$/i.test(pubkey)) {
+      try {
+        const decoded = bech32.decode(pubkey);
+        // Verify the prefix is 'npub' and data length is correct (32 bytes = 52 chars in bech32)
+        return decoded.prefix === 'npub' && decoded.words.length > 0;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    // Check if it's a 64-character hex string (32 bytes)
+    if (/^[0-9a-f]{64}$/i.test(pubkey)) {
+      return true; // Hex format is valid by regex alone
+    }
+
+    return false;
   },
 
-  // Validate Nostr secret key format (basic check)
+  // Validate Nostr secret key format
   isValidSecretKey: (secretKey: string): boolean => {
-    return /^[0-9a-f]{64}$/i.test(secretKey);
+    // Check if it's a bech32 nsec string
+    if (/^nsec1[0-9a-z]{58}$/i.test(secretKey)) {
+      try {
+        const decoded = bech32.decode(secretKey);
+        // Verify the prefix is 'nsec' and data length is correct
+        return decoded.prefix === 'nsec' && decoded.words.length > 0;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    // Check if it's a 64-character hex string (32 bytes)
+    if (/^[0-9a-f]{64}$/i.test(secretKey)) {
+      return true; // Hex format is valid by regex alone
+    }
+
+    return false;
   },
 
   // Sanitize string input

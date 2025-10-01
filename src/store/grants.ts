@@ -83,7 +83,16 @@ export const useGrants = create<GrantsState>((set) => ({
       // Initialize grant service directly
       grantService.startWatchers();
 
-      // Get data from service
+      // Subscribe to changes from the service
+      const unsubscribe = grantService.subscribeToChanges(() => {
+        const grants = grantService.list();
+        set({ grants });
+      });
+
+      // Store unsubscribe function for cleanup
+      set({ unsubscribe });
+
+      // Get initial data from service
       const grants = grantService.list();
       set({
         grants,

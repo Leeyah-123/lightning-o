@@ -21,6 +21,7 @@ class GrantService {
   private grants: Map<string, Grant> = new Map();
   private systemKeys?: NostrKeys;
   private eventRouter: GrantEventRouter;
+  private changeListeners: Set<() => void> = new Set();
 
   constructor() {
     this.eventRouter = new GrantEventRouter(this.grants);
@@ -28,6 +29,15 @@ class GrantService {
 
   setSystemKeys(keys: NostrKeys) {
     this.systemKeys = keys;
+  }
+
+  subscribeToChanges(callback: () => void) {
+    this.changeListeners.add(callback);
+    return () => this.changeListeners.delete(callback);
+  }
+
+  private notifyChange() {
+    this.changeListeners.forEach((callback) => callback());
   }
 
   // Grant CRUD operations
@@ -94,6 +104,7 @@ class GrantService {
       };
 
       this.grants.set(grantId, grant);
+      this.notifyChange();
 
       const content: GrantContentCreate = {
         type: 'create',
@@ -157,6 +168,8 @@ class GrantService {
       grant.applications.push(newApplication);
       grant.updatedAt = Date.now();
       this.grants.set(input.grantId, grant);
+      this.notifyChange();
+      this.notifyChange();
 
       const content: GrantContentApply = {
         type: 'apply',
@@ -215,6 +228,7 @@ class GrantService {
 
       grant.updatedAt = Date.now();
       this.grants.set(input.grantId, grant);
+      this.notifyChange();
 
       const content: GrantContentSelect = {
         type: 'select',
@@ -313,6 +327,7 @@ class GrantService {
 
       grant.updatedAt = Date.now();
       this.grants.set(input.grantId, grant);
+      this.notifyChange();
 
       return {
         success: true,
@@ -361,6 +376,7 @@ class GrantService {
       tranche.submittedLinks = input.links;
       grant.updatedAt = Date.now();
       this.grants.set(input.grantId, grant);
+      this.notifyChange();
 
       const content: GrantContentSubmitTranche = {
         type: 'submit_tranche',
@@ -442,6 +458,7 @@ class GrantService {
 
       grant.updatedAt = Date.now();
       this.grants.set(input.grantId, grant);
+      this.notifyChange();
 
       // Publish Nostr event
       const content: GrantContentApproveTranche | GrantContentRejectTranche =
@@ -496,6 +513,7 @@ class GrantService {
 
       grant.updatedAt = Date.now();
       this.grants.set(input.grantId, grant);
+      this.notifyChange();
 
       const content: GrantContentCancel = {
         type: 'cancel',
@@ -535,6 +553,7 @@ class GrantService {
           tranche.status = 'funded';
           grant.updatedAt = Date.now();
           this.grants.set(grant.id, grant);
+          this.notifyChange();
           return true;
         }
       }
@@ -666,6 +685,7 @@ class GrantService {
                 grant.pendingInvoice = undefined;
                 grant.updatedAt = Date.now();
                 this.grants.set(grant.id, grant);
+                this.notifyChange();
                 break;
               }
             }
@@ -726,6 +746,7 @@ class GrantService {
       }
 
       console.log(`Loaded ${sortedEvents.length} existing grant events`);
+      this.notifyChange();
     } catch (error) {
       console.error('Failed to load existing grant events:', error);
     }

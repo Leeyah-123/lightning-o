@@ -54,7 +54,16 @@ export const useBounties = create<BountiesState>((set) => ({
       // Initialize bounty service directly
       bountyService.startWatchers();
 
-      // Get data from service
+      // Subscribe to changes from the service
+      const unsubscribe = bountyService.subscribeToChanges(() => {
+        const bounties = bountyService.list();
+        set({ bounties });
+      });
+
+      // Store unsubscribe function for cleanup
+      set({ unsubscribe });
+
+      // Get initial data from service
       const bounties = bountyService.list();
       set({
         bounties,

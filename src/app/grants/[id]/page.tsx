@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoadingSpinner } from '@/components/ui/loading';
 import { useToast } from '@/lib/hooks/use-toast';
 import { formatOrdinal } from '@/lib/utils';
-import { profileService } from '@/services/profile-service';
 import { useAuth } from '@/store/auth';
 import { useGrants } from '@/store/grants';
 import { grantUtils, type Grant } from '@/types/grant';

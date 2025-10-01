@@ -7,7 +7,6 @@ import { LoadingSpinner } from '@/components/ui/loading';
 import { useToast } from '@/lib/hooks/use-toast';
 import { formatOrdinal, normalizeToNpub, truncateMiddle } from '@/lib/utils';
 import { lightningService } from '@/services/lightning-service';
-import { profileService } from '@/services/profile-service';
 import { useAuth } from '@/store/auth';
 import { useGrants } from '@/store/grants';
 import { grantUtils, type Grant, type GrantApplication } from '@/types/grant';
