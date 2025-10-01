@@ -1,4 +1,5 @@
 import { nostrValidation } from '@/lib/nostr-validation';
+import { KeyPair } from '@/store/bounties';
 import type { Gig, GigApplication, GigMilestone } from '@/types/gig';
 import type {
   GigContent,
@@ -25,11 +26,27 @@ class GigService {
   private changeListeners: Set<() => void> = new Set();
 
   constructor() {
+    this.getOrCreateSystemKeys().catch(console.error);
     this.eventRouter = new GigEventRouter(this.gigs);
   }
-
   setSystemKeys(keys: NostrKeys) {
     this.systemKeys = keys;
+  }
+
+  async getOrCreateSystemKeys(): Promise<KeyPair> {
+    // Fetch system keys from server
+    try {
+      const response = await fetch('/api/system-keys');
+      if (response.ok) {
+        const { privateKey, publicKey } = await response.json();
+        this.systemKeys = { sk: privateKey, pk: publicKey };
+      }
+    } catch (error) {
+      console.warn('Failed to fetch system keys from server:', error);
+    }
+
+    // Fallback: Generate new system keys locally
+    return nostrService.generateKeys();
   }
 
   subscribeToChanges(callback: () => void) {

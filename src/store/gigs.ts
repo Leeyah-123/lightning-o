@@ -1,7 +1,6 @@
 'use client';
 
 import { gigService } from '@/services/gig-service';
-import { nostrService } from '@/services/nostr-service';
 import type { Gig } from '@/types/gig';
 import { create } from 'zustand';
 import { useAuth } from './auth';
@@ -15,8 +14,6 @@ interface GigsState {
   systemKeys?: KeyPair;
   unsubscribe?: () => void;
   init(): Promise<void>;
-  getOrCreateSystemKeys(): Promise<KeyPair>;
-  resetSystemKeys(): void;
   createGig(input: {
     title: string;
     shortDescription: string;
@@ -95,22 +92,6 @@ export const useGigs = create<GigsState>((set) => ({
         isLoading: false,
       });
     }
-  },
-
-  async getOrCreateSystemKeys(): Promise<KeyPair> {
-    // Fetch system keys from server
-    try {
-      const response = await fetch('/api/system-keys');
-      if (response.ok) {
-        const { privateKey, publicKey } = await response.json();
-        return { sk: privateKey, pk: publicKey };
-      }
-    } catch (error) {
-      console.warn('Failed to fetch system keys from server:', error);
-    }
-
-    // Fallback: Generate new system keys locally
-    return nostrService.generateKeys();
   },
 
   async createGig(input): Promise<Gig> {
@@ -204,11 +185,5 @@ export const useGigs = create<GigsState>((set) => ({
         isLoading: false,
       });
     }
-  },
-
-  resetSystemKeys() {
-    const newSystemKeys = nostrService.generateKeys();
-    gigService.setSystemKeys(newSystemKeys);
-    set({ systemKeys: newSystemKeys });
   },
 }));

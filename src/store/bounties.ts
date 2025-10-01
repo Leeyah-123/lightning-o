@@ -1,7 +1,6 @@
 'use client';
 
 import { bountyService } from '@/services/bounty-service';
-import { nostrService } from '@/services/nostr-service';
 import type { Bounty } from '@/types/bounty';
 import { create } from 'zustand';
 import { useAuth } from './auth';
@@ -15,8 +14,6 @@ interface BountiesState {
   systemKeys?: KeyPair;
   unsubscribe?: () => void;
   init(): Promise<void>;
-  getOrCreateSystemKeys(): Promise<KeyPair>;
-  resetSystemKeys(): void;
   createBounty(input: {
     title: string;
     shortDescription: string;
@@ -78,21 +75,6 @@ export const useBounties = create<BountiesState>((set) => ({
     }
   },
 
-  async getOrCreateSystemKeys(): Promise<KeyPair> {
-    // Fetch system keys from server
-    try {
-      const response = await fetch('/api/system-keys');
-      if (response.ok) {
-        const { privateKey, publicKey } = await response.json();
-        return { sk: privateKey, pk: publicKey };
-      }
-    } catch (error) {
-      console.warn('Failed to fetch system keys from server:', error);
-    }
-
-    // Fallback: Generate new system keys locally
-    return nostrService.generateKeys();
-  },
   async createBounty(input): Promise<Bounty> {
     const { user } = useAuth.getState();
     if (!user) throw new Error('Not authenticated');
@@ -103,6 +85,7 @@ export const useBounties = create<BountiesState>((set) => ({
     return bountyService.create({ ...input, sponsorKeys });
     // Cache will be updated via the onChangeCallback
   },
+
   async fundBounty(bountyId) {
     const { user } = useAuth.getState();
     if (!user) throw new Error('Not authenticated');
@@ -114,6 +97,7 @@ export const useBounties = create<BountiesState>((set) => ({
     // Cache will be updated via the onChangeCallback
     return result;
   },
+
   async completeBounty(bountyId, selectedSubmissionIds) {
     const { user } = useAuth.getState();
     if (!user) throw new Error('Not authenticated');
@@ -140,6 +124,7 @@ export const useBounties = create<BountiesState>((set) => ({
     );
     // Cache will be updated via the onChangeCallback
   },
+
   async refresh() {
     // Re-initialize the service
     set({ isLoading: true, error: null });
@@ -153,11 +138,5 @@ export const useBounties = create<BountiesState>((set) => ({
         isLoading: false,
       });
     }
-  },
-
-  resetSystemKeys() {
-    const newSystemKeys = nostrService.generateKeys();
-    bountyService.setSystemKeys(newSystemKeys);
-    set({ systemKeys: newSystemKeys });
   },
 }));

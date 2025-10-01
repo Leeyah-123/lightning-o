@@ -14,8 +14,6 @@ interface GrantsState {
   systemKeys?: KeyPair;
   unsubscribe?: () => void;
   init(): Promise<void>;
-  getOrCreateSystemKeys(): Promise<KeyPair>;
-  resetSystemKeys(): void;
   createGrant(input: {
     title: string;
     shortDescription: string;
@@ -105,25 +103,6 @@ export const useGrants = create<GrantsState>((set) => ({
         isLoading: false,
       });
     }
-  },
-
-  async getOrCreateSystemKeys(): Promise<KeyPair> {
-    // Fetch system keys from server
-    try {
-      const response = await fetch('/api/system-keys');
-      if (!response.ok) {
-        throw new Error('Failed to fetch system keys');
-      }
-      const { privateKey, publicKey } = await response.json();
-      return { sk: privateKey, pk: publicKey };
-    } catch (error) {
-      console.error('Failed to get system keys:', error);
-      throw error;
-    }
-  },
-
-  resetSystemKeys() {
-    set({ systemKeys: undefined });
   },
 
   async createGrant(input): Promise<Grant> {
