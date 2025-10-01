@@ -42,6 +42,15 @@ class BountyService {
     );
   }
 
+  // Populate the service with cached data
+  populateFromCache(bounties: Bounty[]) {
+    this.bounties.clear();
+    bounties.forEach((bounty) => {
+      this.bounties.set(bounty.id, bounty);
+    });
+    this.notifyChange();
+  }
+
   async create(input: {
     title: string;
     shortDescription: string;

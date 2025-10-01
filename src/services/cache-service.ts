@@ -72,6 +72,8 @@ class CacheService {
     // If we have cached data and it's not stale, use it
     if (cache.bounties.length > 0 && !cache.isStale('bounties')) {
       console.log('Using cached bounties data');
+      // Populate the service with cached data
+      bountyService.populateFromCache(cache.bounties);
       return;
     }
 
@@ -114,6 +116,8 @@ class CacheService {
 
     if (cache.gigs.length > 0 && !cache.isStale('gigs')) {
       console.log('Using cached gigs data');
+      // Populate the service with cached data
+      gigService.populateFromCache(cache.gigs);
       return;
     }
 
@@ -150,6 +154,8 @@ class CacheService {
 
     if (cache.grants.length > 0 && !cache.isStale('grants')) {
       console.log('Using cached grants data');
+      // Populate the service with cached data
+      grantService.populateFromCache(cache.grants);
       return;
     }
 

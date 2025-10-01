@@ -50,6 +50,15 @@ class GrantService {
     );
   }
 
+  // Populate the service with cached data
+  populateFromCache(grants: Grant[]) {
+    this.grants.clear();
+    grants.forEach((grant) => {
+      this.grants.set(grant.id, grant);
+    });
+    this.notifyChange();
+  }
+
   findById(id: string): Grant | undefined {
     return this.grants.get(id);
   }

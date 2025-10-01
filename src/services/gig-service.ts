@@ -49,6 +49,15 @@ class GigService {
     );
   }
 
+  // Populate the service with cached data
+  populateFromCache(gigs: Gig[]) {
+    this.gigs.clear();
+    gigs.forEach((gig) => {
+      this.gigs.set(gig.id, gig);
+    });
+    this.notifyChange();
+  }
+
   getById(id: string): Gig | undefined {
     return this.gigs.get(id);
   }
