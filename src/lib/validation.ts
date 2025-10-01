@@ -118,7 +118,7 @@ export const validationUtils = {
         const decoded = bech32.decode(pubkey);
         // Verify the prefix is 'npub' and data length is correct (32 bytes = 52 chars in bech32)
         return decoded.prefix === 'npub' && decoded.words.length > 0;
-      } catch (e) {
+      } catch {
         return false;
       }
     }
@@ -139,7 +139,7 @@ export const validationUtils = {
         const decoded = bech32.decode(secretKey);
         // Verify the prefix is 'nsec' and data length is correct
         return decoded.prefix === 'nsec' && decoded.words.length > 0;
-      } catch (e) {
+      } catch {
         return false;
       }
     }
