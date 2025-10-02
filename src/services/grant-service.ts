@@ -187,7 +187,6 @@ class GrantService {
       grant.updatedAt = Date.now();
       this.grants.set(input.grantId, grant);
       this.notifyChange();
-      this.notifyChange();
 
       const content: GrantContentApply = {
         type: 'apply',

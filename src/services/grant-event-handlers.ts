@@ -169,7 +169,6 @@ export class GrantEventRouter {
     this.grants = grants;
   }
 
-
   /**
    * Route grant events to appropriate handlers
    */

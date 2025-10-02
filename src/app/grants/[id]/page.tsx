@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoadingSpinner } from '@/components/ui/loading';
 import { useToast } from '@/lib/hooks/use-toast';
-import { formatOrdinal } from '@/lib/utils';
+import { formatOrdinal, normalizeToNpub, truncateMiddle } from '@/lib/utils';
 import { useAuth } from '@/store/auth';
 import { useGrants } from '@/store/grants';
 import { grantUtils, type Grant } from '@/types/grant';
@@ -264,83 +264,100 @@ export default function GrantDetailPage({ params }: GrantDetailPageProps) {
           </Card>
 
           {/* Applications */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Applications ({grant.applications.length})</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {grant.applications.slice(0, 5).map((application) => (
-                <div key={application.id} className="border rounded-lg p-4">
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium">Application</span>
-                        {application.status === 'selected' && (
-                          <Badge variant="success">Selected</Badge>
-                        )}
-                        {application.status === 'rejected' && (
-                          <Badge variant="destructive">Rejected</Badge>
-                        )}
+          {(isOwner || hasUserApplied) && (
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  {isOwner
+                    ? `Applications (${grant.applications.length})`
+                    : 'Your Application'}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {(isOwner
+                  ? grant.applications.slice(0, 5)
+                  : grant.applications.filter(
+                      (app) => user?.pubkey === app.applicantPubkey
+                    )
+                ).map((application) => (
+                  <div key={application.id} className="border rounded-lg p-4">
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-medium">
+                            Application by{' '}
+                            {truncateMiddle(
+                              normalizeToNpub(application.applicantPubkey),
+                              8
+                            )}
+                          </span>
+                          {application.status === 'selected' && (
+                            <Badge variant="success">Selected</Badge>
+                          )}
+                          {application.status === 'rejected' && (
+                            <Badge variant="destructive">Rejected</Badge>
+                          )}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          Applied{' '}
+                          {grantUtils.getRelativeTime(application.submittedAt)}
+                        </div>
                       </div>
-                      <div className="text-sm text-muted-foreground">
-                        Applied{' '}
-                        {grantUtils.getRelativeTime(application.submittedAt)}
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      {isOwner && application.status === 'pending' && (
-                        <Button
-                          onClick={() =>
-                            handleSelectApplication(application.id)
-                          }
-                          size="sm"
-                          className="bg-green-600 hover:from-green-700 hover:to-emerald-700"
-                        >
-                          Select
-                        </Button>
-                      )}
-                      {application.status === 'selected' && (
-                        <Link
-                          href={`/grants/${grant.id}/applications/${application.id}`}
-                        >
-                          <Button size="sm" variant="outline">
-                            Manage Application
+                      <div className="flex gap-2">
+                        {isOwner && application.status === 'pending' && (
+                          <Button
+                            onClick={() =>
+                              handleSelectApplication(application.id)
+                            }
+                            size="sm"
+                            className="bg-green-600 hover:from-green-700 hover:to-emerald-700"
+                          >
+                            Select
                           </Button>
-                        </Link>
-                      )}
+                        )}
+                        {application.status === 'selected' && (
+                          <Link
+                            href={`/grants/${grant.id}/applications/${application.id}`}
+                          >
+                            <Button size="sm" variant="outline">
+                              Manage Application
+                            </Button>
+                          </Link>
+                        )}
+                      </div>
                     </div>
+
+                    <div
+                      className="rich-text-content mb-3"
+                      dangerouslySetInnerHTML={{ __html: application.proposal }}
+                    />
+
+                    {application.portfolioLink && (
+                      <a
+                        href={application.portfolioLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-blue-600 hover:underline"
+                      >
+                        <ExternalLink className="h-3 w-3 inline mr-1" />
+                        Portfolio
+                      </a>
+                    )}
                   </div>
+                ))}
 
-                  <div
-                    className="rich-text-content mb-3"
-                    dangerouslySetInnerHTML={{ __html: application.proposal }}
-                  />
-
-                  {application.portfolioLink && (
-                    <a
-                      href={application.portfolioLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm text-blue-600 hover:underline"
-                    >
-                      <ExternalLink className="h-3 w-3 inline mr-1" />
-                      Portfolio
-                    </a>
-                  )}
-                </div>
-              ))}
-
-              {grant.applications.length > 5 && (
-                <div className="text-center">
-                  <Link href={`/grants/${grant.id}/applications`}>
-                    <Button variant="outline">
-                      View All Applications ({grant.applications.length})
-                    </Button>
-                  </Link>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                {isOwner && grant.applications.length > 5 && (
+                  <div className="text-center">
+                    <Link href={`/grants/${grant.id}/applications`}>
+                      <Button variant="outline">
+                        View All Applications ({grant.applications.length})
+                      </Button>
+                    </Link>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* Sidebar */}

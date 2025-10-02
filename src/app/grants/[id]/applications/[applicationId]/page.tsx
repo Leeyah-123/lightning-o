@@ -344,6 +344,26 @@ export default function ApplicationDetailPage({
     );
   }
 
+  // Access control: only grant owner or the applicant can view this page
+  if (!isOwner && !isApplicant) {
+    return (
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center py-12">
+          <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
+          <p className="text-muted-foreground mb-6">
+            You can only view applications that you created or applied for.
+          </p>
+          <Link href={`/grants/${id}`}>
+            <Button variant="outline">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Grant
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   const isCompleted = isApplicationCompleted();
 
   return (
