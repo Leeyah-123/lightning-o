@@ -7,7 +7,7 @@ import Link from 'next/link';
 
 export function FeaturesSection() {
   return (
-    <section className="mb-16">
+    <section id="how-it-works" className="mb-16">
       <div className="text-center mb-12">
         <h2 className="text-3xl font-bold mb-4">How LightningO Works</h2>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">

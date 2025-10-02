@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Github, Mail, Twitter, Zap } from 'lucide-react';
+import Link from 'next/link';
 
 export function Footer() {
   return (
@@ -36,36 +37,36 @@ export function Footer() {
             <h3 className="font-semibold">Product</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <a
-                  href="#"
+                <Link
+                  href="/bounties"
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Bounties
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#"
+                <Link
+                  href="/gigs"
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Gigs
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#"
+                <Link
+                  href="/grants"
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Grants
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#"
+                <Link
+                  href="/#how-it-works"
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
                   How it Works
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -151,27 +152,27 @@ export function Footer() {
 
         <div className="border-t mt-8 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-sm text-muted-foreground">
-            © 2024 Lightning. All rights reserved.
+            © {new Date().getFullYear()} Lightning. All rights reserved.
           </p>
           <div className="flex gap-6 text-sm">
-            <a
+            <Link
               href="#"
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
               Privacy
-            </a>
-            <a
+            </Link>
+            <Link
               href="#"
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
               Terms
-            </a>
-            <a
+            </Link>
+            <Link
               href="#"
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
               Cookies
-            </a>
+            </Link>
           </div>
         </div>
       </div>

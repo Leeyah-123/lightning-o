@@ -79,6 +79,12 @@ body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
   font-family: var(--font-sans), system-ui, sans-serif;
+  scroll-behavior: smooth;
+}
+
+/* Add scroll margin to sections to account for fixed header */
+section[id] {
+  scroll-margin-top: 80px;
 }
 
 @keyframes fadeIn {
