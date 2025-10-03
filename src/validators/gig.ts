@@ -1,3 +1,4 @@
+import { commonSchemas } from '@/lib/validation';
 import { z } from 'zod';
 
 // Milestone validation schema
@@ -10,15 +11,9 @@ export const milestoneSchema = z.object({
 
 // Gig creation validation schema
 export const createGigSchema = z.object({
-  title: z
-    .string()
-    .min(5, 'Title must be at least 5 characters')
-    .max(100, 'Title must be less than 100 characters'),
-  shortDescription: z
-    .string()
-    .min(20, 'Short description must be at least 20 characters')
-    .max(200, 'Short description must be less than 200 characters'),
-  description: z.string().min(50, 'Description must be at least 50 characters'),
+  title: commonSchemas.title,
+  shortDescription: commonSchemas.shortDescription,
+  description: commonSchemas.description,
   budgetRange: z
     .object({
       minSats: z.number().min(1, 'Minimum budget must be at least 1 sat'),

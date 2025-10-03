@@ -1,19 +1,14 @@
+import { commonSchemas } from '@/lib/validation';
 import { z } from 'zod';
 
 export const grantCreateSchema = z
   .object({
-    title: z
-      .string()
-      .min(1, 'Title is required')
-      .max(100, 'Title must be less than 100 characters'),
-    shortDescription: z
-      .string()
-      .min(10, 'Short description is required')
-      .max(200, 'Short description must be less than 200 characters'),
-    description: z.string().min(1, 'Description is required'),
+    title: commonSchemas.title,
+    shortDescription: commonSchemas.shortDescription,
+    description: commonSchemas.description,
     reward: z.object({
       type: z.enum(['fixed', 'range']),
-      amount: z.number().min(1, 'Amount must be at least 1 sat'),
+      amount: commonSchemas.rewardSats,
       maxAmount: z
         .number()
         .min(1, 'Max amount must be at least 1 sat')

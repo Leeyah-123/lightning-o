@@ -4,12 +4,22 @@ import { z } from 'zod';
 // Common validation schemas
 export const commonSchemas = {
   // String validations
-  title: z.string().min(3).max(120),
-  shortDescription: z.string().min(5).max(200),
-  description: z.string().min(10).max(10000),
+  title: z
+    .string()
+    .min(5, 'Title must be at least 5 characters')
+    .max(100, 'Title must be less than 100 characters'),
+  shortDescription: z
+    .string()
+    .min(20, 'Short description must be at least 20 characters')
+    .max(200, 'Short description must be less than 200 characters'),
+  description: z.string().min(50, 'Description must be at least 50 characters'),
 
   // Number validations
-  rewardSats: z.number().int().positive(),
+  rewardSats: z
+    .number()
+    .int()
+    .positive()
+    .min(1, 'Amount must be at least 1 sat'),
 
   // Reward validation (single number or array of numbers)
   rewardSatsArray: z.union([
@@ -23,52 +33,8 @@ export const commonSchemas = {
   }),
 
   // Nostr validations
-  pubkey: z.string().min(5),
-  secretKey: z.string().min(1),
-};
-
-// Bounty validation schemas
-export const bountySchemas = {
-  create: z
-    .object({
-      title: commonSchemas.title,
-      shortDescription: commonSchemas.shortDescription,
-      description: commonSchemas.description,
-      rewardSats: commonSchemas.rewardSatsArray,
-      submissionDeadline: commonSchemas.date,
-      judgingDeadline: commonSchemas.date,
-    })
-    .refine(
-      (data) => {
-        const now = new Date();
-        const submissionDeadline = new Date(data.submissionDeadline);
-        return submissionDeadline > now;
-      },
-      {
-        message: 'Submission deadline must be in the future',
-        path: ['submissionDeadline'],
-      }
-    )
-    .refine(
-      (data) => {
-        const submissionDeadline = new Date(data.submissionDeadline);
-        const judgingDeadline = new Date(data.judgingDeadline);
-        return judgingDeadline > submissionDeadline;
-      },
-      {
-        message: 'Judging deadline must be after submission deadline',
-        path: ['judgingDeadline'],
-      }
-    ),
-
-  winners: z
-    .array(
-      z.object({
-        pubkey: commonSchemas.pubkey,
-        amountSats: commonSchemas.rewardSats,
-      })
-    )
-    .min(1),
+  pubkey: z.string().regex(/^npub1[0-9a-z]{58}$/i),
+  secretKey: z.string().regex(/^nsec1[0-9a-z]{58}$/i),
 };
 
 // Auth validation schemas
@@ -224,7 +190,5 @@ export const errorMessages = {
 };
 
 // Type exports
-export type BountyCreateInput = z.infer<typeof bountySchemas.create>;
-export type BountyWinnersInput = z.infer<typeof bountySchemas.winners>;
 export type AuthSecretKeyInput = z.infer<typeof authSchemas.secretKey>;
 export type NostrEventInput = z.infer<typeof nostrSchemas.event>;
