@@ -1,92 +1,6 @@
 import { z } from 'zod';
 import { errorMessages, validationUtils } from './validation';
 
-// Form-specific validation schemas
-export const formSchemas = {
-  // Bounty creation form
-  bountyCreate: z
-    .object({
-      title: z
-        .string()
-        .min(3, errorMessages.tooShort('Title', 3))
-        .max(120, errorMessages.tooLong('Title', 120))
-        .transform(validationUtils.sanitizeString),
-
-      shortDescription: z
-        .string()
-        .min(5, errorMessages.tooShort('Short description', 5))
-        .max(200, errorMessages.tooLong('Short description', 200))
-        .transform(validationUtils.sanitizeString),
-
-      description: z
-        .string()
-        .min(10, errorMessages.tooShort('Description', 10))
-        .max(10000, errorMessages.tooLong('Description', 10000))
-        .refine(
-          validationUtils.isValidHTML,
-          'Description contains invalid HTML tags'
-        ),
-
-      rewardSats: z
-        .number()
-        .int('Reward must be a whole number')
-        .positive('Reward must be positive'),
-
-      submissionDeadline: z.date({
-        message: errorMessages.required('Submission deadline'),
-      }),
-
-      judgingDeadline: z.date({
-        message: errorMessages.required('Judging deadline'),
-      }),
-    })
-    .refine((data) => validationUtils.isFutureDate(data.submissionDeadline), {
-      message: errorMessages.futureDate('Submission deadline'),
-      path: ['submissionDeadline'],
-    })
-    .refine(
-      (data) =>
-        validationUtils.isJudgingAfterSubmission(
-          data.submissionDeadline,
-          data.judgingDeadline
-        ),
-      {
-        message: errorMessages.afterDate(
-          'Judging deadline',
-          'submission deadline'
-        ),
-        path: ['judgingDeadline'],
-      }
-    ),
-
-  // User authentication form
-  auth: z.object({
-    secretKey: z
-      .string()
-      .min(1, errorMessages.required('Secret key'))
-      .refine(
-        validationUtils.isValidSecretKey,
-        errorMessages.invalidFormat('Secret key')
-      ),
-  }),
-
-  // Winner selection form
-  winnerSelection: z.object({
-    pubkey: z
-      .string()
-      .min(1, errorMessages.required('Public key'))
-      .refine(
-        validationUtils.isValidPubkey,
-        errorMessages.invalidFormat('Public key')
-      ),
-
-    amountSats: z
-      .number()
-      .int('Amount must be a whole number')
-      .positive('Amount must be positive'),
-  }),
-};
-
 // Form validation utilities
 export const formValidationUtils = {
   // Validate form data and return formatted errors
@@ -179,13 +93,6 @@ export const formValidationUtils = {
     return { isValid: true };
   },
 };
-
-// Type exports
-export type BountyCreateFormData = z.infer<typeof formSchemas.bountyCreate>;
-export type AuthFormData = z.infer<typeof formSchemas.auth>;
-export type WinnerSelectionFormData = z.infer<
-  typeof formSchemas.winnerSelection
->;
 
 import { FieldError, FieldErrors, FieldValues } from 'react-hook-form';
 import { ZodError, ZodType } from 'zod';
