@@ -9,19 +9,13 @@ export const grantCreateSchema = z
     reward: z.object({
       type: z.enum(['fixed', 'range']),
       amount: commonSchemas.rewardSats,
-      maxAmount: z
-        .number()
-        .min(1, 'Max amount must be at least 1 sat')
-        .optional(),
+      maxAmount: commonSchemas.optionalRewardSats,
     }),
     tranches: z
       .array(
         z.object({
-          amount: z.number().min(1, 'Tranche amount must be at least 1 sat'),
-          maxAmount: z
-            .number()
-            .min(1, 'Max amount must be at least 1 sat')
-            .optional(),
+          amount: commonSchemas.rewardSats,
+          maxAmount: commonSchemas.optionalRewardSats,
           description: z.string().min(1, 'Tranche description is required'),
         })
       )

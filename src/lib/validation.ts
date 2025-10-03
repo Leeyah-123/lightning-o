@@ -10,7 +10,7 @@ export const commonSchemas = {
     .max(100, 'Title must be less than 100 characters'),
   shortDescription: z
     .string()
-    .min(20, 'Short description must be at least 20 characters')
+    .min(10, 'Short description must be at least 20 characters')
     .max(200, 'Short description must be less than 200 characters'),
   description: z.string().min(50, 'Description must be at least 50 characters'),
 
@@ -20,6 +20,15 @@ export const commonSchemas = {
     .int()
     .positive()
     .min(1, 'Amount must be at least 1 sat'),
+
+  // Optional number validation that handles empty strings and NaN
+  optionalRewardSats: z
+    .union([
+      z.number().int().positive().min(1, 'Amount must be at least 1 sat'),
+      z.nan().transform(() => undefined),
+      z.undefined(),
+    ])
+    .optional(),
 
   // Reward validation (single number or array of numbers)
   rewardSatsArray: z.union([

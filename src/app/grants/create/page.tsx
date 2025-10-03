@@ -18,7 +18,7 @@ import {
 import { ArrowLeft, DollarSign, Minus, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 
 export default function CreateGrantPage() {
@@ -99,14 +99,27 @@ export default function CreateGrantPage() {
 
     setIsSubmitting(true);
     try {
-      const grant = await createGrant({
+      // Transform NaN values to undefined for optional fields
+      const transformedData = {
         ...data,
+        reward: {
+          ...data.reward,
+          maxAmount:
+            data.reward.maxAmount !== undefined && isNaN(data.reward.maxAmount)
+              ? undefined
+              : data.reward.maxAmount,
+        },
         tranches: data.tranches.map((t) => ({
           amount: t.amount,
-          maxAmount: t.maxAmount,
+          maxAmount:
+            t.maxAmount !== undefined && isNaN(t.maxAmount)
+              ? undefined
+              : t.maxAmount,
           description: t.description,
         })),
-      });
+      };
+
+      const grant = await createGrant(transformedData);
 
       toast({
         title: 'Grant Created Successfully',
@@ -244,7 +257,9 @@ export default function CreateGrantPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="minAmount">Minimum Amount (sats) *</Label>
+                  <Label htmlFor="minAmount">
+                    {isSingleAmount ? 'Amount' : 'Minimum Amount'} (sats) *
+                  </Label>
                   <Input
                     id="minAmount"
                     type="number"
