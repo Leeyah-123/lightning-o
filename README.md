@@ -7,44 +7,44 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.0-38B2AC)](https://tailwindcss.com/)
 
-## 🌟 Features
+## Features
 
-### 💰 **Bounties**
+### **Bounties**
 
 - Create one-time tasks with fixed rewards
 - Submit work with rich text descriptions
 - Instant Lightning payments upon approval
 - Decentralized through Nostr protocol
 
-### 🎯 **Gigs**
+### **Gigs**
 
 - Multi-milestone projects with structured payments
 - Sequential milestone funding and approval
 - Rich text descriptions and portfolio links
 - Progress tracking and milestone management
 
-### 🎓 **Grants**
+### **Grants**
 
 - Tranche-based funding for larger projects
 - Multiple applicants can be selected
 - Sequential tranche funding and approval
 - Flexible reward structures (fixed or range)
 
-### ⚡ **Lightning Integration**
+### **Lightning Integration**
 
 - Real-time Lightning payments via Bitnob
 - QR code generation for invoice payments
 - Development mode with simulated payments
 - Webhook integration for payment confirmations
 
-### 🔗 **Nostr Protocol**
+### **Nostr Protocol**
 
 - Decentralized event publishing and subscription
 - No central servers required
 - Censorship-resistant platform
 - Real-time updates across relays
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -58,8 +58,8 @@
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/yourusername/lightningo.git
-   cd lightningo
+   git clone https://github.com/Leeyah-123/lightning-o.git
+   cd lightning-o
    ```
 
 2. **Install dependencies**
@@ -79,7 +79,7 @@
    ```env
    # Required
    BITNOB_API_KEY=your_bitnob_api_key_here
-   SYSTEM_PRIVATE_KEY=your_system_private_key_here
+   SYSTEM_PRIVATE_KEY=your_system_private_key_here // This Nostr private key will be used to publish system events on Nostr after invoice are paid
 
    # Optional
    NEXT_PUBLIC_APP_URL=http://localhost:3000
@@ -131,7 +131,7 @@
 - **Profile Service**: User authentication and key management
 - **Bounty/Gig/Grant Services**: Business logic for each opportunity type
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 src/
@@ -157,7 +157,7 @@ src/
 └── validators/            # Zod validation schemas
 ```
 
-## 🔧 Configuration
+## Configuration
 
 ### Environment Variables
 
@@ -185,7 +185,7 @@ The application uses default Nostr relays, but you can configure custom ones:
 NEXT_PUBLIC_NOSTR_RELAYS=wss://relay.damus.io,wss://nos.lol,wss://relay.snort.social
 ```
 
-## 🎯 Usage
+## Usage
 
 ### For Sponsors
 
@@ -202,7 +202,7 @@ NEXT_PUBLIC_NOSTR_RELAYS=wss://relay.damus.io,wss://nos.lol,wss://relay.snort.so
 3. **Submit work** for funded milestones/tranches
 4. **Receive Lightning payments** upon approval
 
-## 🧪 Development
+## Development
 
 ### Available Scripts
 
@@ -231,7 +231,7 @@ pnpm lint
 npx tsc --noEmit
 ```
 
-## 🚀 Deployment
+## Deployment
 
 ### Vercel (Recommended)
 
@@ -255,7 +255,7 @@ npx tsc --noEmit
 
 3. **Set up environment variables** on your platform
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
@@ -267,11 +267,11 @@ We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for deta
 4. Add tests if applicable
 5. Submit a pull request
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - [Next.js](https://nextjs.org/) for the React framework
 - [Tailwind CSS](https://tailwindcss.com/) for styling
@@ -280,18 +280,15 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [Bitnob](https://bitnob.com/) for Lightning payments
 - [Tiptap](https://tiptap.dev/) for rich text editing
 
-## 📞 Support
+## Support
 
-- **Documentation**: [GitHub Wiki](https://github.com/yourusername/lightningo/wiki)
-- **Issues**: [GitHub Issues](https://github.com/yourusername/lightningo/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/lightningo/discussions)
+- **Documentation**: [Github README](https://github.com/Leeyah-123/lightning-o)
+- **Issues**: [GitHub Issues](https://github.com/Leeyah-123/lightning-o/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/Leeyah-123/lightning-o/discussions)
+- **Contribution Guidelines**: [Github Contribution Doc](https://github.com/Leeyah-123/lightning-o?tab=contributing-ov-file)
 
-## 🔗 Links
+## Links
 
-- **Website**: [lightningo.app](https://lightningo.app)
-- **Demo**: [demo.lightningo.app](https://demo.lightningo.app)
-- **Documentation**: [docs.lightningo.app](https://docs.lightningo.app)
-
----
-
-**Built with ⚡ Lightning and 🔗 Nostr**
+- **Website**: [lightning-o.vercel.app](https://llightning-o.vercel.app)
+- **Demo**: [Vimeo](https://vimeo.com/1123846668)
+- **Documentation**: [Github README](https://github.com/Leeyah-123/lightning-o)

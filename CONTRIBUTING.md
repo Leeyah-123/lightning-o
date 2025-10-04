@@ -2,7 +2,7 @@
 
 Thank you for your interest in contributing to LightningO! This document provides guidelines and information for contributors.
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Code of Conduct](#code-of-conduct)
 - [Getting Started](#getting-started)
@@ -14,7 +14,7 @@ Thank you for your interest in contributing to LightningO! This document provide
 - [Feature Requests](#feature-requests)
 - [Documentation](#documentation)
 
-## 🤝 Code of Conduct
+## Code of Conduct
 
 This project follows a code of conduct that we expect all contributors to follow. Please be respectful, inclusive, and constructive in all interactions.
 
@@ -26,7 +26,7 @@ This project follows a code of conduct that we expect all contributors to follow
 - Focus on what's best for the community
 - Show empathy towards other community members
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -44,14 +44,14 @@ Before contributing, ensure you have:
 
    ```bash
    # Click the "Fork" button on GitHub, then clone your fork
-   git clone https://github.com/yourusername/lightningo.git
-   cd lightningo
+   git clone https://github.com/Leeyah-123/lightning-o.git
+   cd lightning-o
    ```
 
 2. **Add upstream remote**
 
    ```bash
-   git remote add upstream https://github.com/originalusername/lightningo.git
+   git remote add upstream https://github.com/Leeyah-123/lightning-o.git
    ```
 
 3. **Install dependencies**
@@ -73,7 +73,7 @@ Before contributing, ensure you have:
    pnpm dev
    ```
 
-## 🏗️ Project Structure
+## Project Structure
 
 Understanding the project structure will help you contribute effectively:
 
@@ -110,7 +110,7 @@ src/
 - **`/types`**: TypeScript type definitions
 - **`/lib`**: Utility functions and helpers
 
-## 📝 Coding Standards
+## Coding Standards
 
 ### TypeScript
 
@@ -216,7 +216,7 @@ try {
 }
 ```
 
-## 🔄 Pull Request Process
+## Pull Request Process
 
 ### Before Submitting
 
@@ -311,7 +311,7 @@ Brief description of changes
 - [ ] No console errors
 ```
 
-## 🐛 Issue Reporting
+## Issue Reporting
 
 ### Before Creating an Issue
 
@@ -369,7 +369,7 @@ A clear description of any alternative solutions.
 Add any other context or screenshots about the feature request.
 ```
 
-## 📚 Documentation
+## Documentation
 
 ### Code Documentation
 
@@ -399,7 +399,7 @@ When adding new features:
 - Update installation instructions
 - Add new API endpoints
 
-## 🧪 Testing
+## Testing
 
 ### Manual Testing
 
@@ -426,7 +426,7 @@ describe('BountyService', () => {
 });
 ```
 
-## 🎯 Areas for Contribution
+## Areas for Contribution
 
 ### High Priority
 
@@ -449,7 +449,7 @@ describe('BountyService', () => {
 - **Build optimizations**
 - **Developer experience**
 
-## 💡 Getting Help
+## Getting Help
 
 ### Community
 
@@ -464,7 +464,7 @@ describe('BountyService', () => {
 - [Nostr Protocol Documentation](https://nostr.com)
 - [Bitcoin Lightning Documentation](https://lightning.network)
 
-## 🏆 Recognition
+## Recognition
 
 Contributors will be recognized in:
 
@@ -472,7 +472,7 @@ Contributors will be recognized in:
 - **Release notes** for significant contributions
 - **GitHub** contributor statistics
 
-## 📄 License
+## License
 
 By contributing, you agree that your contributions will be licensed under the MIT License.
 
