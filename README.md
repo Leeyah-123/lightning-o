@@ -44,6 +44,96 @@
 - Censorship-resistant platform
 - Real-time updates across relays
 
+## NIPs (Nostr Implementation Possibilities)
+
+LightningO implements several standard NIPs and defines custom NIPs for its specific functionality:
+
+### Standard NIPs
+
+#### **NIP-01: Basic protocol flow**
+
+- Core Nostr protocol implementation for event creation, signing, and verification
+- Event structure with `id`, `pubkey`, `created_at`, `kind`, `content`, `sig`, and `tags`
+- Event validation and signature verification
+
+#### **NIP-05: Mapping Nostr keys to DNS-based internet identifiers**
+
+- Support for `nip05` field in user profiles
+- Enables human-readable identifiers (e.g., `user@domain.com`)
+
+#### **NIP-16: Event Treatment**
+
+- Custom event kinds for bounty, gig, and grant operations
+- Proper event handling and processing
+
+### Custom NIPs
+
+LightningO defines custom event kinds for its decentralized opportunity platform. For complete implementation details, see [`src/types/nostr.ts`](src/types/nostr.ts):
+
+#### **Bounty Events (Kind Range: 51341-51344)**
+
+| Kind  | Name              | Description                                          |
+| ----- | ----------------- | ---------------------------------------------------- |
+| 51341 | `bounty:create`   | Create a new bounty with details and reward          |
+| 51342 | `bounty:open`     | Mark bounty as open for submissions with escrow info |
+| 51343 | `bounty:complete` | Mark bounty as completed with winner details         |
+| 51344 | `bounty:submit`   | Submit work for a bounty                             |
+
+#### **Gig Events (Kind Range: 51401-51409)**
+
+| Kind  | Name                    | Description                                 |
+| ----- | ----------------------- | ------------------------------------------- |
+| 51401 | `gig:create`            | Create a new gig with milestones            |
+| 51402 | `gig:apply`             | Apply to a gig with proposal and milestones |
+| 51403 | `gig:select`            | Select an applicant for a gig               |
+| 51404 | `gig:funded`            | Fund a milestone with Lightning payment     |
+| 51405 | `gig:submit_milestone`  | Submit work for a milestone                 |
+| 51406 | `gig:approve_milestone` | Approve milestone submission                |
+| 51407 | `gig:reject_milestone`  | Reject milestone submission                 |
+| 51408 | `gig:complete`          | Mark gig as completed                       |
+| 51409 | `gig:cancel`            | Cancel a gig                                |
+
+#### **Grant Events (Kind Range: 51501-51508)**
+
+| Kind  | Name                    | Description                           |
+| ----- | ----------------------- | ------------------------------------- |
+| 51501 | `grant:create`          | Create a new grant with tranches      |
+| 51502 | `grant:apply`           | Apply to a grant with proposal        |
+| 51503 | `grant:select`          | Select applicants for a grant         |
+| 51504 | `grant:funded`          | Fund a tranche with Lightning payment |
+| 51505 | `grant:submit_tranche`  | Submit work for a tranche             |
+| 51506 | `grant:approve_tranche` | Approve tranche submission            |
+| 51507 | `grant:reject_tranche`  | Reject tranche submission             |
+| 51508 | `grant:cancel`          | Cancel a grant                        |
+
+### Event Content Structure
+
+All custom events follow a consistent content structure:
+
+```typescript
+interface EventContent {
+  type: string; // Event type identifier
+  [entityId]: string; // ID of the bounty/gig/grant
+  // ... additional fields based on event type
+}
+```
+
+### Event Tags
+
+Events may include standard and custom tags:
+
+- `system-pubkey`: Identifies system-generated events
+- Standard Nostr tags for replies, mentions, etc.
+
+### Relay Support
+
+LightningO is compatible with any standard Nostr relay and uses these default relays:
+
+- `wss://relay.damus.io`
+- `wss://relay.primal.net`
+- `wss://nos.lol`
+- `wss://relay.snort.social`
+
 ## Quick Start
 
 ### Prerequisites
@@ -105,7 +195,86 @@
 6. **Open your browser**
    Navigate to [http://localhost:3000](http://localhost:3000)
 
-## 🏗️ Architecture
+## Architecture
+
+### System Overview
+
+```mermaid
+graph LR
+    %% User Layer
+    subgraph Users ["Users & Roles"]
+        direction LR
+        U1["Bounty Creators<br/>Post tasks & fund rewards"]
+        U2["Workers<br/>Complete tasks & earn"]
+        U3["Gig Clients<br/>Hire for projects"]
+        U4["Freelancers<br/>Apply for gigs"]
+        U5["Grant Sponsors<br/>Fund initiatives"]
+        U6["Grant Applicants<br/>Apply for funding"]
+    end
+
+    %% Frontend Layer
+    subgraph Frontend ["LightningO Frontend (Next.js)"]
+        subgraph UI ["User Interface Pages"]
+            direction LR
+            UI1["Home"]
+            UI2["Bounties"]
+            UI3["Gigs"]
+            UI4["Grants"]
+            UI5["Profile"]
+        end
+
+        subgraph Services ["Core Services"]
+            direction LR
+            FS1["State Management<br/>(Zustand)"]
+            FS2["Lightning Service"]
+            FS3["Nostr Service"]
+            FS4["Business Logic"]
+        end
+    end
+
+    %% API Layer
+    subgraph API ["Backend APIs"]
+        direction LR
+        API1["Lightning APIs"]
+        API2["System Keys"]
+        API3["Webhooks"]
+    end
+
+    %% External Services
+    subgraph Nostr ["Nostr Network"]
+        direction TB
+        N1["Decentralized Relays"]
+        N2["Event Storage<br/>Bounties • Gigs • Grants"]
+    end
+
+    subgraph Lightning ["Lightning Network"]
+        direction TB
+        L1["Lightning Network Payment Provider<br/>(Bitnob)"]
+    end
+
+    %% Connections
+    Users --> UI
+    UI --> Services
+    Services --> API
+    Services --> Nostr
+    API --> Lightning
+    Lightning --> API
+    N1 --> N2
+
+    %% Clean styling
+    classDef default fill:#ffffff,stroke:#333333,stroke-width:1px,color:#000
+    classDef userBox fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#000
+    classDef frontendBox fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#000
+    classDef apiBox fill:#e8f5e8,stroke:#388e3c,stroke-width:2px,color:#000
+    classDef nostrBox fill:#ffebee,stroke:#d32f2f,stroke-width:2px,color:#000
+    classDef lightningBox fill:#fff8e1,stroke:#f57c00,stroke-width:2px,color:#000
+
+    class Users userBox
+    class Frontend frontendBox
+    class API apiBox
+    class Nostr nostrBox
+    class Lightning lightningBox
+```
 
 ### Frontend
 
