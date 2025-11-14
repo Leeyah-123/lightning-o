@@ -6,6 +6,7 @@ Thank you for your interest in contributing to LightningO! This document provide
 
 - [Code of Conduct](#code-of-conduct)
 - [Getting Started](#getting-started)
+- [Contribution Workflow](#contribution-workflow)
 - [Development Setup](#development-setup)
 - [Project Structure](#project-structure)
 - [Coding Standards](#coding-standards)
@@ -37,6 +38,69 @@ Before contributing, ensure you have:
 - **A GitHub account** for forking and pull requests
 - **Basic knowledge** of React, TypeScript, and Next.js
 - **Understanding** of Bitcoin Lightning and Nostr protocols (helpful but not required)
+
+## Contribution Workflow
+
+**IMPORTANT**: Before starting work on any contribution, please follow this workflow to avoid duplicate efforts and ensure smooth collaboration.
+
+### 1. Choose or Create an Issue
+
+#### Option A: Pick an Existing Issue
+1. Browse the [Issues](https://github.com/Leeyah-123/lightning-o/issues) page
+2. Look for issues labeled `good-first-issue` or `help-wanted` if you're new
+3. Read the issue description and comments carefully
+4. Check if the issue is already assigned to someone
+
+#### Option B: Create a New Issue
+1. If you have a new idea or found a bug not yet reported:
+   - Create a new issue using the appropriate template (Bug Report or Feature Request)
+   - Provide detailed information about your proposal
+   - Wait for maintainer feedback and approval
+
+### 2. Request Assignment
+
+**Before writing any code:**
+
+- Comment on the issue expressing your interest: 
+  ```
+  Hi! I'd like to work on this issue. Could you please assign it to me?
+  ```
+- Wait for a maintainer to assign the issue to you
+- This prevents multiple people from working on the same thing
+
+### 3. Start Working
+
+Once assigned:
+- Fork the repository (if you haven't already)
+- Create a feature branch
+- Start implementing your solution
+- Keep the issue updated with your progress
+
+### 4. Activity Requirements
+
+⏰ **Important Timeline Policy:**
+
+- Once assigned, you have **4 weeks** to submit a pull request or provide a progress update
+- If no activity is seen for **4 weeks** without communication, the assignment may be revoked
+- This allows others to contribute if you're unable to continue
+
+**To maintain your assignment:**
+- Comment on the issue with progress updates
+- Ask questions if you're stuck
+- Let us know if you need more time (life happens!)
+
+### 5. Submit Your Pull Request
+
+- Follow the [Pull Request Process](#pull-request-process) below
+- Link your PR to the issue using `Closes #issue-number`
+- Respond to review feedback promptly
+
+### ⚠️ What NOT to Do
+
+- ❌ Don't submit PRs without an associated issue
+- ❌ Don't work on issues assigned to others
+- ❌ Don't start work before getting assignment confirmation
+- ❌ Don't go silent for weeks without updates
 
 ### Development Setup
 
@@ -218,9 +282,21 @@ try {
 
 ## Pull Request Process
 
+> **Branching Strategy:** All pull requests must target the `dev` branch (not `main`).
+> Always create your feature/fix branches from the latest `dev`.
+
 ### Before Submitting
 
-1. **Create a feature branch**
+1. **Create a feature branch from `dev`**
+
+   Make sure your local `dev` is up to date:
+
+   ```bash
+   git checkout dev
+   git pull upstream dev   # or origin dev, depending on your setup
+   ```
+
+   Then create your feature or fix branch from `dev`:
 
    ```bash
    git checkout -b feature/your-feature-name
@@ -271,8 +347,9 @@ test(utils): add validation tests
    git push origin feature/your-feature-name
    ```
 
-2. **Create a Pull Request**
+2. **Create a Pull Request (against `dev`)**
 
+   - Set the **base branch** to `dev` (not `main`)
    - Use the PR template
    - Provide a clear description
    - Link related issues
