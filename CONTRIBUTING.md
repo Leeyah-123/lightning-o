@@ -282,9 +282,21 @@ try {
 
 ## Pull Request Process
 
+> **Branching Strategy:** All pull requests must target the `dev` branch (not `main`).
+> Always create your feature/fix branches from the latest `dev`.
+
 ### Before Submitting
 
-1. **Create a feature branch**
+1. **Create a feature branch from `dev`**
+
+   Make sure your local `dev` is up to date:
+
+   ```bash
+   git checkout dev
+   git pull upstream dev   # or origin dev, depending on your setup
+   ```
+
+   Then create your feature or fix branch from `dev`:
 
    ```bash
    git checkout -b feature/your-feature-name
@@ -335,8 +347,9 @@ test(utils): add validation tests
    git push origin feature/your-feature-name
    ```
 
-2. **Create a Pull Request**
+2. **Create a Pull Request (against `dev`)**
 
+   - Set the **base branch** to `dev` (not `main`)
    - Use the PR template
    - Provide a clear description
    - Link related issues
