@@ -14,6 +14,13 @@ Thank you for your interest in contributing to LightningO! This document provide
 - [Issue Reporting](#issue-reporting)
 - [Feature Requests](#feature-requests)
 - [Documentation](#documentation)
+- [Testing](#testing)
+- [Areas for Contribution](#areas-for-contribution)
+- [Getting Help](#getting-help)
+- [Recognition](#recognition)
+- [License](#license)
+
+---
 
 ## Code of Conduct
 
@@ -27,6 +34,8 @@ This project follows a code of conduct that we expect all contributors to follow
 - Focus on what's best for the community
 - Show empathy towards other community members
 
+---
+
 ## Getting Started
 
 ### Prerequisites
@@ -39,6 +48,8 @@ Before contributing, ensure you have:
 - **Basic knowledge** of React, TypeScript, and Next.js
 - **Understanding** of Bitcoin Lightning and Nostr protocols (helpful but not required)
 
+---
+
 ## Contribution Workflow
 
 **IMPORTANT**: Before starting work on any contribution, please follow this workflow to avoid duplicate efforts and ensure smooth collaboration.
@@ -46,12 +57,14 @@ Before contributing, ensure you have:
 ### 1. Choose or Create an Issue
 
 #### Option A: Pick an Existing Issue
+
 1. Browse the [Issues](https://github.com/Leeyah-123/lightning-o/issues) page
 2. Look for issues labeled `good-first-issue` or `help-wanted` if you're new
 3. Read the issue description and comments carefully
 4. Check if the issue is already assigned to someone
 
 #### Option B: Create a New Issue
+
 1. If you have a new idea or found a bug not yet reported:
    - Create a new issue using the appropriate template (Bug Report or Feature Request)
    - Provide detailed information about your proposal
@@ -61,18 +74,21 @@ Before contributing, ensure you have:
 
 **Before writing any code:**
 
-- Comment on the issue expressing your interest: 
+- Comment on the issue expressing your interest:
+
   ```
   Hi! I'd like to work on this issue. Could you please assign it to me?
   ```
+
 - Wait for a maintainer to assign the issue to you
 - This prevents multiple people from working on the same thing
 
 ### 3. Start Working
 
 Once assigned:
+
 - Fork the repository (if you haven't already)
-- Create a feature branch
+- Create a feature branch from `dev`
 - Start implementing your solution
 - Keep the issue updated with your progress
 
@@ -85,6 +101,7 @@ Once assigned:
 - This allows others to contribute if you're unable to continue
 
 **To maintain your assignment:**
+
 - Comment on the issue with progress updates
 - Ask questions if you're stuck
 - Let us know if you need more time (life happens!)
@@ -102,13 +119,15 @@ Once assigned:
 - ❌ Don't start work before getting assignment confirmation
 - ❌ Don't go silent for weeks without updates
 
-### Development Setup
+---
+
+## Development Setup
 
 1. **Fork the repository**
 
    ```bash
    # Click the "Fork" button on GitHub, then clone your fork
-   git clone https://github.com/Leeyah-123/lightning-o.git
+   git clone https://github.com/<your-username>/lightning-o.git
    cd lightning-o
    ```
 
@@ -127,15 +146,18 @@ Once assigned:
 4. **Set up environment variables**
 
    ```bash
-   cp env.example .env.local
+   cp .env.example .env.local
    ```
 
    Edit `.env.local` with your configuration (see [README.md](README.md) for details).
 
 5. **Start development server**
+
    ```bash
    pnpm dev
    ```
+
+---
 
 ## Project Structure
 
@@ -174,16 +196,18 @@ src/
 - **`/types`**: TypeScript type definitions
 - **`/lib`**: Utility functions and helpers
 
+---
+
 ## Coding Standards
 
 ### TypeScript
 
 - Use **strict TypeScript** with proper type annotations
-- Avoid `any` types - use specific types or `unknown`
+- Avoid `any` types — use specific types or `unknown`
 - Use **interface** for object shapes, **type** for unions/primitives
 - Export types from `/types` directory
 
-```typescript
+```ts
 // ✅ Good
 interface User {
   id: string;
@@ -202,7 +226,7 @@ const user: any = { id: 1, name: 'John' };
 - Follow **single responsibility** principle
 - Use **custom hooks** for complex logic
 
-```typescript
+```tsx
 // ✅ Good
 interface ButtonProps {
   children: React.ReactNode;
@@ -210,11 +234,7 @@ interface ButtonProps {
   variant?: 'primary' | 'secondary';
 }
 
-export function Button({
-  children,
-  onClick,
-  variant = 'primary',
-}: ButtonProps) {
+export function Button({ children, onClick, variant = 'primary' }: ButtonProps) {
   return (
     <button className={`btn btn-${variant}`} onClick={onClick}>
       {children}
@@ -245,7 +265,7 @@ export function Button({
 - Use **React Query** for server state
 - Follow **immutable updates**
 
-```typescript
+```ts
 // ✅ Good
 interface AppState {
   user: User | null;
@@ -265,7 +285,7 @@ export const useAppStore = create<AppState>((set) => ({
 - Use **toast notifications** for user feedback
 - Log errors for debugging
 
-```typescript
+```ts
 // ✅ Good
 try {
   const result = await api.createBounty(data);
@@ -280,6 +300,8 @@ try {
 }
 ```
 
+---
+
 ## Pull Request Process
 
 > **Branching Strategy:** All pull requests must target the `dev` branch (not `main`).
@@ -293,10 +315,10 @@ try {
 
    ```bash
    git checkout dev
-   git pull upstream dev   # or origin dev, depending on your setup
+   git pull upstream dev
    ```
 
-   Then create your feature or fix branch from `dev`:
+   Then create your branch:
 
    ```bash
    git checkout -b feature/your-feature-name
@@ -305,7 +327,6 @@ try {
    ```
 
 2. **Make your changes**
-
    - Write clean, readable code
    - Add tests if applicable
    - Update documentation if needed
@@ -317,6 +338,7 @@ try {
    ```
 
 4. **Commit your changes**
+
    ```bash
    git add .
    git commit -m "feat: add new feature description"
@@ -324,7 +346,7 @@ try {
 
 ### Commit Message Format
 
-Use conventional commits:
+Use [Conventional Commits](https://www.conventionalcommits.org/):
 
 ```
 type(scope): description
@@ -348,7 +370,6 @@ test(utils): add validation tests
    ```
 
 2. **Create a Pull Request (against `dev`)**
-
    - Set the **base branch** to `dev` (not `main`)
    - Use the PR template
    - Provide a clear description
@@ -388,6 +409,8 @@ Brief description of changes
 - [ ] No console errors
 ```
 
+---
+
 ## Issue Reporting
 
 ### Before Creating an Issue
@@ -398,53 +421,34 @@ Brief description of changes
 
 ### Bug Reports
 
-Use the bug report template:
+Use the **Bug Report** issue template when creating a new issue. It will prompt you for:
 
-```markdown
-**Describe the bug**
-A clear description of what the bug is.
+- A clear description of the bug
+- Steps to reproduce
+- Expected vs. actual behavior
+- Environment details (OS, browser, Node.js version)
+- Impact assessment and severity
+- Relevant error logs or screenshots
 
-**To Reproduce**
-Steps to reproduce the behavior:
+[Open a Bug Report](https://github.com/Leeyah-123/lightning-o/issues/new?template=bug_report.md)
 
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+---
 
-**Expected behavior**
-What you expected to happen.
+## Feature Requests
 
-**Screenshots**
-If applicable, add screenshots.
+Use the **Feature Request** issue template when proposing new functionality. It will prompt you for:
 
-**Environment:**
+- A summary and problem statement
+- Your proposed solution
+- Acceptance criteria
+- Technical considerations
+- Alternatives you've considered
 
-- OS: [e.g. macOS, Windows, Linux]
-- Browser: [e.g. Chrome, Firefox, Safari]
-- Version: [e.g. 1.0.0]
+[Open a Feature Request](https://github.com/Leeyah-123/lightning-o/issues/new?template=feature_request.md)
 
-**Additional context**
-Any other context about the problem.
-```
+> **Note:** Please wait for maintainer approval before starting implementation on a feature request. Once approved, comment to request assignment per the [Contribution Workflow](#contribution-workflow).
 
-### Feature Requests
-
-Use the feature request template:
-
-```markdown
-**Is your feature request related to a problem?**
-A clear description of what the problem is.
-
-**Describe the solution you'd like**
-A clear description of what you want to happen.
-
-**Describe alternatives you've considered**
-A clear description of any alternative solutions.
-
-**Additional context**
-Add any other context or screenshots about the feature request.
-```
+---
 
 ## Documentation
 
@@ -455,7 +459,7 @@ Add any other context or screenshots about the feature request.
 - **Keep README updated** with new features
 - **Update type definitions** when changing interfaces
 
-```typescript
+```ts
 /**
  * Creates a new bounty with the provided data
  * @param data - Bounty creation data
@@ -476,6 +480,8 @@ When adding new features:
 - Update installation instructions
 - Add new API endpoints
 
+---
+
 ## Testing
 
 ### Manual Testing
@@ -492,7 +498,7 @@ When adding new features:
 - Test component rendering
 - Verify type safety
 
-```typescript
+```ts
 // Example test
 describe('BountyService', () => {
   it('should create a bounty with valid data', async () => {
@@ -502,6 +508,8 @@ describe('BountyService', () => {
   });
 });
 ```
+
+---
 
 ## Areas for Contribution
 
@@ -526,6 +534,8 @@ describe('BountyService', () => {
 - **Build optimizations**
 - **Developer experience**
 
+---
+
 ## Getting Help
 
 ### Community
@@ -541,6 +551,8 @@ describe('BountyService', () => {
 - [Nostr Protocol Documentation](https://nostr.com)
 - [Bitcoin Lightning Documentation](https://lightning.network)
 
+---
+
 ## Recognition
 
 Contributors will be recognized in:
@@ -548,6 +560,8 @@ Contributors will be recognized in:
 - **README.md** contributors section
 - **Release notes** for significant contributions
 - **GitHub** contributor statistics
+
+---
 
 ## License
 
